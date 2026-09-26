@@ -1,0 +1,31 @@
+{
+  "source": "dataset/geography/moscow-trams-2026-02-09.json",
+  "source_sha256": "4f8c71abd467dc15fdaae09a8b70f41ba443b0f4810516bca2bc25e04b4f03d7",
+  "geometry_as_of": "2026-02-09",
+  "target_routes": [
+    1,
+    5,
+    7,
+    11,
+    12,
+    17,
+    25,
+    26,
+    28,
+    50
+  ],
+  "route_pairs": 9,
+  "pattern_pairs": 18,
+  "stop_pair_direction_rows": 134,
+  "unique_departure_stop_positions": 114,
+  "corridors": 18,
+  "excluded_stop_pair_direction_rows": 20,
+  "exclusion_reasons": {
+    "no_common_alighting_stop_before_divergence": 12,
+    "alighting_only_at_origin": 8
+  },
+  "source_license": "ODbL-1.0",
+  "historical_2025_verified": false,
+  "rule": "same OSM stop node, boarding permitted by member roles, identical forward track node sequence to a common alighting stop; direction numbers are not compared",
+  "note": "Static dated route topology; no event-to-stop matching or historical 2025 validity is asserted."
+}

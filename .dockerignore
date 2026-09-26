@@ -1,0 +1,15 @@
+.git
+analysis
+dataset
+artifacts
+deliverables
+**/node_modules
+**/.venv
+**/dist
+**/test-results
+**/playwright-report
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/*.tsbuildinfo
+**/.env.local

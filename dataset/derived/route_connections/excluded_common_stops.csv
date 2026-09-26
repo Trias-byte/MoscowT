@@ -1,0 +1,21 @@
+﻿route_a;route_b;relation_a;relation_b;direction_a;direction_b;stop_id;stop_name;reason
+5;7;7556406;556900;0;0;osm-node-4291992592;Лесная улица;no_common_alighting_stop_before_divergence
+5;7;7556406;3299879;0;1;osm-node-5041552959;Белорусский вокзал;alighting_only_at_origin
+5;50;7556406;1538170;0;1;osm-node-13388798128;МИИТ;no_common_alighting_stop_before_divergence
+5;7;15840810;556900;1;0;osm-node-5041552959;Белорусский вокзал;alighting_only_at_origin
+5;7;15840810;3299879;1;1;osm-node-5041552959;Белорусский вокзал;alighting_only_at_origin
+5;50;15840810;1538169;1;0;osm-node-2631470112;Тихвинский переулок;no_common_alighting_stop_before_divergence
+7;11;556900;920053;0;1;osm-node-1984681646;Инновационный университет;no_common_alighting_stop_before_divergence
+7;50;556900;1538170;0;1;osm-node-471943152;Метро «Красносельская»;no_common_alighting_stop_before_divergence
+7;11;3299879;918052;1;0;osm-node-1984681612;Метро «Преображенская площадь»;no_common_alighting_stop_before_divergence
+7;50;3299879;1538169;1;0;osm-node-1257401460;Улица Достоевского;no_common_alighting_stop_before_divergence
+11;12;918052;14258875;0;1;osm-node-1468322492;Восточное Измайлово;alighting_only_at_origin
+11;17;918052;540033;0;0;osm-node-243894862;ВДНХ (северный вход);no_common_alighting_stop_before_divergence
+11;25;918052;3186264;0;0;osm-node-287393738;Ростокинский проезд;no_common_alighting_stop_before_divergence
+11;12;920053;14258874;1;0;osm-node-1475230086;Метро «Семёновская»;no_common_alighting_stop_before_divergence
+11;17;920053;540139;1;1;osm-node-3236023227;Останкино;alighting_only_at_origin
+11;25;920053;3186265;1;1;osm-node-3236023227;Останкино;alighting_only_at_origin
+12;50;14258874;1538169;0;0;osm-node-800886916;Метро «Авиамоторная»;no_common_alighting_stop_before_divergence
+12;50;14258875;1538170;1;1;osm-node-695081254;Дом культуры «Компрессор»;alighting_only_at_origin
+17;25;540033;3186264;0;0;osm-node-243894862;ВДНХ (северный вход);no_common_alighting_stop_before_divergence
+17;25;540139;3186265;1;1;osm-node-3236023227;Останкино;alighting_only_at_origin

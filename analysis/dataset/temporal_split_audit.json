@@ -1,0 +1,547 @@
+{
+  "train_labels": {
+    "rows": 46234,
+    "timestamp_min": "2025-01-01 04:00:00",
+    "timestamp_max": "2025-08-31 23:00:00",
+    "duplicate_keys": 0,
+    "file_sorted_by_timestamp": false
+  },
+  "test_labels": {
+    "rows": 11317,
+    "timestamp_min": "2025-09-01 00:00:00",
+    "timestamp_max": "2025-10-31 23:00:00",
+    "duplicate_keys": 0,
+    "file_sorted_by_timestamp": false
+  },
+  "labels_common_keys": 0,
+  "labels_train_strictly_before_test": true,
+  "train_tail": {
+    "events": 550,
+    "successful": 523,
+    "positive_hour_keys": 15,
+    "rows": [
+      {
+        "split": "train",
+        "route": 7,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 58,
+        "events": 58
+      },
+      {
+        "split": "train",
+        "route": 7,
+        "date": "2025-09-01",
+        "hour": 1,
+        "boardings": 1,
+        "events": 1
+      },
+      {
+        "split": "train",
+        "route": 11,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 122,
+        "events": 128
+      },
+      {
+        "split": "train",
+        "route": 11,
+        "date": "2025-09-01",
+        "hour": 1,
+        "boardings": 31,
+        "events": 33
+      },
+      {
+        "split": "train",
+        "route": 12,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 77,
+        "events": 79
+      },
+      {
+        "split": "train",
+        "route": 12,
+        "date": "2025-09-01",
+        "hour": 1,
+        "boardings": 6,
+        "events": 7
+      },
+      {
+        "split": "train",
+        "route": 17,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 131,
+        "events": 144
+      },
+      {
+        "split": "train",
+        "route": 17,
+        "date": "2025-09-01",
+        "hour": 1,
+        "boardings": 12,
+        "events": 12
+      },
+      {
+        "split": "train",
+        "route": 25,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 14,
+        "events": 14
+      },
+      {
+        "split": "train",
+        "route": 25,
+        "date": "2025-09-01",
+        "hour": 1,
+        "boardings": 2,
+        "events": 3
+      },
+      {
+        "split": "train",
+        "route": 26,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 52,
+        "events": 53
+      },
+      {
+        "split": "train",
+        "route": 26,
+        "date": "2025-09-01",
+        "hour": 1,
+        "boardings": 2,
+        "events": 3
+      },
+      {
+        "split": "train",
+        "route": 28,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 1,
+        "events": 1
+      },
+      {
+        "split": "train",
+        "route": 50,
+        "date": "2025-09-01",
+        "hour": 0,
+        "boardings": 13,
+        "events": 13
+      },
+      {
+        "split": "train",
+        "route": 50,
+        "date": "2025-09-01",
+        "hour": 1,
+        "boardings": 1,
+        "events": 1
+      }
+    ]
+  },
+  "test_tail": {
+    "events": 615,
+    "successful": 562,
+    "positive_hour_keys": 12,
+    "rows": [
+      {
+        "split": "test",
+        "route": 1,
+        "date": "2025-11-01",
+        "hour": 0,
+        "boardings": 2,
+        "events": 8
+      },
+      {
+        "split": "test",
+        "route": 7,
+        "date": "2025-11-01",
+        "hour": 0,
+        "boardings": 109,
+        "events": 115
+      },
+      {
+        "split": "test",
+        "route": 7,
+        "date": "2025-11-01",
+        "hour": 1,
+        "boardings": 25,
+        "events": 27
+      },
+      {
+        "split": "test",
+        "route": 11,
+        "date": "2025-11-01",
+        "hour": 0,
+        "boardings": 108,
+        "events": 118
+      },
+      {
+        "split": "test",
+        "route": 12,
+        "date": "2025-11-01",
+        "hour": 0,
+        "boardings": 30,
+        "events": 37
+      },
+      {
+        "split": "test",
+        "route": 12,
+        "date": "2025-11-01",
+        "hour": 1,
+        "boardings": 3,
+        "events": 3
+      },
+      {
+        "split": "test",
+        "route": 17,
+        "date": "2025-11-01",
+        "hour": 0,
+        "boardings": 151,
+        "events": 161
+      },
+      {
+        "split": "test",
+        "route": 17,
+        "date": "2025-11-01",
+        "hour": 1,
+        "boardings": 30,
+        "events": 34
+      },
+      {
+        "split": "test",
+        "route": 26,
+        "date": "2025-11-01",
+        "hour": 0,
+        "boardings": 40,
+        "events": 43
+      },
+      {
+        "split": "test",
+        "route": 26,
+        "date": "2025-11-01",
+        "hour": 1,
+        "boardings": 3,
+        "events": 3
+      },
+      {
+        "split": "test",
+        "route": 50,
+        "date": "2025-11-01",
+        "hour": 0,
+        "boardings": 55,
+        "events": 60
+      },
+      {
+        "split": "test",
+        "route": 50,
+        "date": "2025-11-01",
+        "hour": 1,
+        "boardings": 6,
+        "events": 6
+      }
+    ]
+  },
+  "test_target_exposure": {
+    "keys": 15,
+    "boardings": 523,
+    "share_of_test_volume_pct": 0.00410051965266168
+  },
+  "raw_files_common_hour_keys": 0,
+  "sparse_row_lags": [
+    {
+      "row_shift": 1,
+      "eligible_rows": 57542,
+      "wrong_clock_lag_rows": 2721,
+      "wrong_pct": 4.728719891557471,
+      "min_hours": 1.0,
+      "median_hours": 1.0,
+      "max_hours": 30.0
+    },
+    {
+      "row_shift": 24,
+      "eligible_rows": 57335,
+      "wrong_clock_lag_rows": 57010,
+      "wrong_pct": 99.4331560129066,
+      "min_hours": 24.0,
+      "median_hours": 27.0,
+      "max_hours": 62.0
+    },
+    {
+      "row_shift": 168,
+      "eligible_rows": 56039,
+      "wrong_clock_lag_rows": 56039,
+      "wrong_pct": 100.0,
+      "min_hours": 179.0,
+      "median_hours": 187.0,
+      "max_hours": 250.0
+    }
+  ],
+  "lag_availability_ideal_zero_delay": [
+    {
+      "mode": "fixed_61_days",
+      "lag_hours": 1,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 14630,
+      "unavailable_pct": 99.93169398907104
+    },
+    {
+      "mode": "daily_24_hours",
+      "lag_hours": 1,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 14030,
+      "unavailable_pct": 95.83333333333334
+    },
+    {
+      "mode": "rolling_next_hour",
+      "lag_hours": 1,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "fixed_61_days",
+      "lag_hours": 24,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 14400,
+      "unavailable_pct": 98.36065573770492
+    },
+    {
+      "mode": "daily_24_hours",
+      "lag_hours": 24,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "rolling_next_hour",
+      "lag_hours": 24,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "fixed_61_days",
+      "lag_hours": 168,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 12960,
+      "unavailable_pct": 88.52459016393442
+    },
+    {
+      "mode": "daily_24_hours",
+      "lag_hours": 168,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "rolling_next_hour",
+      "lag_hours": 168,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "fixed_61_days",
+      "lag_hours": 720,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 7440,
+      "unavailable_pct": 50.81967213114754
+    },
+    {
+      "mode": "daily_24_hours",
+      "lag_hours": 720,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "rolling_next_hour",
+      "lag_hours": 720,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "fixed_61_days",
+      "lag_hours": 1464,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "daily_24_hours",
+      "lag_hours": 1464,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    },
+    {
+      "mode": "rolling_next_hour",
+      "lag_hours": 1464,
+      "test_keys": 14640,
+      "unavailable_actual_keys": 0,
+      "unavailable_pct": 0.0
+    }
+  ],
+  "combined_calendar_reconciliation_mismatches": 0,
+  "small_file_sha256": {
+    "labels/labels_day_test.csv": "37479acea3e319ac613d72df7217bbe57b66af49644e538139174fd534ce2347",
+    "labels/labels_day_train.csv": "20a61009b4ee00327784c6fa888109609fd3a1905ea3a8509b36964dd9baced7",
+    "test_submission.csv": "71c8126bb51068c936462a170da885bad860fc91a58b3d2ac731876d324d7ec3"
+  },
+  "proposed_fixed_origin_folds": [
+    {
+      "role": "development",
+      "origin": "2025-05-01 00:00:00",
+      "train_end_exclusive": "2025-05-01 00:00:00",
+      "test_end_exclusive": "2025-07-01 00:00:00",
+      "test_hours": 1464,
+      "test_keys": 14640
+    },
+    {
+      "role": "development",
+      "origin": "2025-06-01 00:00:00",
+      "train_end_exclusive": "2025-06-01 00:00:00",
+      "test_end_exclusive": "2025-08-01 00:00:00",
+      "test_hours": 1464,
+      "test_keys": 14640
+    },
+    {
+      "role": "development",
+      "origin": "2025-07-01 00:00:00",
+      "train_end_exclusive": "2025-07-01 00:00:00",
+      "test_end_exclusive": "2025-08-31 00:00:00",
+      "test_hours": 1464,
+      "test_keys": 14640
+    },
+    {
+      "role": "holdout",
+      "origin": "2025-09-01 00:00:00",
+      "train_end_exclusive": "2025-09-01 00:00:00",
+      "test_end_exclusive": "2025-11-01 00:00:00",
+      "test_hours": 1464,
+      "test_keys": 14640
+    }
+  ],
+  "reference_snapshots": {
+    "Маршруты GTFS_ROUTES": {
+      "rows": 10,
+      "min_actual_date": "2025-10-20",
+      "max_actual_date": "2026-02-09",
+      "actual_date_at_or_after_2025-09-01": 10,
+      "actual_date_at_or_after_2025-11-01": 9
+    },
+    "Остановки GTFS_STOPS": {
+      "rows": 489,
+      "min_actual_date": "2023-06-13",
+      "max_actual_date": "2026-02-09",
+      "actual_date_at_or_after_2025-09-01": 147,
+      "actual_date_at_or_after_2025-11-01": 67
+    },
+    "Порядок_остановок GTFS_TRIPS_ST": {
+      "rows": 622,
+      "min_actual_date": "2025-10-20",
+      "max_actual_date": "2026-02-09",
+      "actual_date_at_or_after_2025-09-01": 622,
+      "actual_date_at_or_after_2025-11-01": 594
+    },
+    "Наряд": {
+      "rows": 15,
+      "min_actual_date": "2026-02-08",
+      "max_actual_date": "2026-02-08",
+      "actual_date_at_or_after_2025-09-01": 15,
+      "actual_date_at_or_after_2025-11-01": 15
+    },
+    "Порядок_с_координатами": {
+      "rows": 622,
+      "min_actual_date": "2025-10-20",
+      "max_actual_date": "2026-02-09",
+      "actual_date_at_or_after_2025-09-01": 622,
+      "actual_date_at_or_after_2025-11-01": 594
+    }
+  },
+  "previous_full_audit": {
+    "row_intersection": 0,
+    "card_intersection": 1229081,
+    "device_tran_intersection": 282292,
+    "method": "64-bit pandas fingerprints; previous full-file audit, aggregates reverified by fresh scan"
+  },
+  "events_loaded_exactly_at_cutoff": {
+    "train": {
+      "2025-09-01 00:00:00": {
+        "events": 0,
+        "successful": 0
+      },
+      "2025-11-01 00:00:00": {
+        "events": 0,
+        "successful": 0
+      }
+    },
+    "test": {
+      "2025-09-01 00:00:00": {
+        "events": 0,
+        "successful": 0
+      },
+      "2025-11-01 00:00:00": {
+        "events": 2,
+        "successful": 2
+      }
+    }
+  },
+  "fresh_raw_scan": {
+    "train": {
+      "rows": 49051926,
+      "bytes": 8160068959,
+      "mtime_ns": 1789376644000000000,
+      "availability": {
+        "2025-09-01": {
+          "past_events": 49051376,
+          "past_successful": 46912710,
+          "past_events_loaded_at_or_after_cutoff": 563966,
+          "past_successful_loaded_at_or_after_cutoff": 551958,
+          "past_events_with_unknown_load_time": 0
+        },
+        "2025-11-01": {
+          "past_events": 49051926,
+          "past_successful": 46913233,
+          "past_events_loaded_at_or_after_cutoff": 71336,
+          "past_successful_loaded_at_or_after_cutoff": 69501,
+          "past_events_with_unknown_load_time": 0
+        }
+      },
+      "invalid_dates": {
+        "event": 0,
+        "loaded": 0
+      }
+    },
+    "test": {
+      "rows": 13391571,
+      "bytes": 2231502820,
+      "mtime_ns": 1789376648000000000,
+      "availability": {
+        "2025-09-01": {
+          "past_events": 0,
+          "past_successful": 0,
+          "past_events_loaded_at_or_after_cutoff": 0,
+          "past_successful_loaded_at_or_after_cutoff": 0,
+          "past_events_with_unknown_load_time": 0
+        },
+        "2025-11-01": {
+          "past_events": 13390956,
+          "past_successful": 12753958,
+          "past_events_loaded_at_or_after_cutoff": 152514,
+          "past_successful_loaded_at_or_after_cutoff": 149423,
+          "past_events_with_unknown_load_time": 0
+        }
+      },
+      "invalid_dates": {
+        "event": 0,
+        "loaded": 0
+      }
+    }
+  }
+}

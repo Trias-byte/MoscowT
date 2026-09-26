@@ -1,0 +1,16 @@
+split;route;date;hour;boardings_raw;events;boardings_label;_merge
+train;7;2025-09-01;0;58;58;;left_only
+train;7;2025-09-01;1;1;1;;left_only
+train;11;2025-09-01;0;122;128;;left_only
+train;11;2025-09-01;1;31;33;;left_only
+train;12;2025-09-01;0;77;79;;left_only
+train;12;2025-09-01;1;6;7;;left_only
+train;17;2025-09-01;0;131;144;;left_only
+train;17;2025-09-01;1;12;12;;left_only
+train;25;2025-09-01;0;14;14;;left_only
+train;25;2025-09-01;1;2;3;;left_only
+train;26;2025-09-01;0;52;53;;left_only
+train;26;2025-09-01;1;2;3;;left_only
+train;28;2025-09-01;0;1;1;;left_only
+train;50;2025-09-01;0;13;13;;left_only
+train;50;2025-09-01;1;1;1;;left_only

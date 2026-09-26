@@ -1,0 +1,9 @@
+{
+  "raw_rows": 62443497,
+  "raw_success": 59667753,
+  "labels_sum": 59667191,
+  "calendar_reconciliation_differences": 0,
+  "november_tail_success": 562,
+  "november_tail_events": 615,
+  "route50_no_events_sept21": true
+}

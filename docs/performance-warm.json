@@ -1,0 +1,246 @@
+{
+  "mode": "warm",
+  "offeredRps": 300,
+  "requestedDurationSeconds": 30,
+  "elapsedSeconds": 30.000677385000017,
+  "completed": 9000,
+  "achievedRps": 299.99322630294654,
+  "errors": {},
+  "p50Ms": 3.213352332750219,
+  "p95Ms": 4.573655667627463,
+  "p99Ms": 6.577948999620276,
+  "responseBytes": {
+    "min": 903,
+    "mean": 7535.7,
+    "max": 59003
+  },
+  "mix": {
+    "map-snapshot": 0.2,
+    "timeseries": 0.2,
+    "route-comparison": 0.2,
+    "heatmap": 0.2,
+    "capabilities": 0.1,
+    "routes": 0.1
+  },
+  "scopeVariants": 24,
+  "resources": [
+    {
+      "BlockIO": "8.13MB / 4.73MB",
+      "CPUPerc": "72.09%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.58%",
+      "MemUsage": "216.7MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "4.79MB / 83.4MB",
+      "PIDs": "12"
+    },
+    {
+      "BlockIO": "8.13MB / 5.39MB",
+      "CPUPerc": "70.49%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.28%",
+      "MemUsage": "210.6MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "5.08MB / 88.1MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 5.39MB",
+      "CPUPerc": "70.15%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.28%",
+      "MemUsage": "210.5MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "5.38MB / 92.9MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 6.35MB",
+      "CPUPerc": "69.46%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.25%",
+      "MemUsage": "209.9MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "5.68MB / 97.7MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 6.35MB",
+      "CPUPerc": "81.90%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.69%",
+      "MemUsage": "218.9MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "5.98MB / 102MB",
+      "PIDs": "16"
+    },
+    {
+      "BlockIO": "8.13MB / 6.88MB",
+      "CPUPerc": "61.60%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.25%",
+      "MemUsage": "209.9MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "6.28MB / 107MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 7.27MB",
+      "CPUPerc": "71.20%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.26%",
+      "MemUsage": "210.2MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "6.58MB / 112MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 7.27MB",
+      "CPUPerc": "70.24%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.28%",
+      "MemUsage": "210.5MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "6.87MB / 117MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 7.88MB",
+      "CPUPerc": "70.65%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.30%",
+      "MemUsage": "211MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "7.17MB / 121MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 7.88MB",
+      "CPUPerc": "76.16%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.43%",
+      "MemUsage": "213.5MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "7.47MB / 126MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 8.52MB",
+      "CPUPerc": "64.77%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.22%",
+      "MemUsage": "209.3MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "7.77MB / 131MB",
+      "PIDs": "13"
+    },
+    {
+      "BlockIO": "8.13MB / 8.52MB",
+      "CPUPerc": "70.15%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.22%",
+      "MemUsage": "209.2MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "8.07MB / 136MB",
+      "PIDs": "13"
+    },
+    {
+      "BlockIO": "8.13MB / 8.52MB",
+      "CPUPerc": "70.17%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.21%",
+      "MemUsage": "209.1MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "8.37MB / 140MB",
+      "PIDs": "13"
+    },
+    {
+      "BlockIO": "8.13MB / 9.5MB",
+      "CPUPerc": "74.63%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.21%",
+      "MemUsage": "209.1MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "8.66MB / 145MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "8.13MB / 9.5MB",
+      "CPUPerc": "69.38%",
+      "Container": "moscowt-app-1",
+      "ID": "ee5314410a94",
+      "MemPerc": "10.53%",
+      "MemUsage": "215.7MiB / 2GiB",
+      "Name": "moscowt-app-1",
+      "NetIO": "8.95MB / 150MB",
+      "PIDs": "20"
+    }
+  ],
+  "exportJobs": [
+    {
+      "id": "b327bc8d42a24c46bad8cfcb26fd8858",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "checkedAfterSeconds": 28.981373974000235
+    },
+    {
+      "id": "67fb2453ecfa40b8836ad2e8c4c3ac0f",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "checkedAfterSeconds": 23.943618314999185
+    },
+    {
+      "id": "f5643324135f48049e1acc3dbf5f9efd",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "checkedAfterSeconds": 18.93021977600074
+    },
+    {
+      "id": "f19a62e88ad24694b6fba0a92c2f6714",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "checkedAfterSeconds": 13.913364101999832
+    },
+    {
+      "id": "01a4b1f0b2aa4d038ca4dae4c9011042",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "checkedAfterSeconds": 8.901823894999325
+    },
+    {
+      "id": "fc498dbe713e40f7bb1300d34e1c4de6",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "checkedAfterSeconds": 3.886039269000321
+    }
+  ],
+  "metrics": "# HELP moscowt_http_seconds HTTP duration\n# TYPE moscowt_http_seconds histogram\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/health/ready\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/health/ready\"} 5.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/health/ready\"} 0.07472958199832647\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v1/capabilities\"} 1553.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v1/capabilities\"} 1595.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v1/capabilities\"} 1658.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v1/capabilities\"} 1718.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v1/capabilities\"} 1751.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v1/capabilities\"} 1760.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v1/capabilities\"} 1802.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v1/capabilities\"} 1802.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v1/capabilities\"} 1802.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v1/capabilities\"} 1802.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v1/capabilities\"} 1802.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v1/capabilities\"} 23.008043593968978\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3032.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3237.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3392.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3497.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3530.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/map-snapshot\"} 33.69468148803753\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/timeseries\"} 3037.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/timeseries\"} 3203.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/timeseries\"} 3367.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/timeseries\"} 3468.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/timeseries\"} 3506.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/timeseries\"} 3599.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/timeseries\"} 32.68418093598302\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3031.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3198.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3356.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3463.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3505.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3598.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/route-comparison\"} 32.74303016697195\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/heatmap\"} 3008.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/heatmap\"} 3194.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/heatmap\"} 3354.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/heatmap\"} 3462.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/heatmap\"} 3506.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/heatmap\"} 32.922474405972025\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v1/routes\"} 1559.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v1/routes\"} 1594.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v1/routes\"} 1660.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v1/routes\"} 1716.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v1/routes\"} 1749.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v1/routes\"} 1758.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v1/routes\"} 23.230758338004307\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/exports\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/exports\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/exports\"} 8.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/exports\"} 10.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/exports\"} 11.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/exports\"} 11.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/exports\"} 0.701942315998167\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 0.011990392995357979\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/metrics\"} 1.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/metrics\"} 0.00270226599968737\n# HELP moscowt_http_seconds_created HTTP duration\n# TYPE moscowt_http_seconds_created gauge\nmoscowt_http_seconds_created{method=\"GET\",path=\"/health/ready\"} 1.7903516765550194e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v1/capabilities\"} 1.7903516773022802e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/map-snapshot\"} 1.790351677505856e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/timeseries\"} 1.7903516775062134e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/route-comparison\"} 1.7903516775064507e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/heatmap\"} 1.790351677506635e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v1/routes\"} 1.7903516776377673e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/exports\"} 1.7903516788038626e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 1.7903517073104541e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/metrics\"} 1.7903517073214302e+09\n# HELP moscowt_http_requests_total HTTP responses\n# TYPE moscowt_http_requests_total counter\nmoscowt_http_requests_total{path=\"/health/ready\",status=\"200\"} 8.0\nmoscowt_http_requests_total{path=\"/api/v1/capabilities\",status=\"200\"} 1802.0\nmoscowt_http_requests_total{path=\"/api/v1/map-snapshot\",status=\"200\"} 3624.0\nmoscowt_http_requests_total{path=\"/api/v1/timeseries\",status=\"200\"} 3600.0\nmoscowt_http_requests_total{path=\"/api/v1/route-comparison\",status=\"200\"} 3600.0\nmoscowt_http_requests_total{path=\"/api/v1/heatmap\",status=\"200\"} 3600.0\nmoscowt_http_requests_total{path=\"/api/v1/routes\",status=\"200\"} 1800.0\nmoscowt_http_requests_total{path=\"/api/v1/exports\",status=\"202\"} 12.0\nmoscowt_http_requests_total{path=\"/api/v1/jobs/{ident}\",status=\"200\"} 12.0\nmoscowt_http_requests_total{path=\"/metrics\",status=\"200\"} 1.0\n# HELP moscowt_http_requests_created HTTP responses\n# TYPE moscowt_http_requests_created gauge\nmoscowt_http_requests_created{path=\"/health/ready\",status=\"200\"} 1.7903516765551987e+09\nmoscowt_http_requests_created{path=\"/api/v1/capabilities\",status=\"200\"} 1.7903516773023696e+09\nmoscowt_http_requests_created{path=\"/api/v1/map-snapshot\",status=\"200\"} 1.7903516775059218e+09\nmoscowt_http_requests_created{path=\"/api/v1/timeseries\",status=\"200\"} 1.790351677506258e+09\nmoscowt_http_requests_created{path=\"/api/v1/route-comparison\",status=\"200\"} 1.7903516775064952e+09\nmoscowt_http_requests_created{path=\"/api/v1/heatmap\",status=\"200\"} 1.7903516775066786e+09\nmoscowt_http_requests_created{path=\"/api/v1/routes\",status=\"200\"} 1.7903516776378322e+09\nmoscowt_http_requests_created{path=\"/api/v1/exports\",status=\"202\"} 1.7903516788039296e+09\nmoscowt_http_requests_created{path=\"/api/v1/jobs/{ident}\",status=\"200\"} 1.7903517073104944e+09\nmoscowt_http_requests_created{path=\"/metrics\",status=\"200\"} 1.7903517073214622e+09\n# HELP moscowt_jobs Persisted jobs\n# TYPE moscowt_jobs gauge\nmoscowt_jobs{status=\"pending\"} 0.0\nmoscowt_jobs{status=\"running\"} 0.0\nmoscowt_jobs{status=\"ready\"} 42.0\nmoscowt_jobs{status=\"failed\"} 0.0\n# HELP moscowt_cache_bytes Estimated cached response memory\n# TYPE moscowt_cache_bytes gauge\nmoscowt_cache_bytes 1.460112e+07\n",
+  "latencyIncludesSchedulingDelay": true,
+  "clientConcurrency": 96
+}

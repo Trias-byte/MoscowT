@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env.local
+playwright-report/
+test-results/
+*.tsbuildinfo
+tests/fixtures/load-network.geojson
+# The repository's Python ignore rules exclude directories named lib.
+!src/lib/
+!src/lib/**

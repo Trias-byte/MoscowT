@@ -1,0 +1,19 @@
+{
+  "reconstructions": [
+    {
+      "routeId": "5",
+      "validFrom": "2025-12-16",
+      "validTo": "2025-12-19",
+      "geometryDate": "2025-12-19",
+      "officialUrl": "https://mosmetro.ru/news/details/8515",
+      "note": "Открыт 16 декабря. Трасса восстановлена по официальному описанию и геометрии OSM от 19 декабря; точная геометрия 16–18 декабря независимо не подтверждена."
+    }
+  ],
+  "retirements": [
+    {
+      "routeId": "9",
+      "validFrom": "2025-12-17",
+      "officialUrl": "https://mosmetro.ru/news/details/8515"
+    }
+  ]
+}

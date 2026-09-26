@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# MoscowT runtime files; immutable deliverables are exported separately.
+/artifacts/
+/dataset/*.csv
+/dataset/labels/*.csv
+/dataset/spravochniki/*.xlsx
+**/service.sqlite3*
+/backend/openapi.tmp.json

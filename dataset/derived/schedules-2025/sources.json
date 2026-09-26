@@ -1,0 +1,172 @@
+{
+  "retrievedAt": "2026-09-26",
+  "scope": [
+    "1",
+    "5",
+    "7",
+    "11",
+    "12",
+    "17",
+    "25",
+    "26",
+    "28",
+    "50"
+  ],
+  "coverage": "partial_archives_and_reference_intervals_not_complete_2025_timetables",
+  "sources": [
+    {
+      "id": "official-map-2024-10-09",
+      "publisher": "Московский транспорт",
+      "url": "https://news.metro.ru/24/Scheme_tram_Moscow_11_2024.pdf",
+      "originalPage": "https://transport.mos.ru/metro/trammap",
+      "sourceDate": "2024-10-09",
+      "localFile": "sources/map-2024-10-09.pdf",
+      "kind": "official_map_mirrored_in_archive",
+      "use": "Средние интервалы. Перенос на дни 2025 года является допущением; часы, тип дня и срок действия не указаны.",
+      "sha256": "bc847a83ddc5e259e0b209265d9f6459946b3e1c32ab4706a12ea927fdad8096"
+    },
+    {
+      "id": "official-map-2025-12-15",
+      "publisher": "Московский транспорт",
+      "url": "https://news.metro.ru/25/trammap_12_25.pdf",
+      "originalPage": "https://transport.mos.ru/metro/trammap",
+      "sourceDate": "2025-12-15",
+      "localFile": "sources/map-2025-12-15.pdf",
+      "kind": "official_map_mirrored_in_archive",
+      "use": "Средние интервалы. Маршрут 5 начинает работу 16 декабря. Схема не задаёт почасовые отправления и не подтверждает интервалы в другие даты.",
+      "sha256": "621e7a7a68d273553b2586de17bcf0b568368f681e8fb525da78d9f42c4aac6a"
+    },
+    {
+      "id": "official-route7-2025-07-29",
+      "publisher": "Московский транспорт / архив Internet Archive",
+      "url": "https://web.archive.org/web/20250729161007/https://transport.mos.ru/transport/schedule/route/141501932",
+      "downloadUrl": "https://web.archive.org/web/20250729161007id_/https://transport.mos.ru/transport/schedule/route/141501932",
+      "originalPage": "https://transport.mos.ru/transport/schedule/route/141501932",
+      "sourceDate": "2025-07-29",
+      "localFile": "sources/route7-2025-07-29.html.gz",
+      "kind": "archived_stop_departures_one_direction",
+      "use": "Одна дата, направление 0: метро Бульвар Рокоссовского — метро Сокольники. Времена на каждой остановке, без идентификаторов рейса/вагона. Нельзя суммировать отправления всех остановок как рейсы.",
+      "sha256": "3c69ab0fa70b2c5185365fafe8619565b40e46567a307c7554bc99440bd7bfaf",
+      "checksumScope": "uncompressed_source_bytes"
+    },
+    {
+      "id": "calendar-2025",
+      "publisher": "Правительство России",
+      "url": "https://government.ru/docs/all/155500/",
+      "sourceDate": "2024-10-04",
+      "kind": "civil_work_calendar",
+      "use": "Производственный календарь. Тип дня транспортного расписания этим документом не устанавливается."
+    },
+    {
+      "id": "route5-opening",
+      "publisher": "Московский метрополитен",
+      "url": "https://mosmetro.ru/news/details/8515",
+      "sourceDate": "2025-12-16",
+      "kind": "opening_notice",
+      "use": "Маршрут 5 открыт 16 декабря 2025 года."
+    },
+    {
+      "id": "routes7-50-july-change",
+      "publisher": "Московский транспорт",
+      "url": "https://transport.mos.ru/mostrans/all_news/125272",
+      "sourceDate": "2025-07-09",
+      "kind": "temporary_change_notice",
+      "use": "С 10 июля на срок до 28 дней: маршрут 7 до метро Сокольники, 50 объединён с 13. Объявленный срок не подтверждает фактическую дату восстановления."
+    },
+    {
+      "id": "route17-april-change",
+      "publisher": "Московский транспорт",
+      "url": "https://transport.mos.ru/mostrans/all_news/123857",
+      "sourceDate": null,
+      "kind": "temporary_change_notice",
+      "use": "С 5 апреля по выходным маршрут 17 укорочен. Дата окончания в найденном объявлении не установлена."
+    },
+    {
+      "id": "route17-april-suspension",
+      "publisher": "Московский транспорт",
+      "url": "https://transport.mos.ru/mostrans/all_news/124110",
+      "sourceDate": "2025-04-22",
+      "kind": "temporary_change_notice",
+      "use": "С 26 апреля по выходным маршрут 17 не работает. Без объявления о восстановлении нельзя автоматически распространить это на все последующие выходные."
+    }
+  ],
+  "intervalReferences": [
+    {
+      "routeId": "1",
+      "minutesMin": 6,
+      "minutesMax": 8
+    },
+    {
+      "routeId": "7",
+      "minutesMin": 11,
+      "minutesMax": 11
+    },
+    {
+      "routeId": "11",
+      "minutesMin": 8,
+      "minutesMax": 10
+    },
+    {
+      "routeId": "12",
+      "minutesMin": 8,
+      "minutesMax": 10
+    },
+    {
+      "routeId": "17",
+      "minutesMin": 3,
+      "minutesMax": 5
+    },
+    {
+      "routeId": "25",
+      "minutesMin": 9,
+      "minutesMax": 12
+    },
+    {
+      "routeId": "26",
+      "minutesMin": 8,
+      "minutesMax": 10
+    },
+    {
+      "routeId": "28",
+      "minutesMin": 9,
+      "minutesMax": 12
+    },
+    {
+      "routeId": "50",
+      "minutesMin": 12,
+      "minutesMax": 12
+    },
+    {
+      "routeId": "5",
+      "minutesMin": 6,
+      "minutesMax": 7,
+      "onlyFrom": "2025-12-16"
+    }
+  ],
+  "assumptions": {
+    "referenceSpeedKmh": 16,
+    "referenceSpeedMinKmh": 14,
+    "referenceSpeedMaxKmh": 20,
+    "speedSource": "analyst_sensitivity_assumption_not_route_timetable",
+    "layoverMinutes": 0,
+    "referenceMeaning": "Вагоны в движении и на промежуточных остановках при среднем интервале. Отстой на конечных и резерв не включены. Это ориентир для проверки, не знаменатель карты и не фактический выпуск."
+  },
+  "rejectedSources": [
+    {
+      "url": "https://mobilitydatabase.org/feeds/gtfs/mdb-3226",
+      "reason": "Каталог показывает единственный выпуск 30 июня 2026 года; к 2025 году не применяется."
+    },
+    {
+      "url": "https://mybuses.ru/moscow/tram/17/",
+      "reason": "Нет подтверждённой даты действия в 2025 году; в строках времена идут назад. Не использован."
+    },
+    {
+      "url": "https://web.archive.org/web/20250421184745/https://transport.mos.ru/transport/schedule/route/141501918",
+      "reason": "Страница маршрута 1а: расписание на заданную дату не найдено. Не трактуется как нулевой выпуск."
+    },
+    {
+      "url": "https://web.archive.org/cdx/search/cdx?url=rasp.mosgortrans.ru/*&from=2025&to=2025&output=json",
+      "reason": "Поиск не вернул снимков за 2025 год."
+    }
+  ]
+}

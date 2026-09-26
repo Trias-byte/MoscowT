@@ -1,0 +1,138 @@
+{
+  "inputs": [
+    {
+      "file": "train.csv",
+      "sha256": "e4157ed76a617c8a0ab5674eb7de3b3503489f21307ba68893dd0de04317360f",
+      "rows": 49051926,
+      "outsideHistory": 0,
+      "missingVehicleEvents": 383141
+    },
+    {
+      "file": "test.csv",
+      "sha256": "d58523f79b0d47d72eafe0da9a0c72fb8b472bf4b74e68a4e9f789bd6656557a",
+      "rows": 13391571,
+      "outsideHistory": 615,
+      "missingVehicleEvents": 48309
+    }
+  ],
+  "routes": [
+    {
+      "route": "1",
+      "active_hours": 6204,
+      "median_vehicles": 12.0,
+      "p90_vehicles": 15.0,
+      "max_vehicles": 25,
+      "peak_validations_per_vehicle_hour": 118.79571428571428,
+      "median_validations_per_vehicle_hour": 76.92857142857143,
+      "positive_hours_without_vehicles": 0,
+      "known_event_share": 0.9944237409505529
+    },
+    {
+      "route": "5",
+      "active_hours": 0,
+      "median_vehicles": null,
+      "p90_vehicles": null,
+      "max_vehicles": 0,
+      "peak_validations_per_vehicle_hour": null,
+      "median_validations_per_vehicle_hour": null,
+      "positive_hours_without_vehicles": 0,
+      "known_event_share": 0.0
+    },
+    {
+      "route": "7",
+      "active_hours": 6608,
+      "median_vehicles": 16.0,
+      "p90_vehicles": 20.0,
+      "max_vehicles": 33,
+      "peak_validations_per_vehicle_hour": 109.88250000000001,
+      "median_validations_per_vehicle_hour": 57.4,
+      "positive_hours_without_vehicles": 1,
+      "known_event_share": 0.992467927771858
+    },
+    {
+      "route": "11",
+      "active_hours": 6419,
+      "median_vehicles": 15.0,
+      "p90_vehicles": 21.0,
+      "max_vehicles": 32,
+      "peak_validations_per_vehicle_hour": 133.57777777777775,
+      "median_validations_per_vehicle_hour": 92.45454545454545,
+      "positive_hours_without_vehicles": 1,
+      "known_event_share": 0.9940125739048021
+    },
+    {
+      "route": "12",
+      "active_hours": 6633,
+      "median_vehicles": 18.0,
+      "p90_vehicles": 23.0,
+      "max_vehicles": 33,
+      "peak_validations_per_vehicle_hour": 124.78395989974938,
+      "median_validations_per_vehicle_hour": 75.86666666666666,
+      "positive_hours_without_vehicles": 1,
+      "known_event_share": 0.9951069145371052
+    },
+    {
+      "route": "17",
+      "active_hours": 6641,
+      "median_vehicles": 21.0,
+      "p90_vehicles": 26.0,
+      "max_vehicles": 33,
+      "peak_validations_per_vehicle_hour": 173.2,
+      "median_validations_per_vehicle_hour": 108.14285714285714,
+      "positive_hours_without_vehicles": 37,
+      "known_event_share": 0.9930713841340845
+    },
+    {
+      "route": "25",
+      "active_hours": 5903,
+      "median_vehicles": 6.0,
+      "p90_vehicles": 8.0,
+      "max_vehicles": 12,
+      "peak_validations_per_vehicle_hour": 92.16666666666667,
+      "median_validations_per_vehicle_hour": 50.4,
+      "positive_hours_without_vehicles": 3,
+      "known_event_share": 0.9937726771368562
+    },
+    {
+      "route": "26",
+      "active_hours": 6601,
+      "median_vehicles": 12.0,
+      "p90_vehicles": 14.0,
+      "max_vehicles": 24,
+      "peak_validations_per_vehicle_hour": 113.61538461538461,
+      "median_validations_per_vehicle_hour": 55.84615384615385,
+      "positive_hours_without_vehicles": 0,
+      "known_event_share": 0.9942704424138669
+    },
+    {
+      "route": "28",
+      "active_hours": 6114,
+      "median_vehicles": 7.0,
+      "p90_vehicles": 8.0,
+      "max_vehicles": 11,
+      "peak_validations_per_vehicle_hour": 121.85714285714286,
+      "median_validations_per_vehicle_hour": 64.25,
+      "positive_hours_without_vehicles": 7,
+      "known_event_share": 0.9802132337537398
+    },
+    {
+      "route": "50",
+      "active_hours": 6400,
+      "median_vehicles": 15.0,
+      "p90_vehicles": 18.0,
+      "max_vehicles": 32,
+      "peak_validations_per_vehicle_hour": 123.28714285714287,
+      "median_validations_per_vehicle_hour": 49.269696969696966,
+      "positive_hours_without_vehicles": 18,
+      "known_event_share": 0.9930300914541698
+    }
+  ],
+  "positiveRateQuantiles": {
+    "0.25": 29.405882352941177,
+    "0.5": 66.77777777777777,
+    "0.75": 102.35714285714286,
+    "0.9": 129.47826086956522,
+    "0.95": 146.92771428571422,
+    "0.99": 179.0
+  }
+}

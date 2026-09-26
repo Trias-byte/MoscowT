@@ -1,0 +1,2223 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MoscowT route-hour API",
+    "version": "2.0.0"
+  },
+  "paths": {
+    "/health/live": {
+      "get": {
+        "summary": "Live",
+        "operationId": "live_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Ready",
+        "operationId": "ready_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Metrics",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/capabilities": {
+      "get": {
+        "summary": "Capabilities",
+        "operationId": "capabilities_api_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/network": {
+      "get": {
+        "summary": "Get Network",
+        "operationId": "get_network_api_v1_network_get",
+        "parameters": [
+          {
+            "name": "snapshotId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Snapshotid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/geometry": {
+      "post": {
+        "summary": "Get Geometry",
+        "operationId": "get_geometry_api_v1_geometry_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeometrySelection"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/route-imports/preview": {
+      "post": {
+        "summary": "Preview Route",
+        "operationId": "preview_route_api_v1_route_imports_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/route-imports/{ident}/apply": {
+      "post": {
+        "summary": "Apply Route",
+        "operationId": "apply_route_api_v1_route_imports__ident__apply_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes": {
+      "get": {
+        "summary": "Get Routes",
+        "operationId": "get_routes_api_v1_routes_get",
+        "parameters": [
+          {
+            "name": "snapshotId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Snapshotid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Route"
+                  },
+                  "title": "Response Get Routes Api V1 Routes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forecast-runs": {
+      "get": {
+        "summary": "Forecast Runs",
+        "operationId": "forecast_runs_api_v1_forecast_runs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-quality": {
+      "get": {
+        "summary": "Data Quality",
+        "operationId": "data_quality_api_v1_data_quality_get",
+        "parameters": [
+          {
+            "name": "snapshotId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Snapshotid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/map-snapshot": {
+      "post": {
+        "summary": "Map Snapshot",
+        "operationId": "map_snapshot_api_v1_map_snapshot_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/timeseries": {
+      "post": {
+        "summary": "Timeseries",
+        "operationId": "timeseries_api_v1_timeseries_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/route-comparison": {
+      "post": {
+        "summary": "Comparison",
+        "operationId": "comparison_api_v1_route_comparison_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/heatmap": {
+      "post": {
+        "summary": "Heatmap",
+        "operationId": "heatmap_api_v1_heatmap_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeatmapResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/route-profile": {
+      "post": {
+        "summary": "Route Profile",
+        "operationId": "route_profile_api_v1_route_profile_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "422": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports": {
+      "post": {
+        "summary": "Exports",
+        "operationId": "exports_api_v1_exports_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions": {
+      "post": {
+        "summary": "Submissions",
+        "operationId": "submissions_api_v1_submissions_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/{ident}": {
+      "get": {
+        "summary": "Get Job",
+        "operationId": "get_job_api_v1_exports__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{ident}": {
+      "get": {
+        "summary": "Get Job",
+        "operationId": "get_job_api_v1_jobs__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/{ident}/download": {
+      "get": {
+        "summary": "Download",
+        "operationId": "download_api_v1_exports__ident__download_get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Frontend",
+        "operationId": "frontend__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/favicon.svg": {
+      "get": {
+        "summary": "Favicon",
+        "operationId": "favicon_favicon_svg_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApplyImportRequest": {
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "title": "Snapshotid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshotId"
+        ],
+        "title": "ApplyImportRequest"
+      },
+      "CapabilitiesResponse": {
+        "properties": {
+          "contractVersion": {
+            "type": "integer",
+            "const": 2,
+            "title": "Contractversion"
+          },
+          "snapshotId": {
+            "type": "string",
+            "title": "Snapshotid"
+          },
+          "networkSnapshotId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Networksnapshotid"
+          },
+          "metrics": {
+            "items": {
+              "type": "string",
+              "const": "successful_validations"
+            },
+            "type": "array",
+            "title": "Metrics"
+          },
+          "modes": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "history",
+                "forecast"
+              ]
+            },
+            "type": "array",
+            "title": "Modes"
+          },
+          "horizons": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "day",
+                "month",
+                "competition_61d"
+              ]
+            },
+            "type": "array",
+            "title": "Horizons"
+          },
+          "stream": {
+            "type": "boolean",
+            "const": false,
+            "title": "Stream"
+          },
+          "historyRange": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Range"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "forecastRange": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Range"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "forecastId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecastid"
+          },
+          "defaultDate": {
+            "type": "string",
+            "title": "Defaultdate"
+          },
+          "targetRouteIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Targetrouteids"
+          },
+          "absoluteThresholds": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Absolutethresholds"
+          },
+          "submissionAvailable": {
+            "type": "boolean",
+            "title": "Submissionavailable"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "contractVersion",
+          "snapshotId",
+          "networkSnapshotId",
+          "metrics",
+          "modes",
+          "horizons",
+          "stream",
+          "historyRange",
+          "forecastRange",
+          "forecastId",
+          "defaultDate",
+          "targetRouteIds",
+          "absoluteThresholds",
+          "submissionAvailable"
+        ],
+        "title": "CapabilitiesResponse"
+      },
+      "Comparison": {
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "title": "Routeid"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          },
+          "difference": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difference"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "routeId",
+          "value",
+          "baseline",
+          "difference"
+        ],
+        "title": "Comparison"
+      },
+      "ComparisonResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/Comparison"
+            },
+            "type": "array",
+            "title": "Routes"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "meta",
+          "routes"
+        ],
+        "title": "ComparisonResponse"
+      },
+      "ExportRequest": {
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index"
+          },
+          "format": {
+            "type": "string",
+            "const": "csv",
+            "title": "Format",
+            "default": "csv"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope"
+        ],
+        "title": "ExportRequest"
+      },
+      "Frame": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "title": "End"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/RouteValue"
+            },
+            "type": "array",
+            "title": "Values"
+          },
+          "aggregate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aggregate"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "values",
+          "aggregate",
+          "baseline"
+        ],
+        "title": "Frame"
+      },
+      "GeometryScope": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "patternIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Patternids"
+          },
+          "section": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Section"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "referenceMode": {
+            "type": "string",
+            "enum": [
+              "reference",
+              "historical"
+            ],
+            "title": "Referencemode",
+            "default": "reference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "GeometryScope"
+      },
+      "GeometrySelection": {
+        "properties": {
+          "networkSnapshotId": {
+            "type": "string",
+            "title": "Networksnapshotid"
+          },
+          "patternIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Patternids"
+          },
+          "stopIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stopids"
+          },
+          "segmentIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Segmentids"
+          },
+          "geometryQuality": {
+            "type": "string",
+            "enum": [
+              "schematic",
+              "mapped"
+            ],
+            "title": "Geometryquality"
+          },
+          "asOf": {
+            "type": "string",
+            "title": "Asof"
+          },
+          "referenceMode": {
+            "type": "string",
+            "enum": [
+              "reference",
+              "historical"
+            ],
+            "title": "Referencemode"
+          },
+          "historicallyUnavailablePatternIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Historicallyunavailablepatternids"
+          },
+          "missingGeometryRouteIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missinggeometryrouteids"
+          },
+          "geometryFilterAffectsMetric": {
+            "type": "boolean",
+            "const": false,
+            "title": "Geometryfilteraffectsmetric"
+          },
+          "warning": {
+            "type": "string",
+            "title": "Warning"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "networkSnapshotId",
+          "patternIds",
+          "stopIds",
+          "segmentIds",
+          "geometryQuality",
+          "asOf",
+          "referenceMode",
+          "historicallyUnavailablePatternIds",
+          "missingGeometryRouteIds",
+          "geometryFilterAffectsMetric",
+          "warning"
+        ],
+        "title": "GeometrySelection"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HeatmapResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "routeIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Routeids"
+          },
+          "cells": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              ],
+              "type": "array",
+              "maxItems": 3,
+              "minItems": 3
+            },
+            "type": "array",
+            "title": "Cells"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "meta",
+          "routeIds",
+          "cells"
+        ],
+        "title": "HeatmapResponse"
+      },
+      "JobResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "ready",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "downloadUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downloadurl"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "kind",
+          "downloadUrl",
+          "error"
+        ],
+        "title": "JobResponse"
+      },
+      "Meta": {
+        "properties": {
+          "contractVersion": {
+            "type": "integer",
+            "const": 2,
+            "title": "Contractversion"
+          },
+          "snapshotId": {
+            "type": "string",
+            "title": "Snapshotid"
+          },
+          "networkSnapshotId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Networksnapshotid"
+          },
+          "historyId": {
+            "type": "string",
+            "title": "Historyid"
+          },
+          "metric": {
+            "type": "string",
+            "const": "successful_validations",
+            "title": "Metric"
+          },
+          "metricScope": {
+            "type": "string",
+            "const": "route",
+            "title": "Metricscope"
+          },
+          "unit": {
+            "type": "string",
+            "const": "validations",
+            "title": "Unit"
+          },
+          "intervalUnit": {
+            "type": "string",
+            "enum": [
+              "validations/hour",
+              "validations/day"
+            ],
+            "title": "Intervalunit"
+          },
+          "aggregation": {
+            "type": "string",
+            "const": "sum",
+            "title": "Aggregation"
+          },
+          "grain": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day"
+            ],
+            "title": "Grain"
+          },
+          "timeRange": {
+            "$ref": "#/components/schemas/Range"
+          },
+          "provenance": {
+            "type": "string",
+            "enum": [
+              "observation",
+              "forecast",
+              "mixed",
+              "missing"
+            ],
+            "title": "Provenance"
+          },
+          "forecastId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecastid"
+          },
+          "modelId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modelid"
+          },
+          "issuedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issuedat"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "geometryFilterAffectsMetric": {
+            "type": "boolean",
+            "const": false,
+            "title": "Geometryfilteraffectsmetric"
+          },
+          "baselineDescription": {
+            "type": "string",
+            "title": "Baselinedescription"
+          },
+          "coverageNote": {
+            "type": "string",
+            "title": "Coveragenote"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "contractVersion",
+          "snapshotId",
+          "networkSnapshotId",
+          "historyId",
+          "metric",
+          "metricScope",
+          "unit",
+          "intervalUnit",
+          "aggregation",
+          "grain",
+          "timeRange",
+          "provenance",
+          "forecastId",
+          "modelId",
+          "issuedAt",
+          "createdAt",
+          "geometryFilterAffectsMetric",
+          "baselineDescription",
+          "coverageNote"
+        ],
+        "title": "Meta"
+      },
+      "NetworkResponse": {
+        "properties": {
+          "networkSnapshotId": {
+            "type": "string",
+            "title": "Networksnapshotid"
+          },
+          "geometryQuality": {
+            "type": "string",
+            "enum": [
+              "schematic",
+              "mapped"
+            ],
+            "title": "Geometryquality"
+          },
+          "asOf": {
+            "type": "string",
+            "title": "Asof"
+          },
+          "warning": {
+            "type": "string",
+            "title": "Warning"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/Route"
+            },
+            "type": "array",
+            "title": "Routes"
+          },
+          "patterns": {
+            "items": {
+              "$ref": "#/components/schemas/Pattern"
+            },
+            "type": "array",
+            "title": "Patterns"
+          },
+          "stops": {
+            "items": {
+              "$ref": "#/components/schemas/Stop"
+            },
+            "type": "array",
+            "title": "Stops"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/Segment"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "missingGeometryRouteIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missinggeometryrouteids"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "networkSnapshotId",
+          "geometryQuality",
+          "asOf",
+          "warning",
+          "routes",
+          "patterns",
+          "stops",
+          "segments",
+          "missingGeometryRouteIds"
+        ],
+        "title": "NetworkResponse"
+      },
+      "Pattern": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "routeId": {
+            "type": "string",
+            "title": "Routeid"
+          },
+          "direction": {
+            "type": "integer",
+            "title": "Direction"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "validFrom": {
+            "type": "string",
+            "title": "Validfrom"
+          },
+          "validTo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validto"
+          },
+          "observedAt": {
+            "type": "string",
+            "title": "Observedat"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "routeId",
+          "direction",
+          "name",
+          "validFrom",
+          "validTo",
+          "observedAt"
+        ],
+        "title": "Pattern"
+      },
+      "Range": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "title": "End"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "Range"
+      },
+      "Route": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "isTarget": {
+            "type": "boolean",
+            "title": "Istarget"
+          },
+          "hasData": {
+            "type": "boolean",
+            "title": "Hasdata"
+          },
+          "hasGeometry": {
+            "type": "boolean",
+            "title": "Hasgeometry"
+          },
+          "historySupport": {
+            "type": "string",
+            "title": "Historysupport"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "name",
+          "isTarget",
+          "hasData",
+          "hasGeometry",
+          "historySupport"
+        ],
+        "title": "Route"
+      },
+      "RouteImportRequest": {
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "title": "Snapshotid"
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "csv": {
+            "type": "string",
+            "maxLength": 5000000,
+            "minLength": 1,
+            "title": "Csv"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshotId",
+          "filename",
+          "csv"
+        ],
+        "title": "RouteImportRequest"
+      },
+      "RouteValue": {
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "title": "Routeid"
+          },
+          "provenance": {
+            "type": "string",
+            "enum": [
+              "observation",
+              "forecast",
+              "mixed",
+              "missing"
+            ],
+            "title": "Provenance"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          },
+          "baselineCount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baselinecount"
+          },
+          "valueOrigins": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Valueorigins"
+          },
+          "qualityFlags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Qualityflags"
+          },
+          "coverageStatus": {
+            "type": "string",
+            "title": "Coveragestatus"
+          },
+          "historySupport": {
+            "type": "string",
+            "title": "Historysupport"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "routeId",
+          "provenance",
+          "value",
+          "baseline",
+          "baselineCount",
+          "valueOrigins",
+          "qualityFlags",
+          "coverageStatus",
+          "historySupport"
+        ],
+        "title": "RouteValue"
+      },
+      "Scope": {
+        "properties": {
+          "routeIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Routeids"
+          },
+          "metric": {
+            "type": "string",
+            "title": "Metric",
+            "default": "successful_validations"
+          },
+          "metricScope": {
+            "type": "string",
+            "title": "Metricscope",
+            "default": "route"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "history",
+              "forecast"
+            ],
+            "title": "Mode",
+            "default": "auto"
+          },
+          "timeRange": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "grain": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day"
+            ],
+            "title": "Grain",
+            "default": "hour"
+          },
+          "aggregation": {
+            "type": "string",
+            "const": "sum",
+            "title": "Aggregation",
+            "default": "sum"
+          },
+          "snapshotId": {
+            "type": "string",
+            "title": "Snapshotid"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/GeometryScope"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "routeIds",
+          "timeRange",
+          "snapshotId"
+        ],
+        "title": "Scope"
+      },
+      "Section": {
+        "properties": {
+          "patternId": {
+            "type": "string",
+            "title": "Patternid"
+          },
+          "fromId": {
+            "type": "string",
+            "title": "Fromid"
+          },
+          "toId": {
+            "type": "string",
+            "title": "Toid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "patternId",
+          "fromId",
+          "toId"
+        ],
+        "title": "Section"
+      },
+      "Segment": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "routeId": {
+            "type": "string",
+            "title": "Routeid"
+          },
+          "patternId": {
+            "type": "string",
+            "title": "Patternid"
+          },
+          "fromId": {
+            "type": "string",
+            "title": "Fromid"
+          },
+          "toId": {
+            "type": "string",
+            "title": "Toid"
+          },
+          "order": {
+            "type": "integer",
+            "title": "Order"
+          },
+          "coordinates": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "routeId",
+          "patternId",
+          "fromId",
+          "toId",
+          "order",
+          "coordinates"
+        ],
+        "title": "Segment"
+      },
+      "Series": {
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "title": "Routeid"
+          },
+          "points": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "baseline": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Baseline"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "routeId",
+          "points",
+          "baseline"
+        ],
+        "title": "Series"
+      },
+      "SeriesResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/Series"
+            },
+            "type": "array",
+            "title": "Series"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "meta",
+          "series"
+        ],
+        "title": "SeriesResponse"
+      },
+      "SnapshotResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/components/schemas/Frame"
+            },
+            "type": "array",
+            "title": "Frames"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/GeometrySelection"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "meta",
+          "frames",
+          "geometry"
+        ],
+        "title": "SnapshotResponse"
+      },
+      "Stop": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "stationId": {
+            "type": "string",
+            "title": "Stationid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "routeId": {
+            "type": "string",
+            "title": "Routeid"
+          },
+          "patternId": {
+            "type": "string",
+            "title": "Patternid"
+          },
+          "direction": {
+            "type": "integer",
+            "title": "Direction"
+          },
+          "order": {
+            "type": "integer",
+            "title": "Order"
+          },
+          "coordinates": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Coordinates"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "stationId",
+          "name",
+          "routeId",
+          "patternId",
+          "direction",
+          "order",
+          "coordinates"
+        ],
+        "title": "Stop"
+      },
+      "SubmissionRequest": {
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "title": "Snapshotid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshotId"
+        ],
+        "title": "SubmissionRequest"
+      },
+      "TimeRange": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "TimeRange"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

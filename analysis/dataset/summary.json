@@ -1,0 +1,953 @@
+{
+  "total": 59667191,
+  "label_rows": 57551,
+  "full_grid": 72960,
+  "missing_grid_rows": 15409,
+  "routes": [
+    {
+      "route": 1,
+      "total": 5122040,
+      "positive_hours": 6204,
+      "max_hour": 2645,
+      "share_pct": 8.584349144239084,
+      "daily_average": 16848.815789473683,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 5,
+      "total": 0,
+      "positive_hours": 0,
+      "max_hour": 0,
+      "share_pct": 0.0,
+      "daily_average": 0.0,
+      "positive_days": 0,
+      "zero_days": 304
+    },
+    {
+      "route": 7,
+      "total": 6493684,
+      "positive_hours": 6600,
+      "max_hour": 5055,
+      "share_pct": 10.8831736355747,
+      "daily_average": 21360.802631578947,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 11,
+      "total": 8942462,
+      "positive_hours": 6416,
+      "max_hour": 3944,
+      "share_pct": 14.98723477698154,
+      "daily_average": 29415.99342105263,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 12,
+      "total": 9339231,
+      "positive_hours": 6629,
+      "max_hour": 4340,
+      "share_pct": 15.652204911070811,
+      "daily_average": 30721.154605263157,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 17,
+      "total": 14099382,
+      "positive_hours": 6677,
+      "max_hour": 5827,
+      "share_pct": 23.630041508070992,
+      "daily_average": 46379.54605263158,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 25,
+      "total": 1988187,
+      "positive_hours": 5904,
+      "max_hour": 1626,
+      "share_pct": 3.3321277014699753,
+      "daily_average": 6540.088815789473,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 26,
+      "total": 4879661,
+      "positive_hours": 6592,
+      "max_hour": 3656,
+      "share_pct": 8.17813092625728,
+      "daily_average": 16051.516447368422,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 28,
+      "total": 2775255,
+      "positive_hours": 6116,
+      "max_hour": 1783,
+      "share_pct": 4.651224489518872,
+      "daily_average": 9129.128289473685,
+      "positive_days": 304,
+      "zero_days": 0
+    },
+    {
+      "route": 50,
+      "total": 6027289,
+      "positive_hours": 6413,
+      "max_hour": 4276,
+      "share_pct": 10.101512906816748,
+      "daily_average": 19826.60855263158,
+      "positive_days": 303,
+      "zero_days": 1
+    }
+  ],
+  "monthly": [
+    {
+      "month": "2025-01",
+      "total": 5567321,
+      "dates": 31,
+      "daily_average": 179591.0
+    },
+    {
+      "month": "2025-02",
+      "total": 5934775,
+      "dates": 28,
+      "daily_average": 211956.25
+    },
+    {
+      "month": "2025-03",
+      "total": 6718675,
+      "dates": 31,
+      "daily_average": 216731.4516129032
+    },
+    {
+      "month": "2025-04",
+      "total": 6418378,
+      "dates": 30,
+      "daily_average": 213945.93333333332
+    },
+    {
+      "month": "2025-05",
+      "total": 6000921,
+      "dates": 31,
+      "daily_average": 193578.09677419355
+    },
+    {
+      "month": "2025-06",
+      "total": 5554987,
+      "dates": 30,
+      "daily_average": 185166.23333333334
+    },
+    {
+      "month": "2025-07",
+      "total": 5407676,
+      "dates": 31,
+      "daily_average": 174441.16129032258
+    },
+    {
+      "month": "2025-08",
+      "total": 5309977,
+      "dates": 31,
+      "daily_average": 171289.5806451613
+    },
+    {
+      "month": "2025-09",
+      "total": 6147694,
+      "dates": 30,
+      "daily_average": 204923.13333333333
+    },
+    {
+      "month": "2025-10",
+      "total": 6606787,
+      "dates": 31,
+      "daily_average": 213122.16129032258
+    }
+  ],
+  "weekday_daily_average": {
+    "0": 222397.88372093023,
+    "1": 229058.48837209304,
+    "2": 226218.9090909091,
+    "3": 222511.27272727274,
+    "4": 217571.11363636365,
+    "5": 136741.13953488372,
+    "6": 117614.90697674418
+  },
+  "hourly_weekday_weekend": [
+    {
+      "hour": 0,
+      "false": 415.76146788990826,
+      "true": 608.6395348837209
+    },
+    {
+      "hour": 1,
+      "false": 39.11467889908257,
+      "true": 74.66279069767442
+    },
+    {
+      "hour": 2,
+      "false": 1.408256880733945,
+      "true": 3.116279069767442
+    },
+    {
+      "hour": 3,
+      "false": 1.536697247706422,
+      "true": 3.697674418604651
+    },
+    {
+      "hour": 4,
+      "false": 52.555045871559635,
+      "true": 15.883720930232558
+    },
+    {
+      "hour": 5,
+      "false": 1482.8623853211009,
+      "true": 682.4186046511628
+    },
+    {
+      "hour": 6,
+      "false": 6656.334862385321,
+      "true": 2690.8720930232557
+    },
+    {
+      "hour": 7,
+      "false": 14834.591743119267,
+      "true": 3790.593023255814
+    },
+    {
+      "hour": 8,
+      "false": 20804.633027522937,
+      "true": 5315.732558139535
+    },
+    {
+      "hour": 9,
+      "false": 15424.055045871559,
+      "true": 6614.360465116279
+    },
+    {
+      "hour": 10,
+      "false": 12521.908256880733,
+      "true": 7413.662790697675
+    },
+    {
+      "hour": 11,
+      "false": 12157.463302752294,
+      "true": 8776.96511627907
+    },
+    {
+      "hour": 12,
+      "false": 12395.756880733945,
+      "true": 9616.616279069767
+    },
+    {
+      "hour": 13,
+      "false": 12694.564220183487,
+      "true": 10182.488372093023
+    },
+    {
+      "hour": 14,
+      "false": 12567.697247706423,
+      "true": 10200.06976744186
+    },
+    {
+      "hour": 15,
+      "false": 13607.711009174312,
+      "true": 9988.627906976744
+    },
+    {
+      "hour": 16,
+      "false": 15362.79357798165,
+      "true": 9819.790697674418
+    },
+    {
+      "hour": 17,
+      "false": 18302.69266055046,
+      "true": 9726.372093023256
+    },
+    {
+      "hour": 18,
+      "false": 19458.55504587156,
+      "true": 8890.67441860465
+    },
+    {
+      "hour": 19,
+      "false": 14340.811926605504,
+      "true": 7859.883720930233
+    },
+    {
+      "hour": 20,
+      "false": 9624.243119266055,
+      "true": 6108.53488372093
+    },
+    {
+      "hour": 21,
+      "false": 6051.151376146789,
+      "true": 4583.8488372093025
+    },
+    {
+      "hour": 22,
+      "false": 3242.0366972477063,
+      "true": 2748.6976744186045
+    },
+    {
+      "hour": 23,
+      "false": 1491.3256880733945,
+      "true": 1461.8139534883721
+    }
+  ],
+  "hour_counts": [
+    {
+      "hour": 0,
+      "positive_keys": 2223,
+      "total": 142979
+    },
+    {
+      "hour": 1,
+      "positive_keys": 1644,
+      "total": 14948
+    },
+    {
+      "hour": 2,
+      "positive_keys": 62,
+      "total": 575
+    },
+    {
+      "hour": 3,
+      "positive_keys": 29,
+      "total": 653
+    },
+    {
+      "hour": 4,
+      "positive_keys": 1826,
+      "total": 12823
+    },
+    {
+      "hour": 5,
+      "positive_keys": 2667,
+      "total": 381952
+    },
+    {
+      "hour": 6,
+      "positive_keys": 2726,
+      "total": 1682496
+    },
+    {
+      "hour": 7,
+      "positive_keys": 2726,
+      "total": 3559932
+    },
+    {
+      "hour": 8,
+      "positive_keys": 2727,
+      "total": 4992563
+    },
+    {
+      "hour": 9,
+      "positive_keys": 2729,
+      "total": 3931279
+    },
+    {
+      "hour": 10,
+      "positive_keys": 2732,
+      "total": 3367351
+    },
+    {
+      "hour": 11,
+      "positive_keys": 2731,
+      "total": 3405146
+    },
+    {
+      "hour": 12,
+      "positive_keys": 2729,
+      "total": 3529304
+    },
+    {
+      "hour": 13,
+      "positive_keys": 2729,
+      "total": 3643109
+    },
+    {
+      "hour": 14,
+      "positive_keys": 2729,
+      "total": 3616964
+    },
+    {
+      "hour": 15,
+      "positive_keys": 2728,
+      "total": 3825503
+    },
+    {
+      "hour": 16,
+      "positive_keys": 2730,
+      "total": 4193591
+    },
+    {
+      "hour": 17,
+      "positive_keys": 2730,
+      "total": 4826455
+    },
+    {
+      "hour": 18,
+      "positive_keys": 2730,
+      "total": 5006563
+    },
+    {
+      "hour": 19,
+      "positive_keys": 2727,
+      "total": 3802247
+    },
+    {
+      "hour": 20,
+      "positive_keys": 2728,
+      "total": 2623419
+    },
+    {
+      "hour": 21,
+      "positive_keys": 2728,
+      "total": 1713362
+    },
+    {
+      "hour": 22,
+      "positive_keys": 2728,
+      "total": 943152
+    },
+    {
+      "hour": 23,
+      "positive_keys": 2713,
+      "total": 450825
+    }
+  ],
+  "zero_day_runs": {
+    "1": [],
+    "5": [
+      {
+        "start": "2025-01-01",
+        "end": "2025-10-31",
+        "days": 304
+      }
+    ],
+    "7": [],
+    "11": [],
+    "12": [],
+    "17": [],
+    "25": [],
+    "26": [],
+    "28": [],
+    "50": [
+      {
+        "start": "2025-09-21",
+        "end": "2025-09-21",
+        "days": 1
+      }
+    ]
+  },
+  "top_hourly": [
+    {
+      "route": 17,
+      "date": "2025-10-22",
+      "hour": 8,
+      "boardings": 5827,
+      "split": "test"
+    },
+    {
+      "route": 17,
+      "date": "2025-10-14",
+      "hour": 8,
+      "boardings": 5799,
+      "split": "test"
+    },
+    {
+      "route": 17,
+      "date": "2025-05-21",
+      "hour": 8,
+      "boardings": 5773,
+      "split": "train"
+    },
+    {
+      "route": 17,
+      "date": "2025-09-30",
+      "hour": 8,
+      "boardings": 5767,
+      "split": "test"
+    },
+    {
+      "route": 17,
+      "date": "2025-10-20",
+      "hour": 8,
+      "boardings": 5627,
+      "split": "test"
+    },
+    {
+      "route": 17,
+      "date": "2025-02-10",
+      "hour": 8,
+      "boardings": 5603,
+      "split": "train"
+    },
+    {
+      "route": 17,
+      "date": "2025-10-16",
+      "hour": 8,
+      "boardings": 5603,
+      "split": "test"
+    },
+    {
+      "route": 17,
+      "date": "2025-10-08",
+      "hour": 8,
+      "boardings": 5575,
+      "split": "test"
+    },
+    {
+      "route": 17,
+      "date": "2025-02-11",
+      "hour": 8,
+      "boardings": 5572,
+      "split": "train"
+    },
+    {
+      "route": 17,
+      "date": "2025-02-04",
+      "hour": 8,
+      "boardings": 5567,
+      "split": "train"
+    }
+  ],
+  "top_daily": [
+    {
+      "route": 17,
+      "date": "2025-03-07",
+      "boardings": 59718,
+      "month": "2025-03"
+    },
+    {
+      "route": 17,
+      "date": "2025-10-17",
+      "boardings": 59442,
+      "month": "2025-10"
+    },
+    {
+      "route": 17,
+      "date": "2025-10-24",
+      "boardings": 58695,
+      "month": "2025-10"
+    },
+    {
+      "route": 17,
+      "date": "2025-10-16",
+      "boardings": 58216,
+      "month": "2025-10"
+    },
+    {
+      "route": 17,
+      "date": "2025-04-18",
+      "boardings": 58104,
+      "month": "2025-04"
+    },
+    {
+      "route": 17,
+      "date": "2025-03-20",
+      "boardings": 57987,
+      "month": "2025-03"
+    },
+    {
+      "route": 17,
+      "date": "2025-04-15",
+      "boardings": 57941,
+      "month": "2025-04"
+    },
+    {
+      "route": 17,
+      "date": "2025-04-10",
+      "boardings": 57882,
+      "month": "2025-04"
+    },
+    {
+      "route": 17,
+      "date": "2025-04-16",
+      "boardings": 57722,
+      "month": "2025-04"
+    },
+    {
+      "route": 17,
+      "date": "2025-01-31",
+      "boardings": 57719,
+      "month": "2025-01"
+    }
+  ],
+  "min_daily_overall": {
+    "2025-01-01": 54813,
+    "2025-04-06": 81435,
+    "2025-04-27": 91881,
+    "2025-01-02": 93112,
+    "2025-05-01": 93236,
+    "2025-06-14": 101235,
+    "2025-05-11": 104392,
+    "2025-06-29": 104511,
+    "2025-01-07": 105262,
+    "2025-04-13": 105637
+  },
+  "max_daily_overall": {
+    "2025-03-07": 262836,
+    "2025-04-09": 262215,
+    "2025-02-27": 261766,
+    "2025-03-20": 260614,
+    "2025-04-15": 257676,
+    "2025-03-06": 257156,
+    "2025-04-22": 256931,
+    "2025-04-16": 256710,
+    "2025-03-27": 255774,
+    "2025-04-10": 255459
+  },
+  "submission_by_route": [
+    {
+      "route": 1,
+      "size": 1464,
+      "sum": 1104344,
+      "min": 349,
+      "max": 1142,
+      "nunique": 3
+    },
+    {
+      "route": 5,
+      "size": 1464,
+      "sum": 0,
+      "min": 0,
+      "max": 0,
+      "nunique": 1
+    },
+    {
+      "route": 7,
+      "size": 1464,
+      "sum": 1350784,
+      "min": 341,
+      "max": 1363,
+      "nunique": 3
+    },
+    {
+      "route": 11,
+      "size": 1464,
+      "sum": 1904664,
+      "min": 624,
+      "max": 1813,
+      "nunique": 3
+    },
+    {
+      "route": 12,
+      "size": 1464,
+      "sum": 1956392,
+      "min": 613,
+      "max": 1880,
+      "nunique": 3
+    },
+    {
+      "route": 17,
+      "size": 1464,
+      "sum": 2921168,
+      "min": 739,
+      "max": 2905,
+      "nunique": 3
+    },
+    {
+      "route": 25,
+      "size": 1464,
+      "sum": 439200,
+      "min": 143,
+      "max": 410,
+      "nunique": 3
+    },
+    {
+      "route": 26,
+      "size": 1464,
+      "sum": 1011624,
+      "min": 230,
+      "max": 1057,
+      "nunique": 3
+    },
+    {
+      "route": 28,
+      "size": 1464,
+      "sum": 603656,
+      "min": 196,
+      "max": 594,
+      "nunique": 3
+    },
+    {
+      "route": 50,
+      "size": 1464,
+      "sum": 1286856,
+      "min": 333,
+      "max": 1330,
+      "nunique": 3
+    }
+  ],
+  "submission_prediction_changes_by_hour": 549,
+  "reference_checks": {
+    "missing_route_ids": [],
+    "missing_stop_ids": [],
+    "duplicated_trip_stop_sequence": 0,
+    "ordered_stops_equal_join": true,
+    "coords_range": {
+      "stop_lat": [
+        55.59468022,
+        55.85830733
+      ],
+      "stop_lon": [
+        37.38790222,
+        37.82268714
+      ]
+    },
+    "sequence_gaps": {
+      "2035712": [],
+      "2035713": [],
+      "2040216": [],
+      "2040217": [],
+      "2040298": [],
+      "2040299": [],
+      "2040348": [],
+      "2040349": [],
+      "2040920": [],
+      "2040921": [],
+      "2042548": [],
+      "2042549": [],
+      "2042578": [],
+      "2042579": [],
+      "2043157": [],
+      "2043158": [],
+      "2043245": [],
+      "2043246": [],
+      "2043371": [],
+      "2043372": []
+    },
+    "stops_per_route": [
+      {
+        "route_short_name": "1",
+        "rows": 44,
+        "unique_stops": 42,
+        "trips": 2
+      },
+      {
+        "route_short_name": "10",
+        "rows": 20,
+        "unique_stops": 18,
+        "trips": 2
+      },
+      {
+        "route_short_name": "11",
+        "rows": 85,
+        "unique_stops": 83,
+        "trips": 2
+      },
+      {
+        "route_short_name": "12",
+        "rows": 97,
+        "unique_stops": 95,
+        "trips": 2
+      },
+      {
+        "route_short_name": "2",
+        "rows": 44,
+        "unique_stops": 42,
+        "trips": 2
+      },
+      {
+        "route_short_name": "3",
+        "rows": 74,
+        "unique_stops": 72,
+        "trips": 2
+      },
+      {
+        "route_short_name": "4",
+        "rows": 80,
+        "unique_stops": 78,
+        "trips": 2
+      },
+      {
+        "route_short_name": "5",
+        "rows": 32,
+        "unique_stops": 30,
+        "trips": 2
+      },
+      {
+        "route_short_name": "6",
+        "rows": 57,
+        "unique_stops": 55,
+        "trips": 2
+      },
+      {
+        "route_short_name": "7",
+        "rows": 89,
+        "unique_stops": 87,
+        "trips": 2
+      }
+    ],
+    "trips": [
+      {
+        "route_short_name": "1",
+        "trip_id": "2040920",
+        "direction_id": "0",
+        "stops": 22
+      },
+      {
+        "route_short_name": "1",
+        "trip_id": "2040921",
+        "direction_id": "1",
+        "stops": 22
+      },
+      {
+        "route_short_name": "10",
+        "trip_id": "2040348",
+        "direction_id": "0",
+        "stops": 9
+      },
+      {
+        "route_short_name": "10",
+        "trip_id": "2040349",
+        "direction_id": "1",
+        "stops": 11
+      },
+      {
+        "route_short_name": "11",
+        "trip_id": "2043371",
+        "direction_id": "0",
+        "stops": 42
+      },
+      {
+        "route_short_name": "11",
+        "trip_id": "2043372",
+        "direction_id": "1",
+        "stops": 43
+      },
+      {
+        "route_short_name": "12",
+        "trip_id": "2043157",
+        "direction_id": "0",
+        "stops": 50
+      },
+      {
+        "route_short_name": "12",
+        "trip_id": "2043158",
+        "direction_id": "1",
+        "stops": 47
+      },
+      {
+        "route_short_name": "2",
+        "trip_id": "2043245",
+        "direction_id": "0",
+        "stops": 22
+      },
+      {
+        "route_short_name": "2",
+        "trip_id": "2043246",
+        "direction_id": "1",
+        "stops": 22
+      },
+      {
+        "route_short_name": "3",
+        "trip_id": "2040216",
+        "direction_id": "0",
+        "stops": 37
+      },
+      {
+        "route_short_name": "3",
+        "trip_id": "2040217",
+        "direction_id": "1",
+        "stops": 37
+      },
+      {
+        "route_short_name": "4",
+        "trip_id": "2042548",
+        "direction_id": "0",
+        "stops": 41
+      },
+      {
+        "route_short_name": "4",
+        "trip_id": "2042549",
+        "direction_id": "1",
+        "stops": 39
+      },
+      {
+        "route_short_name": "5",
+        "trip_id": "2035712",
+        "direction_id": "0",
+        "stops": 16
+      },
+      {
+        "route_short_name": "5",
+        "trip_id": "2035713",
+        "direction_id": "1",
+        "stops": 16
+      },
+      {
+        "route_short_name": "6",
+        "trip_id": "2040298",
+        "direction_id": "0",
+        "stops": 29
+      },
+      {
+        "route_short_name": "6",
+        "trip_id": "2040299",
+        "direction_id": "1",
+        "stops": 28
+      },
+      {
+        "route_short_name": "7",
+        "trip_id": "2042578",
+        "direction_id": "0",
+        "stops": 45
+      },
+      {
+        "route_short_name": "7",
+        "trip_id": "2042579",
+        "direction_id": "1",
+        "stops": 44
+      }
+    ],
+    "schedule_time_range": [
+      "06:53",
+      "07:11"
+    ],
+    "schedule_sequence_range": [
+      1,
+      15
+    ],
+    "schedule_matches_trip_keys": 15,
+    "roster_schedule_matching_route_grafic": 0,
+    "reference_routes": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      10,
+      11,
+      12
+    ],
+    "overlap_routes": [
+      1,
+      5,
+      7,
+      11,
+      12
+    ],
+    "missing_routes": [
+      17,
+      25,
+      26,
+      28,
+      50
+    ],
+    "metadata_only_routes": [
+      2,
+      3,
+      4,
+      6,
+      10
+    ]
+  }
+}

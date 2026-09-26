@@ -1,0 +1,76 @@
+{
+  "networkArchiveId": "network-779d3bf423a7a6317f93ffb2",
+  "activityArtifactSha256": "de831a0c6612f248bfa383de910a81720ae54e8f83f123fb641d9eca6b3e8ba9",
+  "activityForecastIssuedAt": "2025-11-01T00:00:00+03:00",
+  "fleetMethod": "mean_garage_activity_5min_short_gaps_20min",
+  "dailyRows": 3650,
+  "hourlyRows": 87600,
+  "archivedStopDepartures": 2292,
+  "archiveStops": 20,
+  "archiveFirstStopDepartures": 114,
+  "completeTimetableRouteDays": 0,
+  "partialTimetableRouteDays": 1,
+  "calendarWorkdays": 247,
+  "timetableCoverage": {
+    "not_found": 3649,
+    "one_direction_one_date": 1
+  },
+  "crossRouteVehicleBins": 26233,
+  "byRoute": {
+    "1": {
+      "oldVehicleHoursJanOct": 65474,
+      "activityVehicleHoursJanOct": 55617.25,
+      "directVehicleHoursJanOct": 45152.0
+    },
+    "5": {
+      "oldVehicleHoursJanOct": 0,
+      "activityVehicleHoursJanOct": 0.0,
+      "directVehicleHoursJanOct": 0.0
+    },
+    "7": {
+      "oldVehicleHoursJanOct": 93333,
+      "activityVehicleHoursJanOct": 78180.66666666667,
+      "directVehicleHoursJanOct": 66235.0
+    },
+    "11": {
+      "oldVehicleHoursJanOct": 97050,
+      "activityVehicleHoursJanOct": 83706.33333333333,
+      "directVehicleHoursJanOct": 69482.08333333333
+    },
+    "12": {
+      "oldVehicleHoursJanOct": 113321,
+      "activityVehicleHoursJanOct": 96770.33333333333,
+      "directVehicleHoursJanOct": 83121.66666666667
+    },
+    "17": {
+      "oldVehicleHoursJanOct": 124045,
+      "activityVehicleHoursJanOct": 110807.0,
+      "directVehicleHoursJanOct": 94709.5
+    },
+    "25": {
+      "oldVehicleHoursJanOct": 35755,
+      "activityVehicleHoursJanOct": 32021.75,
+      "directVehicleHoursJanOct": 23154.666666666668
+    },
+    "26": {
+      "oldVehicleHoursJanOct": 72348,
+      "activityVehicleHoursJanOct": 64034.583333333336,
+      "directVehicleHoursJanOct": 52189.75
+    },
+    "28": {
+      "oldVehicleHoursJanOct": 38367,
+      "activityVehicleHoursJanOct": 33523.0,
+      "directVehicleHoursJanOct": 26483.666666666668
+    },
+    "50": {
+      "oldVehicleHoursJanOct": 86127,
+      "activityVehicleHoursJanOct": 69476.5,
+      "directVehicleHoursJanOct": 58978.583333333336
+    }
+  },
+  "artifactHashes": {
+    "daily_service_2025.csv": "f9e9ee5352474acd759a0a7817a7b3a8af9fa3c3bcfbb11bee06efef23c8e252",
+    "hourly_fleet_2025.csv": "f0ee2a755205c6834026bc0945fda86e9f1af5f9470e7de5a9ed10bf553d798a",
+    "archived_stop_departures.csv": "15d7cede9a4789b37b69720f63db94d148d795454cbbd844519b3758b80f7460"
+  }
+}
