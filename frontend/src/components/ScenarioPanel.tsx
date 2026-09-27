@@ -1,17 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { Job, Loose, platform } from '../lib/platform';
 import { usePlatform } from '../lib/usePlatform';
-import { emptyScenario, type Incident, type ScenarioDraft } from '../lib/scenario';
+import {
+  emptyScenario,
+  scenarioInput,
+  scenarioModes,
+  stable,
+  type ScenarioMode,
+  type ScenarioInput,
+  type ScenarioWorkspace,
+  type Incident,
+  type ScenarioDraft,
+} from '../lib/scenario';
 import { ids, JobsPanel } from './PlatformFields';
 import { Chart } from './Chart';
-const stable = (value: unknown): string =>
-  JSON.stringify(value, (_, v) =>
-    v && typeof v === 'object' && !Array.isArray(v)
-      ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b)))
-      : v,
-  );
 const Result = z.object({
   id: z.string(),
   base_total: z.number(),
@@ -33,8 +37,7 @@ const labels = {
 };
 export function ScenarioPanel({
   open,
-  draft,
-  setDraft,
+  workspace,
   placing,
   setPlacing,
   onApply,
@@ -45,11 +48,10 @@ export function ScenarioPanel({
   selectIncident,
 }: {
   open: boolean;
-  draft: ScenarioDraft;
-  setDraft: (v: ScenarioDraft) => void;
+  workspace: ScenarioWorkspace;
   placing: boolean;
   setPlacing: (v: boolean) => void;
-  onApply: (id: string) => void;
+  onApply: (id: string, spec?: ScenarioInput, snapshotId?: string) => void;
   onClose: () => void;
   snapshotId: string;
   activeForecastId?: string | null;
@@ -59,34 +61,21 @@ export function ScenarioPanel({
   const { data, jobs } = usePlatform();
   const [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState<{ job: string; signature: string } | null>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('scenario-pending') || 'null');
-    } catch {
-      return null;
-    }
+  const { record, setDraft } = workspace;
+  const { draft, mode, runs } = record;
+  const modes = Object.keys(scenarioModes) as ScenarioMode[];
+  const input = scenarioInput(draft, mode);
+  const signature = stable(input);
+  const pending = runs[mode]?.job;
+  const results = useQueries({
+    queries: modes.map((m) => ({
+      queryKey: ['scenario-result', record.id, m, runs[m]?.resultId],
+      enabled: !!runs[m]?.resultId,
+      queryFn: () => platform(`/scenarios/${runs[m]!.resultId}`, Result),
+    })),
   });
-  const [resultId, setResultId] = useState(() => localStorage.getItem('scenario-result') || '');
-  const signature = stable(draft),
-    current = useRef(signature);
-  current.current = signature;
-  const result = useQuery({
-    queryKey: ['scenario-result', resultId],
-    enabled: !!resultId,
-    queryFn: () => platform(`/scenarios/${resultId}`, Result),
-  });
-  // Compare canonical inputs rather than server JSON key order/default additions.
-  const matchesResult =
-    result.data?.spec &&
-    Object.keys(draft).every(
-      (key) => stable(result.data!.spec[key]) === stable(draft[key as keyof ScenarioDraft]),
-    );
-  useEffect(() => {
-    localStorage.setItem('scenario-pending', JSON.stringify(pending));
-  }, [pending]);
-  useEffect(() => {
-    localStorage.setItem('scenario-result', resultId);
-  }, [resultId]);
+  const result = results[modes.indexOf(mode)];
+  const matchesResult = runs[mode]?.signature === signature;
   useEffect(() => {
     if (!draft.forecast_id && data.data) {
       const run =
@@ -115,23 +104,73 @@ export function ScenarioPanel({
         });
     }
   }, [data.data, draft, setDraft, activeForecastId]);
+  const missingJobs = workspace.records.flatMap((saved) =>
+    Object.values(saved.runs).flatMap((run) =>
+      run.job && !jobs.data?.some((j) => j.id === run.job) ? [run.job] : [],
+    ),
+  );
+  const recoveredJobs = useQueries({
+    queries: [...new Set(missingJobs)].map((id) => ({
+      queryKey: ['scenario-job', id],
+      queryFn: () => platform(`/jobs/${id}`, Job),
+      refetchInterval: 2000,
+    })),
+  });
   useEffect(() => {
-    if (!pending) return;
-    const job = jobs.data?.find((j) => j.id === pending.job);
-    if (job?.status === 'ready' && typeof job.result?.id === 'string') {
-      setResultId(job.result.id);
-      if (
-        pending.signature === current.current &&
-        job.result.spec &&
-        (job.result.spec as { forecast_id: string }).forecast_id === activeForecastId
-      )
-        onApply(job.result.id);
-      setPending(null);
-    } else if (job && ['failed', 'cancelled'].includes(job.status)) {
-      setError(job.error || 'Расчёт отменён');
-      setPending(null);
+    for (const saved of workspace.records) {
+      for (const [key, run] of Object.entries(saved.runs)) {
+        if (!run.job) continue;
+        const job =
+          jobs.data?.find((j) => j.id === run.job) ||
+          recoveredJobs.find((q) => q.data?.id === run.job)?.data;
+        if (job?.status === 'ready' && typeof job.result?.id === 'string')
+          workspace.setRun(
+            saved.id,
+            key as ScenarioMode,
+            { signature: run.signature, resultId: job.result.id },
+            run.job,
+          );
+        else if (job && ['failed', 'cancelled'].includes(job.status))
+          workspace.setRun(
+            saved.id,
+            key as ScenarioMode,
+            { signature: run.signature, error: job.error || 'Расчёт отменён' },
+            run.job,
+          );
+      }
     }
-  }, [jobs.data, pending, activeForecastId, onApply]);
+  }, [jobs.data, recoveredJobs, workspace]);
+  async function calculate(selectedModes: ScenarioMode[]) {
+    const id = record.id;
+    for (const selectedMode of selectedModes) {
+      if (runs[selectedMode]?.job) continue;
+      const spec = scenarioInput(draft, selectedMode);
+      try {
+        const saved = await platform('/scenarios', z.object({ id: z.string() }), spec);
+        const job = await platform(`/scenarios/${saved.id}/runs`, Job, {});
+        workspace.setRun(id, selectedMode, { job: job.id, signature: stable(spec) });
+      } catch (error) {
+        workspace.setRun(id, selectedMode, {
+          signature: stable(spec),
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+  }
+  async function applyResult(selectedMode: ScenarioMode) {
+    const ready = results[modes.indexOf(selectedMode)].data;
+    if (!ready) return;
+    const spec = ready.spec as unknown as ScenarioInput;
+    let targetSnapshot = snapshotId;
+    if (spec.forecast_id !== activeForecastId) {
+      const map = await platform('/forecast-map-views', z.object({ snapshotId: z.string() }), {
+        forecast_id: spec.forecast_id,
+        snapshot_id: snapshotId,
+      });
+      targetSnapshot = map.snapshotId;
+    }
+    onApply(ready.id, spec, targetSnapshot);
+  }
   async function act(fn: () => Promise<unknown>) {
     setBusy(true);
     setError('');
@@ -195,11 +234,58 @@ export function ScenarioPanel({
       </div>
       <div className="platform-body">
         <p>Измените условия и запустите расчёт. Исходный прогноз сохранится. Время — московское.</p>
-        {(error || data.error || result.error) && (
+        {(error || runs[mode]?.error || data.error || result.error) && (
           <p role="alert" className="platform-error">
-            {error || data.error?.message || result.error?.message}
+            {error || runs[mode]?.error || data.error?.message || result.error?.message}
           </p>
         )}
+        <label>
+          Сохранённый сценарий
+          <select
+            value={record.id}
+            onChange={(e) => {
+              workspace.select(e.target.value);
+              setPlacing(false);
+              selectIncident(null);
+              setError('');
+            }}
+          >
+            {workspace.records.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.draft.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          onClick={() => {
+            workspace.create();
+            setPlacing(false);
+            selectIncident(null);
+          }}
+        >
+          Создать копию сценария
+        </button>
+        <label>
+          Режим сценария
+          <select
+            value={mode}
+            onChange={(e) => {
+              workspace.setMode(e.target.value as ScenarioMode);
+              setPlacing(false);
+            }}
+          >
+            {modes.map((m) => (
+              <option key={m} value={m}>
+                {scenarioModes[m]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p>
+          Каждый режим рассчитывается отдельно относительно одной базы. В совместном режиме
+          учитываются все заданные условия.
+        </p>
         <label>
           Название сценария
           <input value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
@@ -231,10 +317,7 @@ export function ScenarioPanel({
         </label>
         <label>
           Маршруты сценария
-          <input
-            value={draft.route_ids.join(',')}
-            onChange={(e) => patch({ route_ids: ids(e.target.value) })}
-          />
+          <RouteInput value={draft.route_ids} onChange={(route_ids) => patch({ route_ids })} />
         </label>
         <fieldset>
           <legend>Период сценария · конец не включён</legend>
@@ -252,7 +335,7 @@ export function ScenarioPanel({
             </label>
           ))}
         </fieldset>
-        <details open>
+        <details open hidden={mode !== 'combined' && mode !== 'weather'}>
           <summary>Погода</summary>
           <p>
             Пустое поле сохраняет погодный профиль базового выпуска. Изменения поступают в модель.
@@ -316,7 +399,7 @@ export function ScenarioPanel({
             </details>
           )}
         </details>
-        <details open>
+        <details open hidden={mode !== 'combined' && mode !== 'season'}>
           <summary>Сезонность</summary>
           <p>
             Календарь, день недели и час уже входят в базовый прогноз. Месячный рисунок зависит от
@@ -341,7 +424,7 @@ export function ScenarioPanel({
             повторный календарный эффект.
           </p>
         </details>
-        <details open>
+        <details open hidden={mode !== 'combined' && mode !== 'incidents'}>
           <summary>ДТП на карте ({draft.incidents.length})</summary>
           <p>
             Поставьте точку и подтвердите затронутые маршруты. Близость к линии не означает
@@ -410,9 +493,9 @@ export function ScenarioPanel({
               </label>
               <label>
                 Подтверждённые пользователем маршруты
-                <input
-                  value={incident.route_ids.join(',')}
-                  onChange={(e) => editIncident(incident.id, { route_ids: ids(e.target.value) })}
+                <RouteInput
+                  value={incident.route_ids}
+                  onChange={(route_ids) => editIncident(incident.id, { route_ids })}
                 />
               </label>
               <p>
@@ -428,7 +511,7 @@ export function ScenarioPanel({
             </div>
           )}
         </details>
-        <details>
+        <details hidden={mode !== 'combined' && mode !== 'schedule'}>
           <summary>Расписание и бюджет</summary>
           <label>
             Исходное расписание
@@ -638,20 +721,71 @@ export function ScenarioPanel({
           <button
             className="v2-primary"
             disabled={busy || !!pending || !draft.forecast_id}
-            onClick={() =>
-              act(async () => {
-                const saved = await platform('/scenarios', z.object({ id: z.string() }), draft);
-                const job = await platform(`/scenarios/${saved.id}/runs`, Job, {});
-                setPending({ job: job.id, signature });
-              })
-            }
+            onClick={() => act(() => calculate([mode]))}
           >
             {pending ? 'Сценарий рассчитывается…' : 'Рассчитать сценарий'}
           </button>
-          <button onClick={() => onApply('')}>Вернуться к базе</button>
+          <button
+            disabled={busy || !draft.forecast_id || Object.values(runs).some((r) => r.job)}
+            onClick={() => act(() => calculate(modes))}
+          >
+            Рассчитать все режимы отдельно
+          </button>
+          <button
+            onClick={() => {
+              setPlacing(false);
+              onApply('');
+            }}
+          >
+            Вернуться к базе
+          </button>
         </div>
         {pending && (
           <p role="status">Задание сохранено. Можно закрыть панель или обновить страницу.</p>
+        )}
+        {modes.some((m) => runs[m]) && (
+          <section aria-label="Результаты режимов">
+            <h3>Результаты режимов</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Режим</th>
+                  <th>База</th>
+                  <th>Результат / изменение</th>
+                  <th>Состояние</th>
+                </tr>
+              </thead>
+              <tbody>
+                {modes.map((m, i) => {
+                  const r = results[i].data,
+                    run = runs[m];
+                  const stale = run && run.signature !== stable(scenarioInput(draft, m));
+                  return (
+                    <tr key={m}>
+                      <th>{scenarioModes[m]}</th>
+                      <td>{r ? number(r.base_total) : '—'}</td>
+                      <td>{r ? `${number(r.total)} / ${number(r.total - r.base_total)}` : '—'}</td>
+                      <td>
+                        {run?.job
+                          ? 'Расчёт…'
+                          : run?.error ||
+                            results[i].error?.message ||
+                            (stale ? 'Параметры изменены' : r ? 'Готово' : 'Не рассчитан')}
+                        {r && (
+                          <button
+                            disabled={busy || !!stale || !!run?.job}
+                            onClick={() => act(() => applyResult(m))}
+                          >
+                            На карту: {scenarioModes[m]}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
         )}
         {result.data && (
           <section aria-label="Сравнение сценария">
@@ -712,17 +846,11 @@ export function ScenarioPanel({
               </p>
             ))}
             <button
-              disabled={!matchesResult || draft.forecast_id !== activeForecastId}
-              onClick={() => onApply(resultId)}
+              disabled={busy || !matchesResult || !!pending}
+              onClick={() => act(() => applyResult(mode))}
             >
               Показать результат на карте
             </button>
-            {draft.forecast_id !== activeForecastId && (
-              <p>
-                Выберите на карте дату базового выпуска сценария. Для другого набора данных сначала
-                опубликуйте его через «Данные и модели».
-              </p>
-            )}
             <details>
               <summary>Чувствительность модели и допущений</summary>
               <p>
@@ -751,5 +879,28 @@ export function ScenarioPanel({
         <JobsPanel jobs={jobs.data || []} act={act} />
       </div>
     </aside>
+  );
+}
+
+function RouteInput({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (routes: string[]) => void;
+}) {
+  const [text, setText] = useState(value.join(','));
+  const canonical = value.join(',');
+  useEffect(() => {
+    setText((current) => (ids(current).join(',') === canonical ? current : canonical));
+  }, [canonical]);
+  return (
+    <input
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value);
+        onChange(ids(e.target.value));
+      }}
+    />
   );
 }

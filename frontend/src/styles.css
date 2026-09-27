@@ -4939,3 +4939,28 @@ dialog::backdrop {
     height: 50vh;
   }
 }
+
+.scenario-panel details[hidden] {
+  display: none;
+}
+.scenario-panel .incident-editor,
+.scenario-panel details > div:not(.chart) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.scenario-panel label {
+  min-width: 0;
+}
+.scenario-panel input,
+.scenario-panel select {
+  max-width: 100%;
+  min-width: 0;
+}
+.scenario-panel .scenario-run {
+  display: grid;
+  gap: 6px;
+}
+.scenario-panel td button {
+  white-space: normal;
+}

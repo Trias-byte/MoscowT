@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { usePlatform } from '../lib/usePlatform';
-import { downloadUrl, Job, platform } from '../lib/platform';
+import { downloadUrl, Forecast, Job, platform } from '../lib/platform';
 import type { Scope } from '../lib/contracts';
 import { Modal } from './Dialogs';
 import { ids } from './PlatformFields';
+import { scenarioModes, type ScenarioMode } from '../lib/scenario';
 
 export function ExportPanel({
   scope,
@@ -21,6 +23,7 @@ export function ExportPanel({
     [scenarioId, setScenarioId] = useState(scope.scenarioId || '');
   const [routes, setRoutes] = useState(scope.routeIds.join(',')),
     [period, setPeriod] = useState(timeRange);
+  const [sourceMode, setSourceMode] = useState(scope.scenarioId ? 'forecast' : scope.mode);
   const [grain, setGrain] = useState('hour'),
     [metric, setMetric] = useState('route'),
     [objects, setObjects] = useState('');
@@ -29,7 +32,14 @@ export function ExportPanel({
     [jobId, setJobId] = useState('');
   const chosenId =
     forecastId ?? initialForecastId ?? data.data?.capabilities.current_snapshot.forecastId ?? '';
-  const run = data.data?.forecasts.find((f) => f.id === chosenId);
+  const selectedForecast = useQuery({
+    queryKey: ['export-forecast', chosenId],
+    enabled: !!chosenId,
+    queryFn: () => platform(`/forecast-runs/${chosenId}`, Forecast),
+  });
+  const run = selectedForecast.data || data.data?.forecasts.find((f) => f.id === chosenId);
+  const forecasts = data.data?.forecasts || [];
+  const choices = run && !forecasts.some((f) => f.id === run.id) ? [...forecasts, run] : forecasts;
   const job = jobs.data?.find((j) => j.id === jobId);
   const completed =
     jobs.data?.filter(
@@ -52,8 +62,8 @@ export function ExportPanel({
     <Modal title="Экспорт данных" onClose={onClose}>
       <div className="platform-body export-body">
         <p>
-          Единая выгрузка выбранного периода. Базовый и завершённый сценарный прогноз используют тот
-          же расчёт, что карта.
+          CSV как submission: route;date;hour;prediction. Значения округляются до целых, время —
+          московское. Выгрузка включает выбранные маршруты, период и завершённый сценарий.
         </p>
         <label>
           Выпуск прогноза
@@ -62,10 +72,11 @@ export function ExportPanel({
             onChange={(e) => {
               setForecastId(e.target.value);
               setScenarioId('');
+              setSourceMode(e.target.value ? 'forecast' : 'history');
             }}
           >
             <option value="">История</option>
-            {data.data?.forecasts.map((f) => (
+            {choices.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.spec.time_range.start.slice(0, 10)}—{f.spec.time_range.end.slice(0, 10)} ·{' '}
                 {f.id.slice(-8)}
@@ -75,7 +86,20 @@ export function ExportPanel({
         </label>
         <label>
           Результат
-          <select value={scenarioId} onChange={(e) => setScenarioId(e.target.value)}>
+          <select
+            value={scenarioId}
+            onChange={(e) => {
+              setScenarioId(e.target.value);
+              if (!e.target.value) return;
+              const spec = completed.find((j) => j.result?.id === e.target.value)?.result?.spec as
+                { time_range: typeof period; route_ids: string[] } | undefined;
+              if (spec) {
+                setPeriod(spec.time_range);
+                setRoutes(spec.route_ids.join(','));
+              }
+              setSourceMode('forecast');
+            }}
+          >
             <option value="">Базовый выпуск</option>
             {scope.scenarioId && !completed.some((j) => j.result?.id === scope.scenarioId) && (
               <option value={scope.scenarioId}>Сценарий на карте</option>
@@ -89,9 +113,22 @@ export function ExportPanel({
               .map((j) => (
                 <option key={j.id} value={String(j.result!.id)}>
                   {String((j.result!.spec as { name?: string }).name || 'Сценарий')} ·{' '}
+                  {scenarioModes[(j.result!.spec as { mode?: ScenarioMode }).mode || 'combined']} ·{' '}
                   {String(j.result!.id).slice(-8)}
                 </option>
               ))}
+          </select>
+        </label>
+        <label>
+          Источник значений
+          <select
+            value={sourceMode}
+            disabled={!!scenarioId}
+            onChange={(e) => setSourceMode(e.target.value as typeof sourceMode)}
+          >
+            <option value="auto">Как на карте: факты, иначе прогноз</option>
+            <option value="forecast">Только выбранный прогноз</option>
+            <option value="history">Только факты</option>
           </select>
         </label>
         <label>
@@ -133,17 +170,22 @@ export function ExportPanel({
             <input value={objects} onChange={(e) => setObjects(e.target.value)} />
           </label>
         )}
-        {['csv', 'parquet'].map((format) => (
+        {['submission', 'csv', 'parquet'].map((format) => (
           <button
             key={format}
-            disabled={busy || !data.data}
+            disabled={
+              busy ||
+              !data.data ||
+              (!!chosenId && !run) ||
+              (format === 'submission' && (grain !== 'hour' || metric !== 'route'))
+            }
             onClick={() =>
               create('/exports', {
                 dataset_id: run?.spec.dataset_id || data.data?.datasets.current_id,
                 forecast_id: chosenId || null,
                 route_ids: ids(routes),
                 time_range: period,
-                mode: scenarioId ? 'forecast' : scope.mode,
+                mode: scenarioId ? 'forecast' : sourceMode,
                 grain,
                 format,
                 metric_scope: metric,
@@ -153,9 +195,16 @@ export function ExportPanel({
               })
             }
           >
-            {format === 'csv' ? 'Подготовить CSV' : 'Parquet + manifest'}
+            {format === 'submission'
+              ? 'Подготовить CSV как submission'
+              : format === 'csv'
+                ? 'Подробный CSV'
+                : 'Parquet + manifest'}
           </button>
         ))}
+        {(grain !== 'hour' || metric !== 'route') && (
+          <p>Для CSV как submission выберите шаг «Часы» и маршрутные валидации.</p>
+        )}
         <details>
           <summary>Полная поставка и конкурсный профиль</summary>
           <button disabled={busy} onClick={() => create('/bundles', {})}>
@@ -172,9 +221,9 @@ export function ExportPanel({
             включаются.
           </p>
         </details>
-        {(error || job?.error || data.error) && (
+        {(error || job?.error || data.error || selectedForecast.error) && (
           <p role="alert" className="platform-error">
-            {error || job?.error || data.error?.message}
+            {error || job?.error || data.error?.message || selectedForecast.error?.message}
           </p>
         )}
         {job && (

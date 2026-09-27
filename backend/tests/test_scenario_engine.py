@@ -248,3 +248,134 @@ def test_weather_enters_inference_and_future_facts_do_not(model_data):
     second = FactorRepository(data.root).save("weather_hourly", weather, {"test": 2})
     after = hourly_weather(str(data.root), second["id"], target, spec.origin)
     pd.testing.assert_frame_equal(before, after)
+
+
+@pytest.mark.parametrize("mode, multiplier", [
+    ("weather", 1.2), ("season", 1.5), ("incidents", 0.8 * 0.5**0.3),
+    ("schedule", 2**0.3), ("combined", 1.2 * 0.8 * 1.5),
+])
+def test_modes_compute_independent_values_and_submission(model_data, mode, multiplier):
+    models, fs, base = base_run(model_data)
+    settings, queue, job, result = execute_scenario(
+        model_data, models, base, mode=mode,
+        coefficients={"weather": 1.2, "event": 0.8, "season": 1.5},
+        incidents=[{"id": "half", "longitude": 37.62, "latitude": 55.75, "route_ids": ["5"],
+                    "start": "2026-03-01T08:00:00+03:00", "duration_minutes": 120, "reduction": 0.5}],
+        schedule={"base_headway_minutes": 10, "headway_minutes": 5},
+    )
+    queue.finish(job["id"], "test", result=result)
+    assert result["total"] == pytest.approx(result["base_total"] * multiplier)
+    exporter = PeriodExporter(settings, models.data, models)
+    request = PeriodExportSpec(dataset_id=fs.dataset_id, forecast_id=base["id"], route_ids=["5"],
+                               time_range=result["spec"]["time_range"], mode="forecast",
+                               scenario_id=result["id"], format="submission")
+    frame = exporter.frame(request)
+    exported = exporter.write(request, "submission-" + mode)
+    csv = pd.read_csv(models.store.root / "exports" / exported["filename"], sep=";")
+    assert list(csv.columns) == ["route", "date", "hour", "prediction"]
+    assert csv.hour.tolist() == [8, 9]
+    assert csv.date.tolist() == ["2026-03-01"] * 2
+    np.testing.assert_array_equal(csv.prediction, np.floor(frame.value + 0.5).astype(int))
+    assert exported["float_policy"] == "round_half_up_nonnegative_integer"
+    # The persisted forecast is unchanged by every mode.
+    assert models.frame(base["id"])[1].value.sum() == pytest.approx(
+        PeriodExporter(settings, models.data, models).frame(PeriodExportSpec(
+            dataset_id=fs.dataset_id, forecast_id=base["id"], route_ids=fs.route_ids,
+            time_range=fs.time_range, mode="forecast")).value.sum())
+
+
+@pytest.mark.parametrize("incident_start, expected", [("08:00", 0), ("08:30", 0.5)])
+def test_incident_and_service_share_the_same_time_axis(model_data, incident_start, expected):
+    models, _, base = base_run(model_data)
+    settings, queue, job, result = execute_scenario(
+        model_data, models, base,
+        incidents=[{"id": "partial", "longitude": 37.62, "latitude": 55.75, "route_ids": ["5"],
+                    "start": f"2026-03-01T{incident_start}:00+03:00", "duration_minutes": 30,
+                    "reduction": 1}],
+        schedule={"base_headway_minutes": 10, "service_start_minute": 480,
+                  "service_end_minute": 510, "elasticity": 1},
+    )
+    frame = pd.read_parquet(models.store.path("scenario_results", result["id"], "parquet"))
+    assert frame.iloc[0].effective_service_ratio == pytest.approx(expected)
+    assert frame.iloc[0].value == pytest.approx(frame.iloc[0].base_value * expected)
+    assert frame.iloc[1].value == 0
+
+
+def test_service_incident_integration_matches_minute_oracle():
+    from moscowt.scenario_engine import service_availability
+
+    stamp = pd.Timestamp("2026-03-01T08:00:00+03:00")
+    for service_start, service_end in [(480, 510), (495, 535), (1380, 510), (0, 0)]:
+        for start in range(-15, 61, 15):
+            for reduction in [0, 0.5, 1]:
+                restrictions = [(stamp + pd.Timedelta(minutes=start),
+                                 stamp + pd.Timedelta(minutes=start + 30), reduction)]
+                actual = service_fraction(stamp, service_start, service_end) * service_availability(
+                    stamp, service_start, service_end, restrictions)
+                expected = 0
+                for minute in range(60):
+                    m = 480 + minute
+                    operates = (service_start == service_end or
+                                (service_start <= m < service_end if service_start < service_end
+                                 else m >= service_start or m < service_end))
+                    expected += operates * (1 - reduction if start <= minute < start + 30 else 1) / 60
+                assert actual == pytest.approx(expected)
+
+
+def test_unselected_factors_are_removed_before_validation():
+    spec = ScenarioSpec(forecast_id="test", route_ids=["5"], mode="season",
+                        time_range={"start": "2026-03-01T00:00:00+03:00", "end": "2026-03-02T00:00:00+03:00"},
+                        incidents=[{"route_ids": []}], weather={"precipitation": -5},
+                        schedule={"headway_minutes": 0}, coefficients={"season": 1.5})
+    assert not spec.incidents and spec.weather.precipitation is None
+    assert spec.schedule.headway_minutes is None and spec.coefficients.season == 1.5
+
+
+def test_submission_rejects_missing_values_and_non_hourly_rows(model_data):
+    from moscowt.platform_exports import submission_columns
+
+    frame = pd.DataFrame({"route": ["5"], "timestamp": [pd.Timestamp("2026-03-01T21:00:00Z")], "value": [1.5]})
+    result = submission_columns(frame)
+    assert result.iloc[0].to_dict() == {"route": "5", "date": "2026-03-02", "hour": 0, "prediction": 2}
+    for invalid in [np.nan, np.inf, -1]:
+        with pytest.raises(DomainError):
+            submission_columns(frame.assign(value=invalid))
+    models, fs, base = base_run(model_data)
+    settings = Settings(state_dir=models.store.root, data_root=models.data.root, worker_enabled=False)
+    with pytest.raises(DomainError, match="почасовой"):
+        PeriodExporter(settings, models.data, models).write(PeriodExportSpec(
+            dataset_id=fs.dataset_id, forecast_id=base["id"], route_ids=fs.route_ids,
+            time_range=fs.time_range, grain="day", format="submission"), "bad")
+
+
+def test_cancelled_queue_result_is_hidden(model_data):
+    _, _, store = model_data
+    queue = WorkQueue(store.root)
+    job = queue.enqueue("scenario_run", {"scenario_id": "draft"}, "hidden")
+    queue.claim(MODEL_KINDS, "worker")
+    queue.cancel(job["id"])
+    queue.finish(job["id"], "worker", result={"id": "must-not-be-shown"})
+    assert queue.public(queue.get(job["id"]))["result"] is None
+    assert queue.list()[0]["result"] is None
+
+
+def test_concurrent_workers_keep_one_immutable_result(model_data):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    models, fs, base = base_run(model_data)
+    data, _, store = model_data
+    spec = ScenarioSpec(forecast_id=base["id"], engine="recompute", route_ids=["5"],
+                        time_range=fs.time_range, coefficients={"season": 1.5})
+    draft = ScenarioService(store).create(spec)
+    settings = Settings(state_dir=store.root, data_root=data.root, worker_enabled=False)
+    barrier = Barrier(2)
+
+    def calculate():
+        barrier.wait()
+        return ScenarioForecastService(settings, data, models).run(draft["id"], "same-job")
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first, second = list(executor.map(lambda _: calculate(), range(2)))
+    assert first == second
+    assert store.read("scenarios", first["id"]) == first

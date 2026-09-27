@@ -1,0 +1,29 @@
+flowchart TB
+    input["CSV событий или готовые маршрутно-часовые labels"]
+    normalize["SourceNormalizer: проверка и агрегация"]
+    dataset[("DatasetRepository: неизменяемый dataset_id")]
+    factors[("Сохранённые версии календаря, погоды и событий")]
+    features["FeatureBuilder: признаки и история до origin"]
+    adapters["ModelAdapter: seasonal / lgb_cb_rf / annual_scenario"]
+    forecast[("ModelService: model_id и forecast_id")]
+    edits["Пользовательские условия: погода, расписание, ДТП"]
+    scenario["ScenarioForecastService: отдельный сценарный результат"]
+    geography[("Датированная сеть и оценка вагоно-часов")]
+    spatial["SpatialService: остановки, направления и перегоны"]
+    publish["Publication: выбрать выпуск и создать snapshotId"]
+    result["Общие сервисы чтения: карта, аналитика, экспорт"]
+
+    input --> normalize --> dataset
+    dataset -->|"История"| features
+    factors -->|"Выбранные группы"| features
+    features -->|"Для ансамбля"| adapters
+    dataset -->|"Недельный профиль для seasonal и annual"| adapters
+    adapters --> forecast
+    forecast -->|"Базовый выпуск"| scenario
+    edits --> scenario
+    scenario -.->|"Изменение погоды: повторный inference"| features
+    forecast --> publish
+    publish --> result
+    scenario -->|"Готовый scenario_id"| result
+    result -->|"Маршрутные значения"| spatial
+    geography -->|"Геометрия и знаменатель"| spatial

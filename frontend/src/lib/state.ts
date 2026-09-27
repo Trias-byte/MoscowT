@@ -58,6 +58,15 @@ export function initialView(c: Capabilities): ViewState {
         ? Math.min(24 - windowHours, Math.max(0, saved.index))
         : 0,
       scenarioId: typeof saved.scenarioId === 'string' ? saved.scenarioId : undefined,
+      scenarioRange:
+        saved.forecastId &&
+        saved.scenarioRange &&
+        Number.isFinite(Date.parse(saved.scenarioRange.start)) &&
+        Date.parse(saved.scenarioRange.end) > Date.parse(saved.scenarioRange.start)
+          ? saved.scenarioRange
+          : undefined,
+      scenarioName: typeof saved.scenarioName === 'string' ? saved.scenarioName : undefined,
+      scenarioIncidents: Array.isArray(saved.scenarioIncidents) ? saved.scenarioIncidents : [],
       forecastId: typeof saved.forecastId === 'string' ? saved.forecastId : undefined,
       publishedSnapshotId:
         typeof saved.publishedSnapshotId === 'string'

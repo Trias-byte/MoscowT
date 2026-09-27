@@ -545,6 +545,7 @@ def router(settings, data, store, view_cache):
         if job["status"] != "ready" or not job["result"].get("filename"):
             raise DomainError("EXPORT_NOT_READY", "Файл ещё не готов", 409)
         filename = job["result"]["filename"]
-        return FileResponse(store.root / "exports" / filename, filename=filename)
+        download_name = "submission.csv" if job["result"].get("spec", {}).get("format") in ("submission", "competition") else filename
+        return FileResponse(store.root / "exports" / filename, filename=download_name)
 
     return api

@@ -240,6 +240,9 @@ export interface ViewState {
   forecastId?: string;
   publishedSnapshotId?: string;
   scenarioId?: string;
+  scenarioRange?: Scope['timeRange'];
+  scenarioName?: string;
+  scenarioIncidents?: import('./scenario').Incident[];
   index: number;
   geometry: GeometryScope;
 }

@@ -19,7 +19,7 @@ class PeriodExportSpec(StrictModel):
     time_range: TimeRange
     mode: Literal["auto", "history", "forecast"] = "auto"
     grain: Literal["hour", "day", "month"] = "hour"
-    format: Literal["csv", "parquet", "competition"] = "csv"
+    format: Literal["csv", "parquet", "competition", "submission"] = "csv"
     scenario_id: str | None = None
     metric_scope: Literal["route", "stop", "segment"] = "route"
     object_ids: list[str] = Field(default_factory=list)
@@ -182,6 +182,8 @@ class PeriodExporter:
         return frame
 
     def write(self, spec, ident):
+        if spec.format == "submission" and (spec.grain != "hour" or spec.metric_scope != "route"):
+            raise DomainError("INVALID_SUBMISSION_EXPORT", "Формат submission требует маршруты и почасовой шаг")
         frame = self.frame(spec)
         metadata = {
             "spec": spec.model_dump(mode="json"),
@@ -192,6 +194,10 @@ class PeriodExporter:
         extension = "csv"
         if spec.format == "competition":
             frame = self._competition(spec, frame)
+        elif spec.format == "submission":
+            frame = submission_columns(frame)
+        if spec.format in ("submission", "competition"):
+            metadata["float_policy"] = "round_half_up_nonnegative_integer"
         if spec.format == "parquet":
             extension = "zip"
             buffer, parquet = io.BytesIO(), io.BytesIO()
@@ -248,6 +254,21 @@ class PeriodExporter:
             raise DomainError("INCOMPLETE_COMPETITION_EXPORT", "Прогноз не покрывает все ключи шаблона")
         result["prediction"] = np.floor(result.pop("value") + 0.5).astype(np.int64)
         return result
+
+
+def submission_columns(frame):
+    """The submission contract for any selected route-hour window, including scenarios."""
+    if frame.value.isna().any() or not np.isfinite(frame.value).all() or (frame.value < 0).any():
+        raise DomainError("INCOMPLETE_SUBMISSION_EXPORT", "Выбранный период содержит часы без данных")
+    if (frame.value >= np.iinfo(np.int64).max).any():
+        raise DomainError("INVALID_SUBMISSION_EXPORT", "Значение не помещается в целое число")
+    timestamps = frame.timestamp.dt.tz_convert("Europe/Moscow")
+    return pd.DataFrame({
+        "route": frame.route,
+        "date": timestamps.dt.strftime("%Y-%m-%d"),
+        "hour": timestamps.dt.hour,
+        "prediction": np.floor(frame.value + 0.5).astype(np.int64),
+    })
 
 
 def aggregate_timestamp(timestamps, grain):

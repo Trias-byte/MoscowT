@@ -37,6 +37,34 @@ class ScenarioSpec(StrictModel):
     weather: "WeatherChanges" = Field(default_factory=lambda: WeatherChanges())
     incidents: list["Incident"] = Field(default_factory=list, max_length=100)
     schedule: "ScheduleChanges" = Field(default_factory=lambda: ScheduleChanges())
+    mode: Literal["combined", "weather", "season", "incidents", "schedule"] = "combined"
+
+    @model_validator(mode="before")
+    @classmethod
+    def isolate_mode(cls, value):
+        if not isinstance(value, dict) or value.get("mode", "combined") == "combined":
+            return value
+        value = dict(value)
+        mode = value.get("mode")
+        coefficients = dict(value.get("coefficients") or {})
+        value["coefficients"] = {
+            "weather": coefficients.get("weather", 1) if mode == "weather" else 1,
+            "event": coefficients.get("event", 1) if mode == "incidents" else 1,
+            "season": coefficients.get("season", 1) if mode == "season" else 1,
+        }
+        if mode != "weather":
+            value["weather"] = {}
+        if mode != "incidents":
+            value["incidents"] = []
+        if mode != "schedule":
+            schedule = value.get("schedule") or {}
+            value["schedule"] = {
+                key: schedule[key]
+                for key in ("base_schedule_id", "allow_period_reuse", "elasticity")
+                if key in schedule
+            }
+            value["additional_vehicle_hours"] = 0
+        return value
 
 
 class WeatherChanges(StrictModel):

@@ -1,0 +1,22 @@
+flowchart LR
+    ui["Браузер: React, TypeScript, MapLibre, ECharts"]
+    tiles["Внешняя подложка OSM и шрифты OpenFreeMap"]
+    files["Файлы пользователя: валидации, расписания, модели"]
+    sources["Внешние API: погода и ДТП"]
+
+    api["API: запросы, аналитика, публикация и frontend"]
+    general["General worker: импорт, загрузка факторов, экспорт"]
+    model["Model worker: обучение, прогноз, сценарии, пакеты моделей"]
+    queue[("state/service.sqlite3: очередь заданий")]
+    saved[("Тома shared и state: данные, модели, выпуски и сеть")]
+
+    ui -->|"HTTP: /api/v1 и /api/v2"| api
+    ui -.->|"Тайлы и шрифты"| tiles
+    files -->|"Загрузка через API"| api
+    api -->|"Поставить задание"| queue
+    queue -.->|"Канал general"| general
+    queue -.->|"Канал model"| model
+    general -.->|"Загрузить факторы"| sources
+    general -->|"Импорт и экспорт"| saved
+    model -->|"Читать входы, сохранить расчёт"| saved
+    api -->|"Читать и публиковать"| saved

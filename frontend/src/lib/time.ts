@@ -24,8 +24,10 @@ export function makeScope(view: ViewState): Scope {
     routeIds: view.routeIds,
     metric: 'successful_validations',
     metricScope: 'route',
-    mode: 'auto',
-    timeRange: { start: new Date(start).toISOString(), end: new Date(end).toISOString() },
+    mode: view.scenarioId || view.scenarioRange ? 'forecast' : 'auto',
+    timeRange: view.scenarioRange
+      ? view.scenarioRange
+      : { start: new Date(start).toISOString(), end: new Date(end).toISOString() },
     grain: 'hour',
     aggregation: 'sum',
     snapshotId: view.snapshotId,

@@ -27,15 +27,31 @@ def availability(start, end, restrictions):
     return 1 - unavailable / (end - start).total_seconds()
 
 
-def service_fraction(stamp, start_minute, end_minute):
+def service_intervals(stamp, start_minute, end_minute):
     if start_minute is None or start_minute == end_minute:
-        return 1.0
+        return [(stamp, stamp + pd.Timedelta(hours=1))]
     end_minute += 1440 if end_minute < start_minute else 0
-    duration = 0.0
+    intervals = []
     for day in (stamp.normalize() - pd.Timedelta(days=1), stamp.normalize()):
         start, end = day + pd.Timedelta(minutes=start_minute), day + pd.Timedelta(minutes=end_minute)
-        duration += max(0, (min(end, stamp + pd.Timedelta(hours=1)) - max(start, stamp)).total_seconds())
-    return duration / 3600
+        start, end = max(start, stamp), min(end, stamp + pd.Timedelta(hours=1))
+        if start < end:
+            intervals.append((start, end))
+    return intervals
+
+
+def service_fraction(stamp, start_minute, end_minute):
+    return sum((b - a).total_seconds() for a, b in service_intervals(stamp, start_minute, end_minute)) / 3600
+
+
+def service_availability(stamp, start_minute, end_minute, restrictions):
+    """Incident availability conditional on actual service, including partial/night hours."""
+    intervals = service_intervals(stamp, start_minute, end_minute)
+    seconds = sum((b - a).total_seconds() for a, b in intervals)
+    return (
+        sum((b - a).total_seconds() * availability(a, b, restrictions) for a, b in intervals) / seconds
+        if seconds else 0.0
+    )
 
 
 def demand_ratio(ratio, elasticity):
@@ -68,13 +84,17 @@ def timetable_departures(service, ident, time_range, routes, reuse):
 
 
 class ScenarioForecastService:
-    VERSION = "weather-inference-service-elasticity-v2"
+    VERSION = "weather-inference-service-elasticity-v3"
 
     def __init__(self, settings, data, models):
         self.settings, self.data, self.models, self.store = settings, data, models, models.store
 
     def run(self, scenario_id, job_id):
         ident = "scenario-" + digest({"draft": scenario_id, "job": job_id, "version": self.VERSION})
+        with self.store.lock(ident):
+            return self._run(scenario_id, job_id, ident)
+
+    def _run(self, scenario_id, job_id, ident):
         if self.store.path("scenarios", ident).exists():
             existing = self.store.read("scenarios", ident)
             if file_hash(self.store.path("scenario_results", ident, "parquet")) != existing["sha256"]:
@@ -264,8 +284,8 @@ class ScenarioForecastService:
                 ]
                 for position in positions:
                     stamp = frame.timestamp.iloc[position]
-                    accident_availability[position] = availability(
-                        stamp, stamp + pd.Timedelta(hours=1), restrictions
+                    accident_availability[position] = service_availability(
+                        stamp, schedule.service_start_minute, schedule.service_end_minute, restrictions
                     )
             warnings.append(
                 "ДТП: длительность и потеря движения заданы пользователем; близость к линии не доказывает блокировку"

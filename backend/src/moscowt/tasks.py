@@ -69,7 +69,8 @@ class WorkQueue:
 
     def public(self, row):
         return {
-            key: json.loads(row[key]) if key == "result" and row[key] else row[key]
+            key: (json.loads(row[key]) if row[key] and row["status"] == "ready" else None)
+            if key == "result" else row[key]
             for key in (
                 "id",
                 "kind",

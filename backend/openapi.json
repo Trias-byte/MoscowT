@@ -4056,7 +4056,8 @@
             "enum": [
               "csv",
               "parquet",
-              "competition"
+              "competition",
+              "submission"
             ],
             "title": "Format",
             "default": "csv"
@@ -4564,6 +4565,18 @@
           },
           "schedule": {
             "$ref": "#/components/schemas/ScheduleChanges"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "combined",
+              "weather",
+              "season",
+              "incidents",
+              "schedule"
+            ],
+            "title": "Mode",
+            "default": "combined"
           }
         },
         "additionalProperties": false,

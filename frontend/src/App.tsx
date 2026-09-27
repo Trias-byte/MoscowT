@@ -47,7 +47,7 @@ import { getSections, platform } from './lib/platform';
 import { PlatformPanel } from './components/PlatformPanel';
 import { ScenarioPanel } from './components/ScenarioPanel';
 import { ExportPanel } from './components/ExportPanel';
-import { useScenarioDraft } from './lib/scenario';
+import { scenarioModes, useScenarioWorkspace, visibleIncidents } from './lib/scenario';
 interface Draft {
   scope: Scope;
   timeRange: Scope['timeRange'];
@@ -107,7 +107,18 @@ function Workspace({
     [to, setTo] = useState(''),
     [toast, setToast] = useState('');
   const [toolsPanel, setToolsPanel] = useState(() => localStorage.getItem('workspace-tools') || '');
-  const [scenarioDraft, setScenarioDraft] = useScenarioDraft();
+  const scenarioWorkspace = useScenarioWorkspace();
+  const { draft: scenarioDraft, mode: scenarioMode } = scenarioWorkspace.record;
+  const [hideDraftIncidents, setHideDraftIncidents] = useState(
+    () => sessionStorage.getItem('potok-hide-incidents') === 'true',
+  );
+  const setScenarioDraft = scenarioWorkspace.setDraft;
+  const visibleHours = view.scenarioRange
+    ? (Date.parse(view.scenarioRange.end) - Date.parse(view.scenarioRange.start)) / 3600000
+    : view.windowHours;
+  const periodLabel = view.scenarioRange
+    ? `${view.scenarioId ? 'период сценария' : 'выбранный период'} (${visibleHours} ч)`
+    : windowLabel(view.windowHours);
   const [placingIncident, setPlacingIncident] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<string | null>(null);
   useEffect(() => {
@@ -149,10 +160,10 @@ function Workspace({
     queryFn: ({ signal }) => getView(numericScope, signal),
     enabled: scope.routeIds.length > 0,
   });
-  const index = Math.min(view.index, lastHour);
+  const index = view.scenarioRange ? 0 : Math.min(view.index, lastHour);
   const frame = useMemo(
-    () => sumWindow(data.data?.frames ?? [], index, view.windowHours),
-    [data.data, index, view.windowHours],
+    () => sumWindow(data.data?.frames ?? [], index, visibleHours),
+    [data.data, index, visibleHours],
   );
   const networkData = network.data;
   const sectionScope: Scope = {
@@ -160,7 +171,7 @@ function Workspace({
     timeRange: {
       start: new Date(Date.parse(scope.timeRange.start) + index * 3600000).toISOString(),
       end: new Date(
-        Date.parse(scope.timeRange.start) + (index + view.windowHours) * 3600000,
+        Date.parse(scope.timeRange.start) + (index + visibleHours) * 3600000,
       ).toISOString(),
     },
   };
@@ -174,10 +185,10 @@ function Workspace({
       DEMO && networkData
         ? estimateSections(
             buildSectionModel(networkData),
-            (data.data?.frames ?? []).slice(index, index + view.windowHours),
+            (data.data?.frames ?? []).slice(index, index + visibleHours),
           )
         : (sections.data ?? {}),
-    [networkData, data.data, index, view.windowHours, sections.data],
+    [networkData, data.data, index, visibleHours, sections.data],
   );
   const selectedSegment =
     selected.kind === 'segment'
@@ -206,6 +217,13 @@ function Workspace({
     setView((v) => ({
       ...v,
       ...update,
+      ...(!('scenarioRange' in update) &&
+      (update.date !== undefined ||
+        update.index !== undefined ||
+        update.windowHours !== undefined ||
+        ('scenarioId' in update && !update.scenarioId))
+        ? { scenarioRange: undefined }
+        : {}),
       index: Math.min(
         24 - (update.windowHours ?? v.windowHours),
         Math.max(0, update.index ?? v.index),
@@ -214,7 +232,13 @@ function Workspace({
   }, []);
   useEffect(() => saveView(view), [view]);
   useEffect(() => {
-    if (c.fleetId && data.data && !data.data.meta.fleetId && view.snapshotId !== c.snapshotId)
+    if (
+      !view.scenarioId &&
+      c.fleetId &&
+      data.data &&
+      !data.data.meta.fleetId &&
+      view.snapshotId !== c.snapshotId
+    )
       patch({
         snapshotId: c.snapshotId,
         publishedSnapshotId: c.snapshotId,
@@ -331,29 +355,38 @@ function Workspace({
         <ScenarioPanel
           activeForecastId={view.forecastId ?? c.forecastId}
           open={toolsPanel === 'scenarios'}
-          draft={scenarioDraft}
-          setDraft={setScenarioDraft}
+          workspace={scenarioWorkspace}
           placing={placingIncident}
           setPlacing={(value) => {
             setPlacingIncident(value);
-            if (value) setAnalyticsOpen(false);
+            if (value) {
+              setAnalyticsOpen(false);
+              setHideDraftIncidents(false);
+              sessionStorage.setItem('potok-hide-incidents', 'false');
+            }
           }}
           snapshotId={view.snapshotId}
           selectedIncident={selectedIncident}
           selectIncident={setSelectedIncident}
-          onApply={(id) =>
+          onApply={(id, spec, snapshotId) => {
+            setHideDraftIncidents(true);
+            sessionStorage.setItem('potok-hide-incidents', 'true');
             patch({
               scenarioId: id || undefined,
-              ...(id
+              scenarioRange: spec?.time_range || view.scenarioRange,
+              scenarioName: spec ? `${spec.name} · ${scenarioModes[spec.mode]}` : undefined,
+              scenarioIncidents: spec?.incidents,
+              ...(id && spec
                 ? {
-                    date: scenarioDraft.time_range.start.slice(0, 10),
-                    index: Number(scenarioDraft.time_range.start.slice(11, 13)),
-                    windowHours:
-                      Number(scenarioDraft.time_range.start.slice(11, 13)) === 0 ? 24 : 1,
+                    snapshotId,
+                    forecastId: spec.forecast_id,
+                    routeIds: spec.route_ids,
+                    date: spec.time_range.start.slice(0, 10),
+                    index: 0,
                   }
                 : {}),
-            })
-          }
+            });
+          }}
           onClose={() => {
             setToolsPanel('');
             setPlacingIncident(false);
@@ -372,12 +405,16 @@ function Workspace({
         </a>
         <div className="v2-title">
           <h1>Пассажиропоток</h1>
-          <span>Успешные валидации · сумма за {windowLabel(view.windowHours)}</span>
+          <span>Успешные валидации · сумма за {periodLabel}</span>
         </div>
         <div className="v2-header-actions">
           <span className="v2-status">
             <i />
-            {DEMO ? 'Демонстрация' : 'Данные и прогноз'}
+            {view.scenarioId
+              ? `Сценарий: ${view.scenarioName || 'рассчитанный результат'}`
+              : DEMO
+                ? 'Демонстрация'
+                : 'Данные и прогноз'}
           </span>
           <button
             className="v2-outline"
@@ -665,7 +702,16 @@ function Workspace({
                 showReference={showReference}
                 showStops={showStops}
                 loadThresholds={thresholds}
-                incidents={scenarioDraft.incidents}
+                incidents={visibleIncidents(
+                  !hideDraftIncidents &&
+                    toolsPanel === 'scenarios' &&
+                    ['combined', 'incidents'].includes(scenarioMode)
+                    ? scenarioDraft.incidents
+                    : view.scenarioId
+                      ? view.scenarioIncidents || []
+                      : [],
+                  sectionScope.timeRange,
+                )}
                 placingIncident={placingIncident}
                 onIncidentSelect={(id) => {
                   setSelectedIncident(id);
@@ -690,7 +736,10 @@ function Workspace({
                         longitude,
                         latitude,
                         route_ids: [],
-                        start: previous.time_range.start,
+                        start:
+                          new Date(Date.parse(sectionScope.timeRange.start))
+                            .toLocaleString('sv-SE', { timeZone: 'Europe/Moscow' })
+                            .replace(' ', 'T') + '+03:00',
                         duration_minutes: 60,
                         reduction: 0.5,
                       },
@@ -708,7 +757,7 @@ function Workspace({
               <span>{sourceLabel(frameSource(frame))}</span>
               <strong>{number(frame?.aggregate)}</strong>
               <small>
-                По {view.routeIds.length} маршрутам за {windowLabel(view.windowHours)}
+                По {view.routeIds.length} маршрутам за {periodLabel}
               </small>
             </div>
             {(network.isError || data.isError || geometry.isError) && (
@@ -757,7 +806,7 @@ function Workspace({
                 <b>
                   {frame ? intervalLabel(frame.start, frame.end, scope.grain) : 'Выберите период'}
                 </b>
-                <span>Московское время · {windowLabel(view.windowHours)}</span>
+                <span>Московское время · {periodLabel}</span>
                 {c.forecastOptions?.find((f) => f.id === (view.forecastId ?? c.forecastId))
                   ?.kind === 'annual_scenario' && (
                   <span className="annual-forecast-note">Годовой сценарий · невалидированный</span>
@@ -782,7 +831,7 @@ function Workspace({
             <div className="v2-slider-row">
               <button
                 aria-label={playing ? 'Пауза' : 'Воспроизвести'}
-                disabled={!frame || index === lastHour}
+                disabled={!!view.scenarioRange || !frame || index === lastHour}
                 onClick={() => {
                   if (view.windowHours === 24) setView((v) => ({ ...v, windowHours: 1 }));
                   setPlaying(!playing);
@@ -810,7 +859,7 @@ function Workspace({
                 min="0"
                 max={lastHour}
                 value={index}
-                disabled={!frame}
+                disabled={!!view.scenarioRange || !frame}
                 onPointerDown={() => {
                   if (view.windowHours === 24) patch({ windowHours: 1 });
                 }}
@@ -857,7 +906,15 @@ function Workspace({
               onTab={setTab}
               onSelect={(id, i) => {
                 select({ kind: 'route', id });
-                if (i !== undefined) patch({ windowHours: 1, index: i });
+                if (i !== undefined && data.data?.frames[i]) {
+                  const stamp = new Date(data.data.frames[i].start);
+                  const moscow = stamp.toLocaleString('sv-SE', { timeZone: 'Europe/Moscow' });
+                  patch({
+                    windowHours: 1,
+                    date: moscow.slice(0, 10),
+                    index: Number(moscow.slice(11, 13)),
+                  });
+                }
               }}
             />
           )}
