@@ -1,0 +1,25 @@
+{
+  "job": {
+    "id": "99fc1f3f363e4b26ad6023e997009a7a",
+    "kind": "train",
+    "status": "cancelled",
+    "created_at": 1790458691.8390052,
+    "updated_at": 1790458722.7271748,
+    "attempts": 2,
+    "cancel_requested": 1,
+    "progress": 0.0,
+    "phase": "finished",
+    "result": null,
+    "error": "Worker interrupted; submit again to retry"
+  },
+  "successful_reads_during_recovery": 29,
+  "snapshot_unchanged": true,
+  "no_partial_model_published": true,
+  "restart_forecast_checksum_equal": true,
+  "recomputed_after_reload": [
+    "lgb_cb_rf",
+    "seasonal",
+    "annual_scenario"
+  ],
+  "created_at": 1790458731.654514
+}

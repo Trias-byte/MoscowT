@@ -92,6 +92,10 @@ def validate_submission_run(store, snapshot_id):
     if not snapshot.get("forecastId"):
         raise DomainError("FORECAST_NOT_READY", "Нет выпуска для конкурсного файла", 409)
     run = store.read("forecasts", snapshot["forecastId"])
+    if run.get("forecastRunId"):
+        canonical = store.read("forecast_runs", run["forecastRunId"])
+        model = store.read("trained_models", canonical["spec"]["model_id"])
+        run = {**run, "trainingEnd": model["spec"]["time_range"]["end"], "sha256": canonical["sha256"]}
     if (
         datetime.fromisoformat(run["start"]) != HISTORY_END
         or datetime.fromisoformat(run["end"]) != FINAL_END
@@ -110,10 +114,13 @@ class SubmissionService:
 
     def build(self, snapshot_id):
         run = validate_submission_run(self.store, snapshot_id)
-        path = self.store.path("forecasts", run["id"], "parquet")
+        path = self.store.path(
+            "forecast_runs" if run.get("forecastRunId") else "forecasts", run["id"], "parquet"
+        )
         if file_hash(path) != run["sha256"]:
             raise ValueError("Forecast checksum mismatch")
         frame = pd.read_parquet(path)
+        frame["route"] = pd.to_numeric(frame.route, errors="raise").astype("int64")
         template = pd.read_csv(
             self.dataset / "test_submission.csv",
             sep=";",

@@ -382,6 +382,43 @@
         }
       }
     },
+    "/api/v1/service-dataset-2025/{filename}": {
+      "get": {
+        "summary": "Service Dataset",
+        "operationId": "service_dataset_api_v1_service_dataset_2025__filename__get",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Filename"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/map-snapshot": {
       "post": {
         "summary": "Map Snapshot",
@@ -773,6 +810,1266 @@
         }
       }
     },
+    "/api/v2/sections": {
+      "post": {
+        "summary": "Sections",
+        "operationId": "sections_api_v2_sections_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/capabilities": {
+      "get": {
+        "summary": "Capabilities",
+        "operationId": "capabilities_api_v2_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/blobs": {
+      "post": {
+        "summary": "Upload Blob",
+        "operationId": "upload_blob_api_v2_blobs_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/uploads": {
+      "post": {
+        "summary": "Preview",
+        "operationId": "preview_api_v2_uploads_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/uploads/{ident}": {
+      "get": {
+        "summary": "Get Upload",
+        "operationId": "get_upload_api_v2_uploads__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/uploads/{ident}/apply": {
+      "post": {
+        "summary": "Apply",
+        "operationId": "apply_api_v2_uploads__ident__apply_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/datasets": {
+      "get": {
+        "summary": "Datasets",
+        "operationId": "datasets_api_v2_datasets_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/datasets/{ident}": {
+      "get": {
+        "summary": "Dataset",
+        "operationId": "dataset_api_v2_datasets__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/datasets/{ident}/activate": {
+      "post": {
+        "summary": "Activate",
+        "operationId": "activate_api_v2_datasets__ident__activate_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/routes": {
+      "get": {
+        "summary": "Routes",
+        "operationId": "routes_api_v2_routes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Route",
+        "operationId": "create_route_api_v2_routes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/routes/{ident}": {
+      "get": {
+        "summary": "Route",
+        "operationId": "route_api_v2_routes__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external-sources": {
+      "get": {
+        "summary": "External Sources",
+        "operationId": "external_sources_api_v2_external_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/weather-forecasts": {
+      "get": {
+        "summary": "Weather Forecasts",
+        "operationId": "weather_forecasts_api_v2_weather_forecasts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Fetch Weather",
+        "operationId": "fetch_weather_api_v2_weather_forecasts_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/scenarios": {
+      "post": {
+        "summary": "Create Scenario",
+        "operationId": "create_scenario_api_v2_scenarios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioSpec"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/scenarios/{ident}": {
+      "get": {
+        "summary": "Get Scenario",
+        "operationId": "get_scenario_api_v2_scenarios__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/model-types": {
+      "get": {
+        "summary": "Model Types",
+        "operationId": "model_types_api_v2_model_types_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/models": {
+      "get": {
+        "summary": "List Models",
+        "operationId": "list_models_api_v2_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/model-evaluations": {
+      "get": {
+        "summary": "Model Evaluations",
+        "operationId": "model_evaluations_api_v2_model_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/training-runs": {
+      "post": {
+        "summary": "Train",
+        "operationId": "train_api_v2_training_runs_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingSpec"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/forecast-runs": {
+      "post": {
+        "summary": "Forecast",
+        "operationId": "forecast_api_v2_forecast_runs_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastSpec"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Forecast Runs",
+        "operationId": "forecast_runs_api_v2_forecast_runs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/forecast-runs/{ident}": {
+      "get": {
+        "summary": "Forecast Run",
+        "operationId": "forecast_run_api_v2_forecast_runs__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/forecast-runs/{ident}/evaluation": {
+      "get": {
+        "summary": "Evaluate",
+        "operationId": "evaluate_api_v2_forecast_runs__ident__evaluation_get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          },
+          {
+            "name": "truth_dataset_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Truth Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/forecasts/query": {
+      "post": {
+        "summary": "Query",
+        "operationId": "query_api_v2_forecasts_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodExportSpec"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/forecasts": {
+      "get": {
+        "summary": "Forecasts",
+        "operationId": "forecasts_api_v2_forecasts_get",
+        "parameters": [
+          {
+            "name": "forecast_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Forecast Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "End"
+            }
+          },
+          {
+            "name": "route_ids",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Route Ids"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/publications": {
+      "post": {
+        "summary": "Publish",
+        "operationId": "publish_api_v2_publications_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/schedules": {
+      "get": {
+        "summary": "List Schedules",
+        "operationId": "list_schedules_api_v2_schedules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Import Schedule",
+        "operationId": "import_schedule_api_v2_schedules_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/schedules/{ident}/reconciliation": {
+      "get": {
+        "summary": "Reconcile",
+        "operationId": "reconcile_api_v2_schedules__ident__reconciliation_get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          },
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/exports": {
+      "post": {
+        "summary": "Export",
+        "operationId": "export_api_v2_exports_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodExportSpec"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/competition-exports": {
+      "post": {
+        "summary": "Competition Export",
+        "operationId": "competition_export_api_v2_competition_exports_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompetitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/bundles": {
+      "post": {
+        "summary": "Bundle",
+        "operationId": "bundle_api_v2_bundles_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/jobs": {
+      "get": {
+        "summary": "Jobs",
+        "operationId": "jobs_api_v2_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/jobs/{ident}": {
+      "get": {
+        "summary": "Job",
+        "operationId": "job_api_v2_jobs__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/jobs/{ident}/cancel": {
+      "post": {
+        "summary": "Cancel",
+        "operationId": "cancel_api_v2_jobs__ident__cancel_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/jobs/{ident}/download": {
+      "get": {
+        "summary": "Download",
+        "operationId": "download_api_v2_jobs__ident__download_get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Frontend",
@@ -930,6 +2227,24 @@
             "type": "array",
             "title": "Absolutethresholds"
           },
+          "fleetId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fleetid"
+          },
+          "vehicleLoadThresholds": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Vehicleloadthresholds"
+          },
           "submissionAvailable": {
             "type": "boolean",
             "title": "Submissionavailable"
@@ -951,9 +2266,38 @@
           "defaultDate",
           "targetRouteIds",
           "absoluteThresholds",
+          "vehicleLoadThresholds",
           "submissionAvailable"
         ],
         "title": "CapabilitiesResponse"
+      },
+      "Coefficients": {
+        "properties": {
+          "weather": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Weather",
+            "default": 1
+          },
+          "event": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Event",
+            "default": 1
+          },
+          "season": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Season",
+            "default": 1
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Coefficients"
       },
       "Comparison": {
         "properties": {
@@ -1026,6 +2370,20 @@
         ],
         "title": "ComparisonResponse"
       },
+      "CompetitionRequest": {
+        "properties": {
+          "forecast_id": {
+            "type": "string",
+            "title": "Forecast Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forecast_id"
+        ],
+        "title": "CompetitionRequest"
+      },
       "ExportRequest": {
         "properties": {
           "scope": {
@@ -1056,6 +2414,56 @@
           "scope"
         ],
         "title": "ExportRequest"
+      },
+      "ForecastSpec": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "origin": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Origin"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "route_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Route Ids"
+          },
+          "weather_forecast_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weather Forecast Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model_id",
+          "dataset_id",
+          "origin",
+          "time_range",
+          "route_ids"
+        ],
+        "title": "ForecastSpec"
       },
       "Frame": {
         "properties": {
@@ -1331,6 +2739,51 @@
         ],
         "title": "HeatmapResponse"
       },
+      "ImportSpec": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "labels",
+              "events"
+            ],
+            "title": "Kind",
+            "default": "labels"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "append",
+              "upsert",
+              "replace"
+            ],
+            "title": "Mode",
+            "default": "append"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "route_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Route Ids"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "time_range"
+        ],
+        "title": "ImportSpec"
+      },
       "JobResponse": {
         "properties": {
           "id": {
@@ -1410,6 +2863,71 @@
           "historyId": {
             "type": "string",
             "title": "Historyid"
+          },
+          "fleetId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fleetid"
+          },
+          "fleetMethod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fleetmethod"
+          },
+          "datasetId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Datasetid"
+          },
+          "scenarioId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenarioid"
+          },
+          "scheduleId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduleid"
+          },
+          "scheduleScenario": {
+            "type": "boolean",
+            "title": "Schedulescenario",
+            "default": false
+          },
+          "availabilityPolicy": {
+            "type": "string",
+            "title": "Availabilitypolicy",
+            "default": "retrospective_event_time"
           },
           "metric": {
             "type": "string",
@@ -1667,6 +3185,171 @@
         ],
         "title": "Pattern"
       },
+      "PeriodExportSpec": {
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "forecast_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Id"
+          },
+          "route_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Route Ids"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "history",
+              "forecast"
+            ],
+            "title": "Mode",
+            "default": "auto"
+          },
+          "grain": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day",
+              "month"
+            ],
+            "title": "Grain",
+            "default": "hour"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "parquet",
+              "competition"
+            ],
+            "title": "Format",
+            "default": "csv"
+          },
+          "scenario_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Id"
+          },
+          "metric_scope": {
+            "type": "string",
+            "enum": [
+              "route",
+              "stop",
+              "segment"
+            ],
+            "title": "Metric Scope",
+            "default": "route"
+          },
+          "object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Object Ids"
+          },
+          "snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Id"
+          },
+          "schedule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Id"
+          },
+          "schedule_scenario": {
+            "type": "boolean",
+            "title": "Schedule Scenario",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dataset_id",
+          "route_ids",
+          "time_range"
+        ],
+        "title": "PeriodExportSpec"
+      },
+      "PublishRequest": {
+        "properties": {
+          "forecast_id": {
+            "type": "string",
+            "title": "Forecast Id"
+          },
+          "expected_snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Snapshot Id"
+          },
+          "schedule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Id"
+          },
+          "schedule_scenario": {
+            "type": "boolean",
+            "title": "Schedule Scenario",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forecast_id"
+        ],
+        "title": "PublishRequest"
+      },
       "Range": {
         "properties": {
           "start": {
@@ -1730,6 +3413,57 @@
         ],
         "title": "Route"
       },
+      "RouteDefinition": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Number"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "name"
+        ],
+        "title": "RouteDefinition"
+      },
       "RouteImportRequest": {
         "properties": {
           "snapshotId": {
@@ -1758,6 +3492,30 @@
         ],
         "title": "RouteImportRequest"
       },
+      "RouteRequest": {
+        "properties": {
+          "route": {
+            "$ref": "#/components/schemas/RouteDefinition"
+          },
+          "expected_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "route"
+        ],
+        "title": "RouteRequest"
+      },
       "RouteValue": {
         "properties": {
           "routeId": {
@@ -1785,6 +3543,24 @@
               }
             ],
             "title": "Value"
+          },
+          "baseValue": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basevalue"
+          },
+          "additionalVehicleHours": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Additionalvehiclehours",
+            "default": 0
           },
           "baseline": {
             "anyOf": [
@@ -1830,6 +3606,73 @@
           "historySupport": {
             "type": "string",
             "title": "Historysupport"
+          },
+          "fleetVehicles": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fleetvehicles"
+          },
+          "vehicleHours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehiclehours"
+          },
+          "loadPerVehicleHour": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loadpervehiclehour"
+          },
+          "fleetSource": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "estimated",
+              "mixed",
+              "missing",
+              "planned_duty",
+              "stop_timetable_estimate"
+            ],
+            "title": "Fleetsource",
+            "default": "missing"
+          },
+          "fleetSampleDays": {
+            "type": "integer",
+            "title": "Fleetsampledays",
+            "default": 0
+          },
+          "fleetCoverage": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fleetcoverage"
           }
         },
         "additionalProperties": true,
@@ -1847,6 +3690,58 @@
         ],
         "title": "RouteValue"
       },
+      "ScenarioSpec": {
+        "properties": {
+          "forecast_id": {
+            "type": "string",
+            "title": "Forecast Id"
+          },
+          "route_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Route Ids"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "coefficients": {
+            "$ref": "#/components/schemas/Coefficients"
+          },
+          "additional_vehicle_hours": {
+            "type": "number",
+            "maximum": 10000000.0,
+            "minimum": 0.0,
+            "title": "Additional Vehicle Hours",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forecast_id",
+          "route_ids",
+          "time_range"
+        ],
+        "title": "ScenarioSpec"
+      },
+      "ScheduleRequest": {
+        "properties": {
+          "blob_id": {
+            "type": "string",
+            "title": "Blob Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "blob_id"
+        ],
+        "title": "ScheduleRequest"
+      },
       "Scope": {
         "properties": {
           "routeIds": {
@@ -1854,7 +3749,7 @@
               "type": "string"
             },
             "type": "array",
-            "maxItems": 10,
+            "maxItems": 1000,
             "minItems": 1,
             "title": "Routeids"
           },
@@ -1899,6 +3794,17 @@
           "snapshotId": {
             "type": "string",
             "title": "Snapshotid"
+          },
+          "scenarioId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenarioid"
           },
           "geometry": {
             "$ref": "#/components/schemas/GeometryScope"
@@ -2177,6 +4083,98 @@
           "end"
         ],
         "title": "TimeRange"
+      },
+      "TrainingSpec": {
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "model_type": {
+            "type": "string",
+            "enum": [
+              "seasonal",
+              "lgb_cb_rf",
+              "annual_scenario"
+            ],
+            "title": "Model Type",
+            "default": "seasonal"
+          },
+          "route_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Route Ids"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Parameters"
+          },
+          "external_snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Snapshot Id"
+          },
+          "feature_groups": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "calendar",
+                "weather",
+                "events"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Feature Groups"
+          },
+          "seed": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Seed",
+            "default": 42
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dataset_id",
+          "route_ids",
+          "time_range"
+        ],
+        "title": "TrainingSpec"
+      },
+      "UploadRequest": {
+        "properties": {
+          "blob_id": {
+            "type": "string",
+            "title": "Blob Id"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/ImportSpec"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "blob_id",
+          "spec"
+        ],
+        "title": "UploadRequest"
       },
       "ValidationError": {
         "properties": {

@@ -1,9 +1,8 @@
 from datetime import date as CalendarDate
 from datetime import datetime, timedelta
-from typing import Literal, Protocol
+from typing import Literal
 from zoneinfo import ZoneInfo
 
-import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 ROUTES = (1, 5, 7, 11, 12, 17, 25, 26, 28, 50)
@@ -67,7 +66,7 @@ class GeometryScope(StrictModel):
 
 
 class Scope(StrictModel):
-    routeIds: list[str] = Field(min_length=1, max_length=10)
+    routeIds: list[str] = Field(min_length=1, max_length=1000)
     metric: str = METRIC
     metricScope: str = "route"
     mode: Literal["auto", "history", "forecast"] = "auto"
@@ -75,6 +74,7 @@ class Scope(StrictModel):
     grain: Literal["hour", "day"] = "hour"
     aggregation: Literal["sum"] = "sum"
     snapshotId: str
+    scenarioId: str | None = None
     geometry: GeometryScope = Field(default_factory=GeometryScope)
 
     @model_validator(mode="after")
@@ -85,8 +85,6 @@ class Scope(StrictModel):
             raise DomainError("METRIC_UNAVAILABLE", "Доступны только успешные валидации")
         if self.metricScope != "route":
             raise DomainError("METRIC_GRAIN_UNAVAILABLE", "Числовой показатель доступен только по маршруту")
-        if any(r not in {str(x) for x in ROUTES} for r in self.routeIds):
-            raise DomainError("ROUTE_DATA_UNAVAILABLE", "Для выбранного маршрута нет числовых данных")
         if self.grain == "day" and (self.timeRange.start.hour or self.timeRange.end.hour):
             raise ValueError("Daily intervals must be aligned to midnight in Moscow")
         step = timedelta(hours=1) if self.grain == "hour" else timedelta(days=1)
@@ -103,10 +101,6 @@ class ExportRequest(StrictModel):
 
 class SubmissionRequest(StrictModel):
     snapshotId: str
-
-
-class ForecastExpert(Protocol):
-    def predict(self, timestamps, routes) -> np.ndarray: ...
 
 
 def moscow_origin(value: str) -> datetime:

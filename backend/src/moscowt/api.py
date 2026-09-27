@@ -76,7 +76,10 @@ def create_app(settings: Settings | None = None):
     settings = settings or Settings()
     store = SnapshotStore(settings.state_dir)
     jobs = JobRepository(store.root, settings.queue_limit)
-    analytics = RouteAnalyticsService(store)
+    from .data.repository import DatasetRepository
+
+    data = DatasetRepository(settings.data_root)
+    analytics = RouteAnalyticsService(store, data)
     cache = ViewCache(analytics, settings)
     network = NetworkCatalogService(store)
     registry = CollectorRegistry()
@@ -201,11 +204,30 @@ def create_app(settings: Settings | None = None):
                     missing.append(field)
                     continue
                 for extension in extensions:
+                    if (
+                        extension == "parquet"
+                        and store.path(kind, ident).exists()
+                        and store.read(kind, ident).get("datasetId")
+                    ):
+                        continue
                     path = store.path(kind, ident, extension)
                     if not path.is_file():
                         missing.append(f"{kind}/{ident}.{extension}")
                     elif extension == "json":
                         json.loads(path.read_bytes())
+            if current.get("datasetId"):
+                manifest = data.manifest(current["datasetId"])
+                for part in manifest["partitions"]:
+                    if not data.files.path("partitions", part["id"], "parquet").is_file():
+                        missing.append("canonical/" + part["id"])
+                run = store.read("forecast_runs", current["forecastId"])
+                for kind, ident, extension in (
+                    ("forecast_runs", run["id"], "parquet"),
+                    ("trained_models", run["spec"]["model_id"], "json"),
+                    ("trained_models", run["spec"]["model_id"], "joblib"),
+                ):
+                    if not store.path(kind, ident, extension).is_file():
+                        missing.append(f"{kind}/{ident}.{extension}")
         except (OSError, ValueError, DomainError):
             current, missing = {}, ["invalid_artifact_manifest"]
         return JSONResponse(
@@ -244,9 +266,9 @@ def create_app(settings: Settings | None = None):
             "grains": ["hour", "day"],
             "exportFormats": ["csv"],
             "stream": False,
-            "ingestion": False,
+            "ingestion": True,
             "timezone": "Europe/Moscow",
-            "targetRouteIds": [str(r) for r in ROUTES],
+            "targetRouteIds": sorted(set(history.get("routes", [str(r) for r in ROUTES]))) if history else [],
             "historyRange": {"start": history["start"], "end": history["end"]} if history else None,
             "forecastRange": {"start": run["start"], "end": run["end"]} if run else None,
             "forecastId": run["id"] if run else None,
@@ -262,14 +284,40 @@ def create_app(settings: Settings | None = None):
             ),
         }
 
+    def decorated_network(current, date=None):
+        selected = resolve_network(store, store.read("networks", current["networkId"]), date)
+        value = {**selected, "routes": [dict(route) for route in selected["routes"]]}
+        if current.get("datasetId"):
+            known = set(data.manifest(current["datasetId"])["routes"])
+            definitions = {r["id"]: r for r in data.catalog.routes()}
+            present = {r["id"] for r in value["routes"]}
+            for rid in sorted(known - present):
+                definition = definitions.get(rid, {})
+                value["routes"].append(
+                    {
+                        "id": rid,
+                        "number": definition.get("number", rid),
+                        "name": definition.get("name", "Маршрут " + rid),
+                        "color": "#167f78",
+                        "isTarget": True,
+                        "hasData": True,
+                        "hasGeometry": False,
+                        "historySupport": "available",
+                    }
+                )
+            geometry = {p["routeId"] for p in value["patterns"]}
+            for route in value["routes"]:
+                route["hasData"] = route["id"] in known
+                route["historySupport"] = "available" if route["hasData"] else "unavailable"
+            value["missingGeometryRouteIds"] = sorted(known - geometry)
+        return value
+
     @app.get("/api/v1/network", response_model=NetworkResponse)
     def get_network(snapshotId: str | None = None, date: CalendarDate | None = None):
         current = snapshot(snapshotId)
         if not current.get("networkId"):
             raise DomainError("NETWORK_NOT_READY", "Справочник не подготовлен", 503)
-        value = resolve_network(
-            store, store.read("networks", current["networkId"]), date.isoformat() if date else None
-        )
+        value = decorated_network(current, date.isoformat() if date else None)
         return response(value)
 
     @app.post("/api/v1/geometry", response_model=GeometrySelection)
@@ -287,9 +335,7 @@ def create_app(settings: Settings | None = None):
     @app.get("/api/v1/routes", response_model=list[Route])
     def get_routes(snapshotId: str | None = None, date: CalendarDate | None = None):
         current = snapshot(snapshotId)
-        return resolve_network(
-            store, store.read("networks", current["networkId"]), date.isoformat() if date else None
-        )["routes"]
+        return decorated_network(current, date.isoformat() if date else None)["routes"]
 
     @app.get("/api/v1/forecast-runs")
     def forecast_runs():
@@ -305,7 +351,9 @@ def create_app(settings: Settings | None = None):
             "anomalies": [
                 {"routeId": "50", "dates": ["2025-09-20", "2025-09-21"], "status": "requires_review"}
             ],
-            "route5Policy": "zero_fallback_no_positive_history",
+            "route5Policy": "no_forced_zero; see_model_route_coverage"
+            if current.get("datasetId")
+            else "zero_fallback_no_positive_history",
             "fleetId": current.get("fleetId"),
             "fleetMethod": fleet.get("method"),
             "limitations": [
@@ -314,7 +362,7 @@ def create_app(settings: Settings | None = None):
                 "Число вагонов оценивается по событиям: вагоны без валидаций могут быть пропущены",
                 "Профиль вагонов строится по 8 предшествующим неделям; тип дня по производственному календарю является допущением",
                 "Полный архив расписаний на 2025 год не найден; справочные интервалы не подменяют ежедневный выпуск",
-                "Поток и SSE недоступны в P0",
+                "Поток событий и SSE не включены; задания доступны через поллинг",
             ],
         }
 
@@ -393,6 +441,10 @@ def create_app(settings: Settings | None = None):
             media_type="text/csv; charset=utf-8",
             filename="submission.csv" if job["kind"] == "submission" else "validations.csv",
         )
+
+    from .platform_api import router
+
+    app.include_router(router(settings, data, store, cache))
 
     if settings.frontend_dir.is_dir():
         assets = settings.frontend_dir / "assets"

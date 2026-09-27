@@ -5,17 +5,13 @@ from math import isfinite
 import numpy as np
 import pandas as pd
 
-from .domain import METRIC, ROUTES, DomainError, Scope
+from .domain import METRIC, DomainError, Scope
 from .fleet import FleetService, fleet_summary
 from .storage import SnapshotStore
 
 
 def number(value):
     return float(value) if isfinite(value) else None
-
-
-def complete_sum(values):
-    return number(np.sum(values))
 
 
 def provenance(sources):
@@ -28,9 +24,9 @@ def provenance(sources):
 class RouteAnalyticsService:
     """Small immutable matrices, bounded by three loaded data versions."""
 
-    def __init__(self, store: SnapshotStore):
-        self.store = store
-        self.fleet = FleetService(store)
+    def __init__(self, store: SnapshotStore, data=None):
+        self.store, self.data = store, data
+        self.fleet = FleetService(store, data.root if data else None)
         self.matrices = OrderedDict()
 
     def matrix(self, kind, ident):
@@ -39,15 +35,64 @@ class RouteAnalyticsService:
             self.matrices.move_to_end(key)
             return self.matrices[key]
         manifest = self.store.read(kind, ident)
-        frame = pd.read_parquet(self.store.path(kind, ident, "parquet"))
+        if manifest.get("datasetId"):
+            if self.data is None:
+                from .config import Settings
+                from .data.repository import DatasetRepository
+
+                self.data = DatasetRepository(Settings(state_dir=self.store.root).data_root)
+            if kind == "histories":
+                frame = self.data.frame(manifest["datasetId"])
+                frame["valueOrigin"] = frame.value_origin
+            else:
+                frame = pd.read_parquet(
+                    self.store.path("forecast_runs", manifest["forecastRunId"], "parquet")
+                )
+                frame["valueOrigin"] = "model"
+            frame["coverageStatus"] = "provided_extract" if kind == "histories" else "forecast"
+            frame["qualityFlag"] = "none"
+            frame["baseline"], frame["baselineCount"] = np.nan, 0
+        else:
+            frame = pd.read_parquet(self.store.path(kind, ident, "parquet"))
+        frame["route"] = frame.route.astype(str)
+        routes = sorted(frame.route.unique())
         frame = frame.sort_values(["route", "timestamp"])
         start, end = datetime.fromisoformat(manifest["start"]), datetime.fromisoformat(manifest["end"])
         count = int((end - start).total_seconds() // 3600)
-        if len(frame) != len(ROUTES) * count:
-            raise DomainError("ARTIFACT_INVALID", "Неполная сетка артефакта", 503)
-        result = {"start": start, "end": end, "count": count, "manifest": manifest}
+        if frame.duplicated(["route", "timestamp"]).any():
+            raise DomainError("ARTIFACT_INVALID", "Повтор ключа артефакта", 503)
+        grid = pd.MultiIndex.from_product(
+            [routes, pd.date_range(start, end, freq="h", inclusive="left")], names=["route", "timestamp"]
+        )
+        frame = frame.set_index(["route", "timestamp"]).reindex(grid).reset_index()
+        if manifest.get("datasetId"):
+            if kind == "histories":
+                groups = frame.groupby(
+                    [frame.route, frame.timestamp.dt.dayofweek, frame.timestamp.dt.hour]
+                ).value
+                frame["baseline"] = groups.transform(
+                    lambda values: values.shift().rolling(8, min_periods=1).mean()
+                )
+                frame["baselineCount"] = groups.transform(
+                    lambda values: values.shift().rolling(8, min_periods=1).count()
+                ).fillna(0)
+            else:
+                origin = pd.Timestamp(manifest["issuedAt"])
+                past = self.data.frame(
+                    manifest["datasetId"], start=origin - pd.Timedelta(days=56), end=origin
+                )
+                profile = past.groupby(
+                    [past.route, past.timestamp.dt.dayofweek, past.timestamp.dt.hour]
+                ).value.agg(["mean", "count"])
+                keys = pd.MultiIndex.from_arrays(
+                    [frame.route, frame.timestamp.dt.dayofweek, frame.timestamp.dt.hour]
+                )
+                selected = profile.reindex(keys)
+                frame["baseline"] = selected["mean"].to_numpy()
+                frame["baselineCount"] = selected["count"].fillna(0).to_numpy()
+        result = {"start": start, "end": end, "count": count, "manifest": manifest, "routes": routes}
         for col in ("value", "baseline", "baselineCount", "valueOrigin", "coverageStatus", "qualityFlag"):
-            array = frame[col].to_numpy().reshape(len(ROUTES), count)
+            array = frame[col].to_numpy().reshape(len(routes), count)
             array.flags.writeable = False
             result[col] = array
         self.matrices[key] = result
@@ -82,11 +127,12 @@ class RouteAnalyticsService:
             )
             present = (indices >= 0) & (indices < matrix["count"])
             slices.append((source, matrix, indices, present))
-        selected_routes = [int(r) for r in scope.routeIds]
+        selected_routes = scope.routeIds
+        if set(selected_routes) - {r for _, matrix in matrices for r in matrix["routes"]}:
+            raise DomainError("ROUTE_DATA_UNAVAILABLE", "Для выбранного маршрута нет числовых данных")
         series, route_values = [], {}
         used_sources = set()
         for route in selected_routes:
-            row = ROUTES.index(route)
             numeric = {
                 name: np.full(frame_count * hours, np.nan) for name in ("value", "baseline", "baselineCount")
             }
@@ -94,6 +140,9 @@ class RouteAnalyticsService:
             flags_by_hour = np.full(frame_count * hours, "none", dtype=object)
             sources = np.zeros(frame_count * hours, dtype=np.uint8)
             for source, matrix, indices, present in slices:
+                if route not in matrix["routes"]:
+                    continue
+                row = matrix["routes"].index(route)
                 positions = np.flatnonzero(present)
                 positions = positions[np.isfinite(matrix["value"][row, indices[positions]])]
                 for name, expanded in numeric.items():
@@ -101,6 +150,30 @@ class RouteAnalyticsService:
                 origins_by_hour[positions] = matrix["valueOrigin"][row, indices[positions]]
                 flags_by_hour[positions] = matrix["qualityFlag"][row, indices[positions]]
                 sources[positions] = source
+            base_values = numeric["value"].copy()
+            scenario_budget = 0.0
+            if scope.scenarioId:
+                from .scenarios import ScenarioSpec
+
+                scenario = ScenarioSpec.model_validate(self.store.read("scenarios", scope.scenarioId)["spec"])
+                if scenario.forecast_id != snapshot.get("forecastId"):
+                    raise DomainError(
+                        "SCENARIO_FORECAST_MISMATCH", "Сценарий относится к другому прогнозу", 409
+                    )
+                times = pd.date_range(scope.timeRange.start, periods=len(sources), freq="h")
+                mask = (
+                    (times >= scenario.time_range.start) & (times < scenario.time_range.end) & (sources == 2)
+                )
+                if route in scenario.route_ids:
+                    numeric["value"][mask] *= scenario.coefficients.multiplier
+                    cells = (
+                        len(scenario.route_ids)
+                        * (scenario.time_range.end - scenario.time_range.start).total_seconds()
+                        / 3600
+                    )
+                    scenario_budget = scenario.additional_vehicle_hours / cells
+                else:
+                    mask[:] = False
             used_sources.update(sources.tolist())
             values, baseline, counts = [], [], []
             for name, target in (("value", values), ("baseline", baseline), ("baselineCount", counts)):
@@ -120,6 +193,11 @@ class RouteAnalyticsService:
             fleet_hours = self.fleet.hours(
                 snapshot, scope.timeRange.start, str(route), sources, run["issuedAt"] if run else None
             )
+            if scope.scenarioId and scenario_budget:
+                fleet_hours = [dict(record) for record in fleet_hours]
+                for index, selected in enumerate(mask):
+                    if selected and fleet_hours[index]["vehicles"] is not None:
+                        fleet_hours[index]["vehicles"] += scenario_budget
             for i in range(frame_count):
                 positions = [j for j in range(i * hours, (i + 1) * hours) if sources[j]]
                 origins = sorted({origins_by_hour[j] for j in positions})
@@ -130,6 +208,12 @@ class RouteAnalyticsService:
                         "routeId": str(route),
                         "provenance": source,
                         "value": values[i],
+                        "baseValue": number(base_values[i * hours : (i + 1) * hours].sum()),
+                        "additionalVehicleHours": float(
+                            scenario_budget * mask[i * hours : (i + 1) * hours].sum()
+                        )
+                        if scope.scenarioId
+                        else 0.0,
                         "baseline": baseline[i],
                         "baselineCount": counts[i],
                         "valueOrigins": origins,
@@ -137,7 +221,9 @@ class RouteAnalyticsService:
                         "coverageStatus": ("provided_extract" if source == "observation" else source)
                         if values[i] is not None
                         else "missing",
-                        "historySupport": "no_positive_history" if route == 5 else "available",
+                        "historySupport": "available"
+                        if any(v is not None and v > 0 for v in values)
+                        else "no_positive_values_in_selection",
                         **fleet_summary(fleet_hours[i * hours : (i + 1) * hours], values[i]),
                     }
                 )
@@ -161,15 +247,26 @@ class RouteAnalyticsService:
             )
         if 2 not in used_sources:
             run = None
+        fleet_method = (
+            self.store.read("fleets", snapshot["fleetId"]).get("method") if snapshot.get("fleetId") else None
+        )
+        if snapshot.get("scheduleId") and self.fleet.data_root:
+            from .schedules import ScheduleService
+
+            fleet_method = ScheduleService(self.fleet.data_root).store.read(
+                "schedules", snapshot["scheduleId"]
+            )["method"]
         meta = {
+            "datasetId": snapshot.get("datasetId"),
+            "scenarioId": scope.scenarioId,
+            "scheduleId": snapshot.get("scheduleId"),
+            "scheduleScenario": snapshot.get("scheduleScenario", False),
             "contractVersion": 2,
             "snapshotId": scope.snapshotId,
             "networkSnapshotId": snapshot.get("networkId"),
             "historyId": snapshot["historyId"],
             "fleetId": snapshot.get("fleetId"),
-            "fleetMethod": self.store.read("fleets", snapshot["fleetId"]).get("method")
-            if snapshot.get("fleetId")
-            else None,
+            "fleetMethod": fleet_method,
             "metric": METRIC,
             "metricScope": "route",
             "unit": "validations",

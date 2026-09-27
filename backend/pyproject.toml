@@ -21,6 +21,14 @@ dev = [
 [project.scripts]
 moscowt = "moscowt.cli:main"
 
+[project.optional-dependencies]
+models = [
+    "holidays==0.105",
+    "joblib==1.6.0",
+    "lightgbm==4.7.0",
+    "scikit-learn==1.9.1",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

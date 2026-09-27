@@ -44,6 +44,8 @@ import { Modal } from './components/Dialogs';
 import { RouteUpload } from './components/RouteUpload';
 import { RouteSections, SectionDetails } from './components/SectionDetails';
 import { buildSectionModel, estimateSections } from './lib/sectionLoad';
+import { getSections } from './lib/platform';
+import { PlatformPanel } from './components/PlatformPanel';
 interface Draft {
   scope: Scope;
   timeRange: Scope['timeRange'];
@@ -58,6 +60,7 @@ export default function App() {
       <main className="v2-start">
         <TramFront size={40} />
         <h1>Не удалось подключиться к backend</h1>
+        {!DEMO && <PlatformPanel onPublished={() => capabilities.refetch()} />}
         <p>{capabilities.error.message}</p>
         <p>Запустите подготовку данных и сервер по инструкции README.</p>
         <button className="v2-primary" onClick={() => capabilities.refetch()}>
@@ -143,19 +146,29 @@ function Workspace({
     [data.data, index, view.windowHours],
   );
   const networkData = network.data;
-  const sectionModel = useMemo(
-    () => (networkData ? buildSectionModel(networkData) : null),
-    [networkData],
-  );
+  const sectionScope: Scope = {
+    ...geometryScope,
+    timeRange: {
+      start: new Date(Date.parse(scope.timeRange.start) + index * 3600000).toISOString(),
+      end: new Date(
+        Date.parse(scope.timeRange.start) + (index + view.windowHours) * 3600000,
+      ).toISOString(),
+    },
+  };
+  const sections = useQuery({
+    queryKey: ['sections', sectionScope],
+    queryFn: ({ signal }) => getSections(sectionScope, signal),
+    enabled: !DEMO && !!networkData && scope.routeIds.length > 0,
+  });
   const sectionLoads = useMemo(
     () =>
-      sectionModel
+      DEMO && networkData
         ? estimateSections(
-            sectionModel,
+            buildSectionModel(networkData),
             (data.data?.frames ?? []).slice(index, index + view.windowHours),
           )
-        : {},
-    [sectionModel, data.data, index, view.windowHours],
+        : (sections.data ?? {}),
+    [networkData, data.data, index, view.windowHours, sections.data],
   );
   const selectedSegment =
     selected.kind === 'segment'
@@ -259,6 +272,24 @@ function Workspace({
     : [];
   return (
     <main className="workspace-v2">
+      {!DEMO && (
+        <PlatformPanel
+          onPublished={() => {
+            refresh();
+            getCapabilities().then((caps) =>
+              patch({
+                snapshotId: caps.snapshotId,
+                date: caps.defaultDate,
+                routeIds: caps.targetRouteIds,
+                scenarioId: undefined,
+                geometry: { patternIds: [], section: null, bbox: null, referenceMode: 'reference' },
+              }),
+            );
+          }}
+          onScenario={(id) => patch({ scenarioId: id })}
+        />
+      )}
+
       <header className="v2-header">
         <a className="v2-brand" href="/" aria-label="Поток — главная">
           <span>
@@ -275,7 +306,7 @@ function Workspace({
         <div className="v2-header-actions">
           <span className="v2-status">
             <i />
-            {DEMO ? 'Демонстрация' : 'Данные 2025'}
+            {DEMO ? 'Демонстрация' : 'Данные и прогноз'}
           </span>
           <button aria-label="О данных" onClick={() => setHelp(true)}>
             <Info size={19} />
@@ -342,7 +373,9 @@ function Workspace({
             )}
             <div className="v2-section-title">
               <span>Целевые маршруты</span>
-              <b>{view.routeIds.length} / 10</b>
+              <b>
+                {view.routeIds.length} / {c.targetRouteIds.length}
+              </b>
             </div>
             <div className="v2-small-actions">
               <button onClick={() => patch({ routeIds: c.targetRouteIds })}>Все</button>
@@ -872,7 +905,7 @@ function Workspace({
                 (value?.provenance === 'forecast' || value?.provenance === 'mixed') && (
                   <>
                     <span>Модельный момент выпуска</span>
-                    <b>{dateLabel(data.data.meta.issuedAt)} 2025</b>
+                    <b>{dateLabel(data.data.meta.issuedAt)}</b>
                   </>
                 )}
               <code>
@@ -887,7 +920,7 @@ function Workspace({
             </div>
             <div className="v2-provenance">
               <h3>Источник карты</h3>
-              <p>Маршруты на {mapDate} · архив 2025</p>
+              <p>Маршруты на {mapDate} · версия геометрии по дате</p>
               <p>Версия OSM от {networkData?.sourceAsOf ?? networkData?.asOf}</p>
               {route?.sourceKind === 'reconstruction' && (
                 <p className="v2-notice">{route.geometryNote}</p>
@@ -985,7 +1018,10 @@ function Workspace({
       )}
       {help && (
         <Modal title="О данных и ограничениях" onClose={() => setHelp(false)}>
-          <p>История: январь–октябрь 2025 года. Конкурсный прогноз: ноябрь–декабрь 2025 года.</p>
+          <p>
+            Текущие периоды истории и прогноза определяются опубликованным выпуском. Новые данные и
+            модели доступны в панели «Данные и модели».
+          </p>
           <p>Источник выбирается автоматически: фактические данные при наличии, иначе прогноз.</p>
           <p>
             Показатель — число успешных валидаций по маршруту и часу. Он не измеряет наполнение
@@ -1051,9 +1087,7 @@ function DatePicker(p: {
   const start = Math.min(startHour, 24 - windowHours);
   return (
     <Modal title="Дата и время" onClose={p.onClose}>
-      <p className="v2-hint">
-        Любой день 2025 года. Фактические данные при наличии, иначе прогноз.
-      </p>
+      <p className="v2-hint">Выберите день в пределах истории и опубликованного прогноза.</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();

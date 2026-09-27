@@ -56,6 +56,7 @@ export function initialView(c: Capabilities): ViewState {
       index: Number.isInteger(saved.index)
         ? Math.min(24 - windowHours, Math.max(0, saved.index))
         : 0,
+      scenarioId: typeof saved.scenarioId === 'string' ? saved.scenarioId : undefined,
       geometry,
     };
   } catch {

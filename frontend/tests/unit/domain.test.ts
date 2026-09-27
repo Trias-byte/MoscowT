@@ -158,8 +158,8 @@ it('uses vehicle-hours as the denominator for a window and keeps the scale fixed
   expect(half).toMatchObject({ vehicleHours: 72, fleetVehicles: 6, fleetSource: 'mixed' });
   expect(half.loadPerVehicleHour).toBe(174 / 72);
   expect(sumWindow(frames, 0, 24)!.values[0].loadPerVehicleHour).toBe(300 / 144);
-  expect(valueColor(69.9, VEHICLE_LOAD_THRESHOLDS)).toBe(COLORS[3]);
-  expect(valueColor(70, VEHICLE_LOAD_THRESHOLDS)).toBe(COLORS[4]);
+  expect(valueColor(49.9, VEHICLE_LOAD_THRESHOLDS)).toBe(COLORS[3]);
+  expect(valueColor(50, VEHICLE_LOAD_THRESHOLDS)).toBe(COLORS[4]);
   frames[9].values[0].vehicleHours = null;
   frames[9].values[0].fleetSource = 'missing';
   expect(sumWindow(frames, 8, 12)!.values[0]).toMatchObject({

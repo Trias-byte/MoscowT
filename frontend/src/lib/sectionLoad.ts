@@ -37,7 +37,7 @@ export interface SectionLoad {
   meanVehicles: number | null;
   hours: number;
   source: 'scenario' | 'missing';
-  modelVersion: typeof SECTION_MODEL_VERSION;
+  modelVersion: typeof SECTION_MODEL_VERSION | 'ordered-stop-scenario-v2';
 }
 
 function meters(a: number[], b: number[]) {

@@ -64,6 +64,20 @@ def test_disconnected_tracks_and_invalid_stop_order_are_rejected():
     assert ordered_path([[3, 2, 1], [3, 4, 5]], [1, 4, 5]) == ([1, 2, 3, 4, 5], [0, 3, 4])
 
 
+def test_date_selection_preserves_source_metadata_and_geometry(store):
+    from moscowt.storage import canonical
+
+    archive = store.read("networks", store.current()["networkId"])
+    before = {v["networkId"]: canonical(store.read("networks", v["networkId"])) for v in archive["versions"]}
+    first = resolve_network(store, archive, "2025-11-01")
+    expected = canonical(first)
+    resolve_network(store, archive, "2026-01-01")
+    resolve_network(store, archive, "2025-12-31")
+    assert canonical(first) == expected
+    assert canonical(resolve_network(store, archive, "2025-11-01")) == expected
+    assert all(canonical(store.read("networks", ident)) == content for ident, content in before.items())
+
+
 def test_bbox_checks_all_vertices_of_curved_segments(store, scope):
     network = resolve_network(store, store.read("networks", store.current()["networkId"]), "2025-11-01")
     segment = next(s for s in network["segments"] if len(s["coordinates"]) > 10)

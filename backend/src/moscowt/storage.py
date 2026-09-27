@@ -94,9 +94,11 @@ class SnapshotStore:
         except FileNotFoundError:
             return {}
 
-    def publish(self, **changes):
+    def publish(self, expected_snapshot_id=None, **changes):
         with self.lock():
             current = self.current()
+            if expected_snapshot_id is not None and current.get("snapshotId") != expected_snapshot_id:
+                raise DomainError("SNAPSHOT_CHANGED", "Текущий снимок изменился; обновите выбор", 409)
             current.update(changes)
             current.pop("snapshotId", None)
             current["snapshotId"] = "snapshot-" + digest(current)

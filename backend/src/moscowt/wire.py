@@ -21,6 +21,11 @@ class Meta(WireModel):
     historyId: str
     fleetId: str | None = None
     fleetMethod: str | None = None
+    datasetId: str | None = None
+    scenarioId: str | None = None
+    scheduleId: str | None = None
+    scheduleScenario: bool = False
+    availabilityPolicy: str = "retrospective_event_time"
     metric: Literal["successful_validations"]
     metricScope: Literal["route"]
     unit: Literal["validations"]
@@ -42,6 +47,8 @@ class RouteValue(WireModel):
     routeId: str
     provenance: Literal["observation", "forecast", "mixed", "missing"]
     value: float | None = Field(ge=0)
+    baseValue: float | None = Field(default=None, ge=0)
+    additionalVehicleHours: float = Field(default=0, ge=0)
     baseline: float | None = Field(ge=0)
     baselineCount: float | None
     valueOrigins: list[str]
@@ -51,7 +58,9 @@ class RouteValue(WireModel):
     fleetVehicles: float | None = Field(default=None, ge=0)
     vehicleHours: float | None = Field(default=None, ge=0)
     loadPerVehicleHour: float | None = Field(default=None, ge=0)
-    fleetSource: Literal["observed", "estimated", "mixed", "missing"] = "missing"
+    fleetSource: Literal[
+        "observed", "estimated", "mixed", "missing", "planned_duty", "stop_timetable_estimate"
+    ] = "missing"
     fleetSampleDays: int = 0
     fleetCoverage: float | None = Field(default=None, ge=0, le=1)
 

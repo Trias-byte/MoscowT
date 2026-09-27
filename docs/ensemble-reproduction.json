@@ -1,0 +1,29 @@
+{
+  "script_sha256": "ac131522b088e8b8b4dc8968894838f7b94818fdf7df43cddb22e69008e502dc",
+  "features_sha256": "1b3c174504a7824764d058ae98c14f6df50d34c587f1189eb6f0551e42fe12ef",
+  "output_sha256": "30084e398037b61ecc606de2f5bfbbc4125630b8de20466b065e41682932dab2",
+  "seconds": 102.68757067600382,
+  "peak_rss_bytes": 1189036032,
+  "environment": {
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "catboost": "1.2.10",
+    "lightgbm": "4.7.0",
+    "scikit-learn": "1.9.1",
+    "holidays": "0.105"
+  },
+  "models": [
+    "model_lgb_local",
+    "model_cat_local",
+    "model_rf_local",
+    "model_lgb",
+    "model_cat",
+    "model_rf"
+  ],
+  "keys_equal": true,
+  "predictions_equal": false,
+  "differing_predictions": 12038,
+  "sum_actual": 12438321,
+  "sum_reference": 12102911,
+  "max_absolute_difference": 714
+}

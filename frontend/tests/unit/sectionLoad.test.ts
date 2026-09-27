@@ -54,19 +54,17 @@ function network(): Network {
       });
     }
     const stops = n.stops.filter((s) => s.patternId === id);
-    stops
-      .slice(0, -1)
-      .forEach((s, i) =>
-        n.segments.push({
-          id: `${id}-e${i}`,
-          routeId: '1',
-          patternId: id,
-          fromId: s.id,
-          toId: stops[i + 1].id,
-          order: i,
-          coordinates: [s.coordinates, stops[i + 1].coordinates],
-        }),
-      );
+    stops.slice(0, -1).forEach((s, i) =>
+      n.segments.push({
+        id: `${id}-e${i}`,
+        routeId: '1',
+        patternId: id,
+        fromId: s.id,
+        toId: stops[i + 1].id,
+        order: i,
+        coordinates: [s.coordinates, stops[i + 1].coordinates],
+      }),
+    );
   }
   return n;
 }

@@ -29,6 +29,7 @@ export function makeScope(view: ViewState): Scope {
     grain: 'hour',
     aggregation: 'sum',
     snapshotId: view.snapshotId,
+    ...(view.scenarioId ? { scenarioId: view.scenarioId } : {}),
     geometry: view.geometry,
   };
 }

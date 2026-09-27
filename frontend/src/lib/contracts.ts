@@ -87,6 +87,10 @@ export const MetaSchema = z.object({
   historyId: z.string(),
   fleetId: z.string().nullable().optional(),
   fleetMethod: z.string().nullable().optional(),
+  datasetId: z.string().nullable().optional(),
+  scenarioId: z.string().nullable().optional(),
+  scheduleId: z.string().nullable().optional(),
+  scheduleScenario: z.boolean().optional(),
   metric: z.literal('successful_validations'),
   metricScope: z.literal('route'),
   unit: z.literal('validations'),
@@ -107,6 +111,8 @@ export const ValueSchema = z.object({
   routeId: z.string(),
   provenance: ProvenanceSchema,
   value: nullable,
+  baseValue: nullable.optional(),
+  additionalVehicleHours: z.number().nonnegative().optional(),
   baseline: nullable,
   baselineCount: nullable,
   valueOrigins: z.array(z.string()),
@@ -116,7 +122,9 @@ export const ValueSchema = z.object({
   fleetVehicles: nullable.optional(),
   vehicleHours: nullable.optional(),
   loadPerVehicleHour: nullable.optional(),
-  fleetSource: z.enum(['observed', 'estimated', 'mixed', 'missing']).optional(),
+  fleetSource: z
+    .enum(['observed', 'estimated', 'mixed', 'missing', 'planned_duty', 'stop_timetable_estimate'])
+    .optional(),
   fleetSampleDays: z.number().int().nonnegative().optional(),
   fleetCoverage: z.number().min(0).max(1).nullable().optional(),
 });
@@ -199,6 +207,7 @@ export interface Scope {
   grain: 'hour' | 'day';
   aggregation: 'sum';
   snapshotId: string;
+  scenarioId?: string;
   geometry: GeometryScope;
 }
 export interface ViewState {
@@ -208,6 +217,7 @@ export interface ViewState {
   windowHours: WindowHours;
   date: string;
   snapshotId: string;
+  scenarioId?: string;
   index: number;
   geometry: GeometryScope;
 }

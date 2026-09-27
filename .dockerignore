@@ -1,8 +1,11 @@
 .git
 analysis
-dataset
+dataset/*
+!dataset/derived
+dataset/derived/*
+!dataset/derived/schedules-2025
 artifacts
-deliverables
+deliverables/*
 **/node_modules
 **/.venv
 **/dist
@@ -13,3 +16,7 @@ deliverables
 **/.ruff_cache
 **/*.tsbuildinfo
 **/.env.local
+artifacts-data
+outputs
+!deliverables/platform-demo.tar.gz.part-*
+!deliverables/competition-template.csv

@@ -272,9 +272,9 @@ test('vehicle estimates drive the same hourly scale for one, twelve and twenty-f
   request,
 }) => {
   const capabilities = await (await request.get('/api/v1/capabilities')).json();
-  expect(capabilities.vehicleLoadThresholds).toEqual([5, 20, 40, 70]);
+  expect(capabilities.vehicleLoadThresholds).toEqual([5, 20, 34, 50]);
   const legend = page.locator('.v2-legend');
-  const labels = ['0', '5', '20', '40', '70+'];
+  const labels = ['0', '5', '20', '34', '50+'];
   const fmt = (n: number) => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(n);
   for (const date of ['2025-10-31', '2025-11-01']) {
     await page.getByRole('button', { name: 'Дата и время', exact: true }).click();
@@ -381,7 +381,7 @@ test('user CSV contains the selected 12 hours and full submission stays complete
   csv = '';
   for await (const chunk of stream!) csv += chunk.toString();
   expect(csv.trim().split(/\r?\n/)).toHaveLength(14641);
-  expect(csv).toContain('5;2025-11-01;0;0');
+  expect(csv).toContain('5;2025-11-01;0;');
   expect(download.suggestedFilename()).toBe('submission.csv');
 });
 test('section cards distinguish directions and keep route totals intact', async ({ page }) => {

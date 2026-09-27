@@ -12,6 +12,8 @@ def main():
     parser = argparse.ArgumentParser(description="MoscowT reproducible preparation and forecast commands")
     parser.add_argument("--state-dir", type=Path)
     parser.add_argument("--dataset-dir", type=Path)
+    parser.add_argument("--data-root", type=Path)
+    parser.add_argument("--source-dir", type=Path)
     sub = parser.add_subparsers(dest="command", required=True)
     for name in ("prepare-labels", "prepare-network", "prepare-fleet", "backtest"):
         sub.add_parser(name)
@@ -29,14 +31,52 @@ def main():
     serve.add_argument("--port", type=int, default=8000)
     sub.add_parser("bootstrap")
     sub.add_parser("openapi")
+    worker = sub.add_parser("worker")
+    worker.add_argument("--channel", choices=["general", "model"], required=True)
+    demo = sub.add_parser("demo-prepare")
+    demo.add_argument("--weather-dir", type=Path)
+    demo.add_argument("--schedule", type=Path)
+    demo.add_argument("--quick", action="store_true")
+    restore = sub.add_parser("restore")
+    restore.add_argument("archive", type=Path)
+    sub.add_parser("bundle")
     args = parser.parse_args()
     settings = Settings()
-    if args.state_dir:
-        settings.state_dir = args.state_dir
-    if args.dataset_dir:
-        settings.dataset_dir = args.dataset_dir
+    settings = Settings(
+        **{
+            name: getattr(args, name)
+            for name in ("state_dir", "dataset_dir", "data_root", "source_dir")
+            if getattr(args, name) is not None
+        }
+    )
+    if args.command == "restore":
+        from .bundles import restore_bundle
+
+        print(json.dumps(restore_bundle(args.archive, settings)))
+        return
     store = SnapshotStore(settings.state_dir)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
+    if args.command == "worker":
+        from .platform_worker import run
+
+        run(settings, args.channel)
+        return
+    if args.command == "bundle":
+        from .bundles import create_bundle
+
+        print(json.dumps(create_bundle(settings, "portable")))
+        return
+    if args.command == "demo-prepare":
+        from .demo import prepare_demo
+
+        print(
+            json.dumps(
+                prepare_demo(settings, args.weather_dir, args.schedule, args.quick),
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return
     if args.command == "serve":
         import uvicorn
 
@@ -61,7 +101,9 @@ def main():
     from .pipelines import prepare_labels, prepare_network
 
     if args.command == "prepare-labels":
-        result = prepare_labels(store, settings.dataset_dir)
+        result = prepare_labels(
+            store, settings.source_dir if (settings.source_dir / "labels").exists() else settings.dataset_dir
+        )
     elif args.command == "prepare-fleet":
         result = prepare_fleet(store, settings.dataset_dir)
     elif args.command == "prepare-network":
@@ -85,7 +127,9 @@ def main():
             args.snapshot_id or store.current()["snapshotId"], args.output
         )
     elif args.command == "bootstrap":
-        history = prepare_labels(store, settings.dataset_dir)
+        history = prepare_labels(
+            store, settings.source_dir if (settings.source_dir / "labels").exists() else settings.dataset_dir
+        )
         prepare_fleet(store, settings.dataset_dir)
         prepare_network(store, settings.dataset_dir)
         report = backtest(store, history["id"])

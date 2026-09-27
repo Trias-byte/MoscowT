@@ -11,7 +11,7 @@ from .domain import HISTORY_END, HISTORY_START, ROUTES, TZ, DomainError
 from .service_calendar import profile_weekday
 from .storage import digest
 
-VEHICLE_LOAD_THRESHOLDS = [5, 20, 40, 70]
+VEHICLE_LOAD_THRESHOLDS = [5, 20, 34, 50]
 
 
 def prepare_fleet(store, dataset):
@@ -96,8 +96,8 @@ def missing():
 
 
 class FleetService:
-    def __init__(self, store):
-        self.store = store
+    def __init__(self, store, data_root=None):
+        self.store, self.data_root = store, data_root
 
     def observed(self, fleet_id, route, timestamp):
         data = self.store.read("fleets", fleet_id)
@@ -160,6 +160,25 @@ class FleetService:
         }
 
     def hours(self, snapshot, start, route, sources, issued_at):
+        if snapshot.get("scheduleId") and self.data_root:
+            from .domain import TimeRange
+            from .schedules import ScheduleService
+
+            records = ScheduleService(self.data_root).hours(
+                snapshot["scheduleId"],
+                TimeRange(start=start, end=start + timedelta(hours=len(sources))),
+                [route],
+                scenario=snapshot.get("scheduleScenario", False),
+            )
+            return [
+                {
+                    "vehicles": r["vehicle_hours"],
+                    "source": r["method"],
+                    "sampleDays": 0,
+                    "coverage": 1.0 if r["vehicle_hours"] is not None else None,
+                }
+                for r in records
+            ]
         fleet_id = snapshot.get("fleetId")
         if not fleet_id:
             return [missing() for _ in sources]

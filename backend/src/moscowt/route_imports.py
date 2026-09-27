@@ -75,8 +75,8 @@ def parse_route_csv(text: str, filename: str):
                 raise ValueError
         except ValueError:
             invalid("Даты должны иметь формат YYYY-MM-DD")
-    if not "2025-01-01" <= head["valid_from"] < head["valid_to"] <= "2026-01-01":
-        invalid("Период должен быть внутри 2025 года; valid_to — первый день без этой версии")
+    if not head["valid_from"] < head["valid_to"]:
+        invalid("valid_to должен быть позже valid_from; это первый день без этой версии")
     groups = defaultdict(list)
     station_positions = {}
     for line, row in enumerate(rows, 2):

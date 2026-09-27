@@ -61,9 +61,19 @@ def resolve_network(store: SnapshotStore, archive: dict, day: str | None = None)
     except ValueError:
         raise DomainError("INVALID_GEOMETRY_DATE", "Ожидается дата YYYY-MM-DD") from None
     version = next((v for v in archive["versions"] if v["validFrom"] <= day < v["validTo"]), None)
-    if not version:
-        raise DomainError("GEOMETRY_DATE_UNAVAILABLE", "Архив маршрутов доступен с 01.01 по 31.12.2025")
-    value = deepcopy(store.read("networks", version["networkId"]))
+    unavailable = version is None
+    if unavailable:
+        version = archive["versions"][-1]
+    source = store.read("networks", version["networkId"])
+    # Coordinates are immutable. Copy only records whose metadata or membership
+    # changes during date selection, rather than every point of the Moscow map.
+    value = {
+        **source,
+        "routes": [dict(route) for route in source["routes"]],
+        "patterns": [dict(pattern) for pattern in source["patterns"]],
+        "stops": list(source["stops"]),
+        "segments": list(source["segments"]),
+    }
     value.update(
         networkSnapshotId=archive["networkSnapshotId"],
         asOf=day,
@@ -75,6 +85,11 @@ def resolve_network(store: SnapshotStore, archive: dict, day: str | None = None)
     )
     for pattern in value["patterns"]:
         pattern.update(validFrom=version["validFrom"], validTo=version["validTo"], sourceKind="osm_archive")
+    if unavailable:
+        remove_patterns(value, {p["id"] for p in value["patterns"]})
+        value["warning"] = (
+            "На эту дату нет архивной геометрии; показаны только применимые пользовательские трассы"
+        )
     # Official opening takes precedence over an earlier planned OSM relation.
     if day < "2025-12-16":
         remove_patterns(value, {p["id"] for p in value["patterns"] if p["routeId"] == "5"})

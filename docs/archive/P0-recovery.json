@@ -1,0 +1,11 @@
+{
+  "snapshotId": "snapshot-a8c0de3fc04710e998d35944",
+  "jobId": "1e309897e600479a96f63853254dc5c3",
+  "statusBeforeKill": "running",
+  "statusAfterRecovery": "ready",
+  "killedWorkerPid": 10,
+  "idempotencyVerified": true,
+  "rows": 14640,
+  "sha256": "1724418353516da1a59dcfdcbd68cc7e78e38176092d308b58587d5c9f5d41f3",
+  "containerRestartPreservedFile": true
+}

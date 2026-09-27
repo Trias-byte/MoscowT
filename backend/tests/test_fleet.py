@@ -135,7 +135,7 @@ def test_reusing_a_history_resets_fleet_only_when_history_changes(store, dataset
 def test_api_vehicle_counts_match_raw_day_and_forecast_export(client, store, scope):
     capabilities = client.get("/api/v1/capabilities").json()
     assert capabilities["fleetId"] == store.current()["fleetId"]
-    assert capabilities["vehicleLoadThresholds"] == [5, 20, 40, 70]
+    assert capabilities["vehicleLoadThresholds"] == [5, 20, 34, 50]
     scope.update(
         mode="auto",
         routeIds=["17"],

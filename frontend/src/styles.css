@@ -4586,3 +4586,137 @@ dialog::backdrop {
   display: grid;
   gap: 8px;
 }
+
+.platform-panel {
+  position: fixed;
+  z-index: 40;
+  right: 20px;
+  top: 76px;
+  width: min(440px, calc(100vw - 32px));
+  border: 1px solid #cad9d3;
+  border-radius: 12px;
+  background: #f8fbf9;
+  color: #203e35;
+  box-shadow: 0 6px 24px #193a3328;
+}
+.platform-toggle {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  background: #174e42;
+  color: white;
+  border-radius: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.platform-body {
+  overflow: auto;
+  max-height: calc(100vh - 150px);
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.platform-body label {
+  display: block;
+  margin: 10px 0;
+}
+.platform-body input:not([type='checkbox']),
+.platform-body select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #b8ccc3;
+  border-radius: 5px;
+  background: white;
+  color: #203e35;
+  margin: 4px 0;
+}
+.platform-body fieldset {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  border: 1px solid #d4ded9;
+  padding: 8px;
+}
+.platform-body fieldset input {
+  min-width: 0;
+}
+.platform-body button {
+  margin: 5px 7px 5px 0;
+  padding: 7px 10px;
+  border: 1px solid #789e91;
+  background: #e5f1eb;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.platform-body button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.platform-body summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding: 10px 0;
+}
+.platform-body details {
+  border-top: 1px solid #d4ded9;
+  margin-top: 10px;
+}
+.platform-body pre {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 11px;
+  background: #edf3ef;
+  padding: 8px;
+}
+.platform-error {
+  color: #8e251d;
+  background: #ffeded;
+  padding: 10px;
+  border-radius: 5px;
+}
+.platform-job {
+  border-left: 3px solid #82ad9c;
+  padding-left: 10px;
+  margin: 12px 0;
+}
+@media (max-width: 700px) {
+  .platform-panel {
+    right: 8px;
+    top: auto;
+    bottom: 12px;
+  }
+  .platform-panel:not(.expanded) {
+    width: 210px;
+  }
+  .platform-panel.expanded {
+    bottom: 8px;
+  }
+  .platform-body {
+    max-height: calc(100dvh - 160px);
+  }
+}
+
+.platform-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 8px 0;
+}
+.platform-panel th,
+.platform-panel td {
+  padding: 5px;
+  border-bottom: 1px solid #d8e0e5;
+  text-align: right;
+}
+.platform-panel th:first-child,
+.platform-panel td:first-child {
+  text-align: left;
+}
+.platform-series {
+  max-height: 280px;
+  overflow: auto;
+}
