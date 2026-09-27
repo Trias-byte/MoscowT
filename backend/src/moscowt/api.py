@@ -6,11 +6,12 @@ import threading
 import time
 from collections import OrderedDict
 from contextlib import asynccontextmanager
-from datetime import date as CalendarDate
+from datetime import date as CalendarDate, datetime
 
 import anyio
 from fastapi import FastAPI, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from prometheus_client import (
@@ -138,7 +139,25 @@ def create_app(settings: Settings | None = None):
                 process.terminate()
                 await asyncio.to_thread(process.join, 2)
 
-    app = FastAPI(title="MoscowT route-hour API", version="2.0.0", lifespan=lifespan)
+    app = FastAPI(
+        title="MoscowT route-hour API",
+        version="2.0.0",
+        lifespan=lifespan,
+        docs_url=None,
+        redoc_url=None,
+    )
+
+    @app.get("/docs", include_in_schema=False)
+    def api_documentation():
+        return get_swagger_ui_html(
+            openapi_url=app.openapi_url,
+            title="MoscowT API",
+            swagger_js_url="/assets/docs/swagger-ui-bundle.js",
+            swagger_css_url="/assets/docs/swagger-ui.css",
+            swagger_favicon_url="/favicon.svg",
+            swagger_ui_parameters={"validatorUrl": None},
+        )
+
     app.state.store, app.state.jobs, app.state.cache = store, jobs, cache
     app.add_middleware(
         CORSMiddleware,
@@ -290,7 +309,14 @@ def create_app(settings: Settings | None = None):
             "unsupportedMetricScopes": ["stop", "segment", "direction", "vehicle"],
             "modes": ["auto"] + (["history"] if history else []) + (["forecast"] if run else []),
             "horizons": ["day", "month"]
-            + (["year"] if any(o["kind"] == "annual_scenario" for o in options) else [])
+            + (
+                ["year"]
+                if any(
+                    (datetime.fromisoformat(o["end"]) - datetime.fromisoformat(o["origin"])).days >= 365
+                    for o in options
+                )
+                else []
+            )
             + (["competition_61d"] if run and run["horizon"] == "competition_61d" else []),
             "grains": ["hour", "day"],
             "exportFormats": ["csv"],
@@ -475,6 +501,9 @@ def create_app(settings: Settings | None = None):
     from .platform_api import router
 
     app.include_router(router(settings, data, store, cache))
+    from .passenger_api import router as passenger_router
+
+    app.include_router(passenger_router(settings, store, data))
 
     if settings.frontend_dir.is_dir():
         assets = settings.frontend_dir / "assets"

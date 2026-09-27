@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from pydantic import Field
 
-from ..domain import DomainError, StrictModel
+from ..domain import TZ, DomainError, StrictModel
+from .competition import CompetitionAdapter
 from .contracts import ModelAdapter
 from .features import FEATURE_VERSION, FeatureBuilder
 
@@ -155,12 +156,18 @@ class AnnualScenarioAdapter(SeasonalAdapter):
 
 
 def target_grid(spec):
-    times = pd.date_range(spec.time_range.start, spec.time_range.end, freq="h", inclusive="left")
+    times = pd.date_range(
+        pd.Timestamp(spec.time_range.start).tz_convert(TZ),
+        pd.Timestamp(spec.time_range.end).tz_convert(TZ),
+        freq="h",
+        inclusive="left",
+    )
     return pd.MultiIndex.from_product([sorted(spec.route_ids), times], names=["route", "timestamp"]).to_frame(
         index=False
     )
 
 
 ADAPTERS = {
-    adapter.name: adapter for adapter in (SeasonalAdapter(), EnsembleAdapter(), AnnualScenarioAdapter())
+    adapter.name: adapter
+    for adapter in (SeasonalAdapter(), EnsembleAdapter(), AnnualScenarioAdapter(), CompetitionAdapter())
 }

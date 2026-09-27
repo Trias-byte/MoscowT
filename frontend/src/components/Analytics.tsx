@@ -7,10 +7,12 @@ import { intervalLabel, dateLabel, hour } from '../lib/time';
 import { number, sourceLabel } from '../lib/domain';
 import { dynamicsTooltip, ROUTE_COLORS } from '../lib/dynamics';
 import { Modal } from './Dialogs';
-export type ChartTab = 'dynamics' | 'comparison' | 'heatmap' | 'table';
+import { PassengerPanel } from './Passengers';
+export type ChartTab = 'dynamics' | 'comparison' | 'heatmap' | 'table' | 'passengers';
 export function Analytics(p: {
   data: ViewData;
   scope: Scope;
+  passengerScope: Scope;
   frame?: Frame;
   tab: ChartTab;
   onTab: (tab: ChartTab) => void;
@@ -149,6 +151,7 @@ export function Analytics(p: {
             ['comparison', 'Сравнение маршрутов'],
             ['heatmap', 'Тепловая матрица'],
             ['table', 'Таблица'],
+            ['passengers', 'Пассажиры'],
           ] as const
         ).map(([id, label]) => (
           <button role="tab" aria-selected={p.tab === id} key={id} onClick={() => p.onTab(id)}>
@@ -156,81 +159,87 @@ export function Analytics(p: {
           </button>
         ))}
       </div>
-      <div className="analytics-caption-row">
-        <div className="v2-chart-caption">
-          {p.tab === 'comparison'
-            ? 'Сумма по маршрутам за выбранный интервал'
-            : p.tab === 'dynamics'
-              ? 'Динамика выбранных маршрутов · нажмите номер, чтобы скрыть или показать линию'
-              : p.tab === 'heatmap'
-                ? 'Весь день по часам · нажмите ячейку для выбора часа'
-                : 'Маршрутные значения выбранного интервала'}{' '}
-          · успешные валидации
-        </div>
-        {p.tab === 'dynamics' && (
-          <button className="analytics-expand" onClick={() => setExpanded(true)}>
-            <Maximize2 size={15} />
-            Развернуть график
-          </button>
-        )}
-      </div>
-      {p.tab === 'dynamics' && controls()}
-      {p.tab === 'table' ? (
-        <div className="v2-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Маршрут</th>
-                <th>Значение</th>
-                <th>Источник</th>
-                <th>Среднее</th>
-                <th>Покрытие</th>
-                <th>Вагонов в среднем · оценка</th>
-                <th>На вагон в час</th>
-              </tr>
-            </thead>
-            <tbody>
-              {frame?.values.map((v) => (
-                <tr key={v.routeId}>
-                  <td>
-                    <button onClick={() => p.onSelect(v.routeId)}>№ {v.routeId}</button>
-                  </td>
-                  <td>{number(v.value)}</td>
-                  <td>{sourceLabel(v.provenance)}</td>
-                  <td>{number(v.baseline)}</td>
-                  <td>
-                    {v.coverageStatus === 'missing'
-                      ? 'Нет данных'
-                      : v.qualityFlags.length
-                        ? 'Требует проверки'
-                        : v.historySupport === 'no_positive_history'
-                          ? 'Нет положительной истории'
-                          : v.provenance === 'forecast'
-                            ? 'Модельная оценка'
-                            : 'Предоставленная выгрузка'}
-                  </td>
-                  <td>{number(v.fleetVehicles)}</td>
-                  <td>{number(v.loadPerVehicleHour)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {p.tab === 'passengers' ? (
+        <PassengerPanel scope={p.passengerScope} />
       ) : (
-        <Chart
-          option={option}
-          label={`${p.tab === 'heatmap' ? 'Тепловая матрица маршрутов' : 'График успешных валидаций'}; числовая альтернатива во вкладке Таблица`}
-          onSelect={(index, value) => {
-            if (p.tab === 'heatmap' && Array.isArray(value))
-              p.onSelect(p.data.heatmap.routeIds[value[1]], value[0]);
-            else if (p.tab === 'comparison') p.onSelect(frame!.values[index].routeId);
-          }}
-        />
+        <>
+          <div className="analytics-caption-row">
+            <div className="v2-chart-caption">
+              {p.tab === 'comparison'
+                ? 'Сумма по маршрутам за выбранный интервал'
+                : p.tab === 'dynamics'
+                  ? 'Динамика выбранных маршрутов · нажмите номер, чтобы скрыть или показать линию'
+                  : p.tab === 'heatmap'
+                    ? 'Весь день по часам · нажмите ячейку для выбора часа'
+                    : 'Маршрутные значения выбранного интервала'}{' '}
+              · успешные валидации
+            </div>
+            {p.tab === 'dynamics' && (
+              <button className="analytics-expand" onClick={() => setExpanded(true)}>
+                <Maximize2 size={15} />
+                Развернуть график
+              </button>
+            )}
+          </div>
+          {p.tab === 'dynamics' && controls()}
+          {p.tab === 'table' ? (
+            <div className="v2-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Маршрут</th>
+                    <th>Значение</th>
+                    <th>Источник</th>
+                    <th>Среднее</th>
+                    <th>Покрытие</th>
+                    <th>Вагонов в среднем · оценка</th>
+                    <th>На вагон в час</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {frame?.values.map((v) => (
+                    <tr key={v.routeId}>
+                      <td>
+                        <button onClick={() => p.onSelect(v.routeId)}>№ {v.routeId}</button>
+                      </td>
+                      <td>{number(v.value)}</td>
+                      <td>{sourceLabel(v.provenance)}</td>
+                      <td>{number(v.baseline)}</td>
+                      <td>
+                        {v.coverageStatus === 'missing'
+                          ? 'Нет данных'
+                          : v.qualityFlags.length
+                            ? 'Требует проверки'
+                            : v.historySupport === 'no_positive_history'
+                              ? 'Нет положительной истории'
+                              : v.provenance === 'forecast'
+                                ? 'Модельная оценка'
+                                : 'Предоставленная выгрузка'}
+                      </td>
+                      <td>{number(v.fleetVehicles)}</td>
+                      <td>{number(v.loadPerVehicleHour)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Chart
+              option={option}
+              label={`${p.tab === 'heatmap' ? 'Тепловая матрица маршрутов' : 'График успешных валидаций'}; числовая альтернатива во вкладке Таблица`}
+              onSelect={(index, value) => {
+                if (p.tab === 'heatmap' && Array.isArray(value))
+                  p.onSelect(p.data.heatmap.routeIds[value[1]], value[0]);
+                else if (p.tab === 'comparison') p.onSelect(frame!.values[index].routeId);
+              }}
+            />
+          )}
+          <small>
+            {frame ? intervalLabel(frame.start, frame.end, p.scope.grain) : 'Нет данных'} · МСК ·{' '}
+            {p.data.meta.snapshotId}
+          </small>
+        </>
       )}
-      <small>
-        {frame ? intervalLabel(frame.start, frame.end, p.scope.grain) : 'Нет данных'} · МСК ·{' '}
-        {p.data.meta.snapshotId}
-      </small>
       {expanded && (
         <Modal
           title="Динамика маршрутов"

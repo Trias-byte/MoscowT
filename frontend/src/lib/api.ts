@@ -1,3 +1,11 @@
+import { ApiClient } from '../services/ApiClient';
+import {
+  API_V1_BASE,
+  DEMO,
+  DOWNLOAD_REVOKE_MS,
+  EXPORT_POLL_MS,
+  EXPORT_TIMEOUT_MS,
+} from '../constants/api';
 import { z } from 'zod';
 import {
   CapabilitiesSchema,
@@ -10,10 +18,10 @@ import {
   GeometrySchema,
 } from './contracts';
 import type { Scope, ViewData, Frame } from './contracts';
-export const DEMO = import.meta.env.VITE_DEMO === 'true';
-const BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/$/, '');
+const client = new ApiClient(API_V1_BASE);
+export { DEMO } from '../constants/api';
 export const serviceDatasetUrl = (filename: string) =>
-  `${BASE}/service-dataset-2025/${encodeURIComponent(filename)}`;
+  client.url(`/service-dataset-2025/${encodeURIComponent(filename)}`);
 export async function request<T>(
   path: string,
   schema: z.ZodType<T>,
@@ -21,24 +29,9 @@ export async function request<T>(
   body?: unknown,
   headers?: Record<string, string>,
 ): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    signal,
-    method: body === undefined ? 'GET' : 'POST',
-    headers: { 'Content-Type': 'application/json', ...headers },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-  if (!res.ok) {
-    let message = `Ошибка API (HTTP ${res.status})`;
-    try {
-      const error = await res.json();
-      message = error.error?.message || message;
-    } catch {
-      /* Keep HTTP error. */
-    }
-    throw new Error(message);
-  }
-  return schema.parse(await res.json());
+  return client.request(path, schema, { signal, body, headers });
 }
+
 export async function getCapabilities(signal?: AbortSignal) {
   return DEMO
     ? (await import('../data/demo')).capabilities
@@ -148,7 +141,7 @@ export function download(blob: Blob, name: string) {
   a.href = url;
   a.download = name;
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_REVOKE_MS);
 }
 export function createDemoCsv(frames: Frame[], scope: Scope) {
   return (
@@ -170,7 +163,7 @@ async function pause(signal: AbortSignal) {
     const timer = setTimeout(() => {
       signal.removeEventListener('abort', cancel);
       resolve();
-    }, 500);
+    }, EXPORT_POLL_MS);
     signal.addEventListener('abort', cancel, { once: true });
   });
 }
@@ -194,7 +187,7 @@ export async function exportData(
   let job = await request(submission ? '/submissions' : '/exports', JobSchema, signal, body, {
     'Idempotency-Key': crypto.randomUUID(),
   });
-  const deadline = Date.now() + 300000;
+  const deadline = Date.now() + EXPORT_TIMEOUT_MS;
   while (job.status !== 'ready') {
     if (job.status === 'failed' || Date.now() > deadline)
       throw new Error(job.error || 'Экспорт не завершён за 5 минут');
@@ -202,7 +195,7 @@ export async function exportData(
     job = await request(`/jobs/${job.id}`, JobSchema, signal);
   }
   if (!job.downloadUrl) throw new Error('Ссылка на файл отсутствует');
-  const url = new URL(job.downloadUrl, new URL(`${BASE}/`, location.origin));
+  const url = new URL(job.downloadUrl, new URL(`${API_V1_BASE}/`, location.origin));
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error('Не удалось скачать файл');
   download(await response.blob(), submission ? 'submission.csv' : 'validations.csv');

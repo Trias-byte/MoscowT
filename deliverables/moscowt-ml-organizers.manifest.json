@@ -1,0 +1,69 @@
+{
+  "archive": "moscowt-ml-organizers.zip",
+  "sha256": "42a7957e957675868e93c2f7d3405325d003574e532bc4b7e520626a1fca9bbf",
+  "bytes": 1402372,
+  "files": 33,
+  "submitted_forecast_sha256": "4adcc1b06ccd53eeddee5637560919396483809fc2da696cae3c1cba013a8d95",
+  "notebook": "moscowt-ml-organizers/training_and_inference.ipynb",
+  "verification": {
+    "environment": {
+      "python": "3.12.12",
+      "numpy": "2.5.3",
+      "pandas": "2.3.3",
+      "catboost": "1.2.10"
+    },
+    "threads": 4,
+    "training_rows": 59760,
+    "features": 34,
+    "saved_models_export": {
+      "rows": 14640,
+      "total": 12629114,
+      "sha256": "4adcc1b06ccd53eeddee5637560919396483809fc2da696cae3c1cba013a8d95",
+      "matches_reference": true,
+      "rounding": "half-even, once after averaging"
+    },
+    "retrained_export": {
+      "rows": 14640,
+      "total": 12629114,
+      "sha256": "4adcc1b06ccd53eeddee5637560919396483809fc2da696cae3c1cba013a8d95",
+      "matches_reference": true,
+      "rounding": "half-even, once after averaging"
+    },
+    "retraining_comparison": {
+      "max_abs_raw_difference": 0.0,
+      "csv_matches_submitted_file": true
+    },
+    "september_metrics": {
+      "rows": 14640,
+      "target_sum": 12754481.0,
+      "absolute_error": 2239837.0,
+      "wape": 0.17561177126689828,
+      "score": 0.8243882287331017,
+      "mae": 152.99433060109288,
+      "bias": -83.96127049180328
+    },
+    "september_matches_original": true,
+    "contract_tests": 5,
+    "contract_tests_passed": true,
+    "elapsed_seconds": 39.953631771999426,
+    "original_feature_matrix_equality": {
+      "rows": 59760,
+      "features": 34,
+      "target_and_feature_values_identical": true
+    },
+    "validation_environment": "Fresh Python 3.12 virtual environment; no application installed"
+  },
+  "extracted_release_validation": {
+    "status": "passed",
+    "isolated_temporary_directory": true,
+    "application_installed": false,
+    "checked_commands": [
+      "verify",
+      "audit",
+      "predict --require-reference",
+      "unittest discover -s tests -v"
+    ],
+    "contract_tests_passed": 5,
+    "submission_rows": 14640
+  }
+}

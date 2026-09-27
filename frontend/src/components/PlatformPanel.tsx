@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Job, Loose, platform, upload } from '../lib/platform';
 import { usePlatform } from '../lib/usePlatform';
 import { dates, ids, JobsPanel, Period } from './PlatformFields';
 import { ModelControls } from './ModelControls';
 import { ExternalEvidence } from './ExternalEvidence';
+import { PassengerPassport } from './Passengers';
 
 export function PlatformPanel({
   onPublished,
@@ -23,7 +24,35 @@ export function PlatformPanel({
     [routes, setRoutes] = useState('');
   const [name, setName] = useState('История валидаций'),
     [newDataset, setNewDataset] = useState(false);
-  const [period, setPeriod] = useState<[string, string]>(['2025-09-01', '2025-10-01']);
+  const [period, setPeriod] = useState<[string, string]>(['', '']);
+  const [completedUpdate, setCompletedUpdate] = useState<{
+    model_id?: string;
+    forecast_id?: string;
+  }>();
+  const seenJobs = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!jobs.data) return;
+    const finished = jobs.data.filter((j) => ['ready', 'failed', 'cancelled'].includes(j.status));
+    if (!seenJobs.current) {
+      seenJobs.current = new Set(finished.map((j) => j.id));
+      return;
+    }
+    for (const job of [...finished].reverse()) {
+      if (seenJobs.current.has(job.id)) continue;
+      seenJobs.current.add(job.id);
+      const result = job.result || job.update;
+      if (
+        ['import_apply', 'model_refresh'].includes(job.kind) &&
+        typeof result?.dataset_id === 'string'
+      )
+        setDatasetId(result.dataset_id);
+      if (job.kind === 'model_refresh' && job.status === 'ready')
+        setCompletedUpdate({
+          model_id: typeof result?.model_id === 'string' ? result.model_id : undefined,
+          forecast_id: typeof result?.forecast_id === 'string' ? result.forecast_id : undefined,
+        });
+    }
+  }, [jobs.data]);
   const [kind, setKind] = useState('labels'),
     [mode, setMode] = useState('append'),
     [complete, setComplete] = useState(false);
@@ -41,6 +70,10 @@ export function PlatformPanel({
     if (selected) {
       setRoutes(selected.routes.join(','));
       setName(selected.name || 'История валидаций');
+      const start = (selected.forecast_origin || selected.end).slice(0, 10);
+      const end = new Date(`${start}T00:00:00Z`);
+      end.setUTCMonth(end.getUTCMonth() + 1);
+      setPeriod([start, end.toISOString().slice(0, 10)]);
     }
   }, [selected]);
   async function act(fn: () => Promise<unknown>) {
@@ -100,6 +133,38 @@ export function PlatformPanel({
                   ? new Date(selected.created_at).toLocaleString('ru')
                   : 'Существующий архив'}
               </p>
+              <p>
+                Последние факты:{' '}
+                {selected.last_observation
+                  ? new Date(selected.last_observation).toLocaleString('ru', {
+                      timeZone: 'Europe/Moscow',
+                    })
+                  : 'нет'}{' '}
+                · МСК.
+              </p>
+              {selected.route_coverage && (
+                <details>
+                  <summary>Покрытие маршрутов</summary>
+                  {Object.entries(selected.route_coverage).map(([route, coverage]) => (
+                    <p key={route}>
+                      № {route}: {coverage.known_hours} известных часов, {coverage.missing_hours}{' '}
+                      пропусков; последние факты{' '}
+                      {coverage.last_observation
+                        ? new Date(coverage.last_observation).toLocaleString('ru', {
+                            timeZone: 'Europe/Moscow',
+                          })
+                        : 'отсутствуют'}
+                      .
+                    </p>
+                  ))}
+                </details>
+              )}
+              <button
+                disabled={busy}
+                onClick={() => act(() => platform(`/datasets/${datasetId}/refresh-model`, Job, {}))}
+              >
+                Обновить модель и прогноз
+              </button>
               <details>
                 <summary>Исходные файлы и происхождение</summary>
                 <pre>{JSON.stringify(selected.imports, null, 2)}</pre>
@@ -248,9 +313,11 @@ export function PlatformPanel({
             scheduleId={scheduleId}
             reuse={reuse}
             onPublished={onPublished}
+            completedUpdate={completedUpdate}
           />
         )}
         {data.data && <ExternalEvidence external={data.data.external} />}
+        <PassengerPassport />
         <button onClick={onHelp} disabled={!onHelp}>
           О данных и ограничениях
         </button>

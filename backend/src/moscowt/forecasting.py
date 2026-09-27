@@ -6,19 +6,12 @@ import catboost
 import numpy as np
 import pandas as pd
 
+from .constants.forecasting import (
+    RECIPE as RECIPE,
+)
 from .domain import HISTORY_END, HISTORY_START, ROUTES, TZ, DomainError
 from .pipelines import parquet_write
 from .storage import SnapshotStore, atomic_write, digest, file_hash, write_json
-
-RECIPE = {
-    "schema": 2,
-    "iterations": 800,
-    "depth": 6,
-    "learning_rate": 0.05,
-    "loss_function": "MAE",
-    "random_seed": 42,
-    "thread_count": 2,
-}
 
 
 def features(frame: pd.DataFrame) -> pd.DataFrame:

@@ -1,3 +1,5 @@
+import { COLORS, HOURLY_LOAD_THRESHOLDS } from '../constants/domain';
+export { COLORS, HOURLY_LOAD_THRESHOLDS, VEHICLE_LOAD_THRESHOLDS } from '../constants/domain';
 import type { Frame, Provenance } from './contracts';
 
 export const sourceLabel = (source?: Provenance) =>
@@ -68,10 +70,6 @@ export function sumWindow(frames: Frame[], startHour: number, hours: number): Fr
   };
 }
 
-export const COLORS = ['#93cdbd', '#46a995', '#167f78', '#e5a344', '#ce6b54'];
-// Rounded historical mean of route/day hourly peaks: 2,077.5 validations.
-export const HOURLY_LOAD_THRESHOLDS = [200, 600, 1200, 2000];
-export const VEHICLE_LOAD_THRESHOLDS = [5, 20, 34, 50];
 export const fleetSourceLabel = (source?: Frame['values'][number]['fleetSource']) =>
   source === 'scenario_service_assumption'
     ? 'Сценарная оценка выпуска'

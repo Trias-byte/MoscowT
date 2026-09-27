@@ -12,11 +12,12 @@ from urllib.request import urlopen
 import numpy as np
 import pandas as pd
 
+from .constants.factors import (
+    ACCIDENT_URL as ACCIDENT_URL,
+    WEATHER_COLUMNS as WEATHER_COLUMNS,
+)
 from .domain import DomainError
 from .storage import SnapshotStore, atomic_write, digest, file_hash
-
-WEATHER_COLUMNS = ("temperature_2m", "relative_humidity_2m", "precipitation")
-ACCIDENT_URL = "https://dtp-stat.ru/media/opendata/moskva.geojson.zip"
 
 
 class FactorRepository:
@@ -208,7 +209,31 @@ def factor_frame(root, kind, ident):
     return FactorRepository(root).read(kind, ident)
 
 
-def hourly_weather(root, ident, target, origin, observed=False):
+def hourly_weather(root, ident, target, origin, observed=False, forecast_id=None):
+    if forecast_id:
+        from .external import OpenMeteoForecastProvider
+
+        provider = OpenMeteoForecastProvider(root)
+        release = provider.store.read("weather_forecasts", forecast_id)
+        if pd.Timestamp(release["available_at"]) > origin:
+            raise DomainError("WEATHER_NOT_AVAILABLE", "Погодный выпуск получен после origin")
+        hourly = release["response"].get("hourly")
+        if not hourly:
+            raise DomainError("HOURLY_WEATHER_REQUIRED", "Выпуск не содержит почасовую погоду")
+        stamps = pd.to_datetime(hourly["time"]).tz_localize("Europe/Moscow")
+        covered = target.timestamp.isin(stamps) & target.timestamp.lt(
+            pd.Timestamp(origin) + pd.Timedelta(days=1)
+        )
+        result = pd.DataFrame(index=range(len(target)), columns=WEATHER_COLUMNS, dtype=float)
+        if covered.any():
+            result.loc[covered.to_numpy(), :] = provider.select_hourly(
+                forecast_id, target.loc[covered, "timestamp"], origin
+            ).to_numpy()
+        if (~covered).any():
+            result.loc[(~covered).to_numpy(), :] = hourly_weather(
+                root, ident, target.loc[~covered], origin, observed
+            ).to_numpy()
+        return result
     _, frame = factor_frame(root, "weather_hourly", ident)
     if observed:
         result = frame.set_index("timestamp")[list(WEATHER_COLUMNS)].reindex(target.timestamp)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
-import { Job, Loose, platform } from '../lib/platform';
+import { Forecast, Model, Job, Loose, platform } from '../lib/platform';
 import { usePlatform } from '../lib/usePlatform';
 import {
   emptyScenario,
@@ -16,6 +16,9 @@ import {
 } from '../lib/scenario';
 import { ids, JobsPanel } from './PlatformFields';
 import { Chart } from './Chart';
+import { ScenarioContext } from './ScenarioContext';
+import { factorNumber, factorRange } from '../lib/factorContext';
+import type { ObjectSelection } from '../lib/contracts';
 const Result = z.object({
   id: z.string(),
   base_total: z.number(),
@@ -44,6 +47,8 @@ export function ScenarioPanel({
   onClose,
   snapshotId,
   activeForecastId,
+  selectedObject,
+  selectedRouteId,
   selectedIncident,
   selectIncident,
 }: {
@@ -55,6 +60,8 @@ export function ScenarioPanel({
   onClose: () => void;
   snapshotId: string;
   activeForecastId?: string | null;
+  selectedObject: ObjectSelection;
+  selectedRouteId: string;
   selectedIncident: string | null;
   selectIncident: (id: string | null) => void;
 }) {
@@ -63,6 +70,28 @@ export function ScenarioPanel({
     [busy, setBusy] = useState(false);
   const { record, setDraft } = workspace;
   const { draft, mode, runs } = record;
+  const [showResearch, setShowResearch] = useState(false);
+  const selectedForecastId = draft.forecast_id || activeForecastId || '';
+  const selectedForecast = useQuery({
+    queryKey: ['scenario-selected-forecast', selectedForecastId],
+    enabled: !!selectedForecastId,
+    queryFn: () => platform(`/forecast-runs/${selectedForecastId}`, Forecast),
+  });
+  const research = useQuery({
+    queryKey: ['scenario-research-catalog'],
+    enabled: open && (showResearch || selectedForecast.data?.purpose === 'research'),
+    queryFn: async () => {
+      const [forecasts, models] = await Promise.all([
+        platform('/forecast-runs?include_research=true', z.array(Forecast)),
+        platform('/models?include_research=true', z.array(Model)),
+      ]);
+      return { forecasts, models };
+    },
+  });
+  const catalogue = showResearch && research.data ? research.data : data.data;
+  const forecasts = [...(catalogue?.forecasts || [])];
+  if (selectedForecast.data && !forecasts.some((f) => f.id === selectedForecast.data.id))
+    forecasts.push(selectedForecast.data);
   const modes = Object.keys(scenarioModes) as ScenarioMode[];
   const input = scenarioInput(draft, mode);
   const signature = stable(input);
@@ -79,7 +108,9 @@ export function ScenarioPanel({
   useEffect(() => {
     if (!draft.forecast_id && data.data) {
       const run =
-        data.data.forecasts.find((f) => f.id === activeForecastId) || data.data.forecasts[0];
+        data.data.forecasts.find((f) => f.id === activeForecastId) ||
+        selectedForecast.data ||
+        (!activeForecastId ? data.data.forecasts[0] : undefined);
       if (run)
         setDraft({
           ...draft,
@@ -103,7 +134,7 @@ export function ScenarioPanel({
           },
         });
     }
-  }, [data.data, draft, setDraft, activeForecastId]);
+  }, [data.data, draft, setDraft, activeForecastId, selectedForecast.data]);
   const missingJobs = workspace.records.flatMap((saved) =>
     Object.values(saved.runs).flatMap((run) =>
       run.job && !jobs.data?.some((j) => j.id === run.job) ? [run.job] : [],
@@ -188,8 +219,10 @@ export function ScenarioPanel({
     patch({ schedule: { ...draft.schedule, ...v } });
   const editIncident = (id: string, v: Partial<Incident>) =>
     patch({ incidents: draft.incidents.map((i) => (i.id === id ? { ...i, ...v } : i)) });
-  const forecast = data.data?.forecasts.find((f) => f.id === draft.forecast_id);
-  const model = data.data?.models.find((m) => m.id === forecast?.spec.model_id);
+  const forecast = forecasts.find((f) => f.id === draft.forecast_id);
+  const model =
+    catalogue?.models.find((m) => m.id === forecast?.spec.model_id) ||
+    research.data?.models.find((m) => m.id === forecast?.spec.model_id);
   const supportsWeather =
     !!model?.spec.weather_hourly_id && model.spec.feature_groups?.includes('weather');
   const weatherProfile = useQuery({
@@ -202,7 +235,11 @@ export function ScenarioPanel({
           method: z.string(),
           fields: z.record(
             z.string(),
-            z.object({ min: z.number(), max: z.number(), mean: z.number() }),
+            z.object({
+              min: z.number().nullable(),
+              max: z.number().nullable(),
+              mean: z.number().nullable(),
+            }),
           ),
         }),
         draft.time_range,
@@ -291,11 +328,29 @@ export function ScenarioPanel({
           <input value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
         </label>
         <label>
+          <input
+            type="checkbox"
+            checked={showResearch}
+            onChange={(e) => setShowResearch(e.target.checked)}
+          />
+          Показать исследовательские выпуски
+        </label>
+        {research.error && <p role="alert">{research.error.message}</p>}
+        {showResearch && (
+          <p>
+            Исследовательские выпуски доступны для локального сравнения. Общая публикация и
+            конкурсный экспорт запрещены.
+          </p>
+        )}
+        {selectedForecast.data?.purpose === 'research' && (
+          <p className="scenario-note">Выбрана исследовательская база.</p>
+        )}
+        <label>
           Базовый выпуск
           <select
             value={draft.forecast_id}
             onChange={(e) => {
-              const run = data.data?.forecasts.find((f) => f.id === e.target.value);
+              const run = forecasts.find((f) => f.id === e.target.value);
               if (run)
                 setDraft({
                   ...structuredClone(emptyScenario),
@@ -307,10 +362,11 @@ export function ScenarioPanel({
             }}
           >
             <option value="">Выберите прогноз</option>
-            {data.data?.forecasts.map((f) => (
+            {forecasts.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.spec.time_range.start.slice(0, 10)}—{f.spec.time_range.end.slice(0, 10)} ·{' '}
                 {f.id.slice(-8)}
+                {f.purpose === 'research' ? ' · Исследование' : ''}
               </option>
             ))}
           </select>
@@ -335,6 +391,34 @@ export function ScenarioPanel({
             </label>
           ))}
         </fieldset>
+        <ScenarioContext
+          draft={draft}
+          selected={selectedObject}
+          routeId={selectedRouteId}
+          snapshotId={snapshotId}
+          open={open}
+        />
+        <fieldset className="scenario-factors">
+          <legend>Учитывать факторы</legend>
+          {Object.entries({
+            weather: 'Погода',
+            season: 'Сезонность',
+            incidents: 'ДТП',
+            schedule: 'Расписание',
+          }).map(([key, title]) => (
+            <label key={key}>
+              <input
+                type="checkbox"
+                checked={draft.enabled[key as keyof ScenarioDraft['enabled']]}
+                onChange={(e) => {
+                  patch({ enabled: { ...draft.enabled, [key]: e.target.checked } });
+                  if (key === 'incidents' && !e.target.checked) setPlacing(false);
+                }}
+              />
+              {title}
+            </label>
+          ))}
+        </fieldset>
         <details open hidden={mode !== 'combined' && mode !== 'weather'}>
           <summary>Погода</summary>
           <p>
@@ -342,8 +426,10 @@ export function ScenarioPanel({
           </p>
           {weatherProfile.data && (
             <p>
-              {weatherProfile.data.method === 'available_forecast_release'
-                ? 'Основа: сохранённый погодный выпуск.'
+              {['available_forecast_release', 'received_forecast_then_climatology'].includes(
+                weatherProfile.data.method,
+              )
+                ? 'Основа: сохранённый погодный выпуск в пределах суток и его покрытия, далее — климатология.'
                 : 'Основа: почасовой профиль прошлых лет, сценарий погоды.'}{' '}
               Ниже показано среднее за выбранные часы.
             </p>
@@ -360,7 +446,7 @@ export function ScenarioPanel({
               {labels[k]}
               <input
                 type="number"
-                disabled={!supportsWeather}
+                disabled={!supportsWeather || !draft.enabled.weather}
                 min={k === 'temperature_2m' ? -60 : 0}
                 max={k === 'temperature_2m' ? 60 : k === 'precipitation' ? 200 : 100}
                 step={k === 'precipitation' ? 0.1 : 1}
@@ -377,15 +463,20 @@ export function ScenarioPanel({
               />
               {weatherProfile.data?.fields[k] && (
                 <small>
-                  База: {number(weatherProfile.data.fields[k].mean)} (
-                  {number(weatherProfile.data.fields[k].min)}…
-                  {number(weatherProfile.data.fields[k].max)}). Сценарий:{' '}
-                  {draft.weather[k] === null ? 'исходный профиль' : number(draft.weather[k])}.
-                  {draft.weather[k] !== null && (
+                  База: {factorNumber(weatherProfile.data.fields[k].mean)}
+                  {factorRange(
+                    weatherProfile.data.fields[k].min,
+                    weatherProfile.data.fields[k].max,
+                  ) && weatherProfile.data.fields[k].min !== weatherProfile.data.fields[k].max
+                    ? ` (${factorRange(weatherProfile.data.fields[k].min, weatherProfile.data.fields[k].max)})`
+                    : ''}
+                  . Сценарий:{' '}
+                  {draft.weather[k] === null ? 'исходный профиль' : factorNumber(draft.weather[k])}.
+                  {draft.weather[k] !== null && weatherProfile.data.fields[k].mean !== null && (
                     <>
                       {' '}
                       Разница со средним:{' '}
-                      {number(draft.weather[k] - weatherProfile.data.fields[k].mean)}.
+                      {factorNumber(draft.weather[k] - weatherProfile.data.fields[k].mean!)}.
                     </>
                   )}
                 </small>
@@ -430,7 +521,11 @@ export function ScenarioPanel({
             Поставьте точку и подтвердите затронутые маршруты. Близость к линии не означает
             блокировку.
           </p>
-          <button aria-pressed={placing} onClick={() => setPlacing(!placing)}>
+          <button
+            disabled={!draft.enabled.incidents}
+            aria-pressed={placing}
+            onClick={() => setPlacing(!placing)}
+          >
             {placing ? 'Отменить добавление ДТП' : 'Добавить ДТП на карте'}
           </button>
           {placing && (

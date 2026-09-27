@@ -1,18 +1,7 @@
+export { ROUTE_COLORS } from '../constants/dynamics';
 import type { ViewData } from './contracts';
 import { number } from './domain';
 
-export const ROUTE_COLORS = [
-  '#187f70',
-  '#b45b1f',
-  '#6258b8',
-  '#c44065',
-  '#2788ad',
-  '#78831d',
-  '#8b5792',
-  '#447b31',
-  '#b03f32',
-  '#596980',
-];
 const escape = (value: string) =>
   value.replace(
     /[&<>"']/g,

@@ -10,21 +10,11 @@ from datetime import date
 
 from pydantic import Field
 
+from .constants.route_imports import (
+    COLUMNS as COLUMNS,
+)
 from .domain import ROUTES, DomainError, StrictModel
 from .storage import SnapshotStore, digest
-
-COLUMNS = [
-    "route_id",
-    "route_name",
-    "direction",
-    "valid_from",
-    "valid_to",
-    "point_order",
-    "longitude",
-    "latitude",
-    "stop_id",
-    "stop_name",
-]
 
 
 class RouteImportRequest(StrictModel):

@@ -3,16 +3,22 @@ from pathlib import Path
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+from .constants.config import (
+    PROJECT_ROOT as PROJECT_ROOT,
+)
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="MOSCOWT_")
     state_dir: Path = PROJECT_ROOT / "artifacts"
     dataset_dir: Path = PROJECT_ROOT / "dataset"
-    source_dir: Path = PROJECT_ROOT.parent / "dataset"
+    source_dir: Path | None = None
     data_root: Path | None = None
     frontend_dir: Path = PROJECT_ROOT / "frontend/dist"
+    demo: bool = False
+    demo_bundle: Path = PROJECT_ROOT / "deliverables/platform-demo.tar.gz"
+    passenger_package: Path = PROJECT_ROOT / "deliverables/passengers.tar.gz"
+    baseline_package: Path = PROJECT_ROOT / "deliverables/competition-baseline.zip"
     worker_enabled: bool = True
     log_requests: bool = False
     request_threads: int = Field(default=4, ge=1, le=32)
@@ -25,7 +31,16 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def resolve_paths(self):
-        for name in ("state_dir", "dataset_dir", "source_dir", "frontend_dir"):
+        self.source_dir = self.source_dir or self.dataset_dir
+        for name in (
+            "state_dir",
+            "dataset_dir",
+            "source_dir",
+            "frontend_dir",
+            "demo_bundle",
+            "passenger_package",
+            "baseline_package",
+        ):
             setattr(self, name, getattr(self, name).expanduser().resolve())
         self.data_root = (self.data_root or self.state_dir.with_name(self.state_dir.name + "-data")).resolve()
         return self

@@ -1,5 +1,7 @@
+import { MOSCOW } from '../constants/time';
+export { MOSCOW } from '../constants/time';
 import type { Capabilities, Scope, ViewState } from './contracts';
-export const MOSCOW = 'Europe/Moscow';
+
 export const localDate = (iso: string) =>
   new Intl.DateTimeFormat('sv-SE', { timeZone: MOSCOW }).format(new Date(iso));
 export const dateLabel = (iso: string) =>
@@ -54,4 +56,12 @@ export function dateBounds(c: Capabilities) {
         max: localDate(new Date(Date.parse(range.end) - 1).toISOString()),
       }
     : { min: c.defaultDate, max: c.defaultDate };
+}
+
+export const moscowDateTime = (iso: string) =>
+  new Date(iso).toLocaleString('sv-SE', { timeZone: MOSCOW }).replace(' ', 'T') + '+03:00';
+
+export function hourViewAt(iso: string) {
+  const stamp = moscowDateTime(iso);
+  return { date: stamp.slice(0, 10), index: Number(stamp.slice(11, 13)), windowHours: 1 as const };
 }

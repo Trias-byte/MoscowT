@@ -1,0 +1,7 @@
+{
+  "source": "https://www.openstreetmap.org/copyright",
+  "license": "ODbL-1.0",
+  "as_of": "2025-01-01",
+  "source_sha256": "789320cb339f02d0853170b6afce6bbb77ed6d7f0a5cd0902ffde42c9a04c31f",
+  "description": "Reference tram tracks. No street basemap; dated active routes come from the API."
+}

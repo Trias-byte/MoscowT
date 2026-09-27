@@ -78,13 +78,6 @@ assert len(enriched) == len(labels)
 
 Связи статические. Они не доказывают одновременное прибытие трамваев, удобство пересадки, остановку конкретной валидации или пассажиропоток на остановке. Для использования потока соседних маршрутов в модели нужны доступные на момент прогноза лаги; фактические значения прогнозируемого часа использовать нельзя.
 
-## Воспроизведение
-
-Из корня проекта:
-
-```bash
-python3 analysis/dataset/build_same_direction_stops.py
-python3 -m unittest discover -s analysis/dataset -p 'test_same_direction_stops.py' -v
-```
+## Источник
 
 Источник: `dataset/geography/moscow-trams-2026-02-09.json`; запрос Overpass и дата загрузки сохранены в нём. Производная база географии: © OpenStreetMap contributors, [ODbL 1.0](https://www.openstreetmap.org/copyright). Лицензия числовых валидаций этим не изменяется.

@@ -1,9 +1,7 @@
+import { SECTION_MODEL_VERSION } from '../constants/sectionLoad';
+export { SECTION_MODEL_VERSION, SECTION_MODEL_NOTE } from '../constants/sectionLoad';
 import type { Frame, Network } from './contracts';
 
-// A scenario model, not a stop-level observation or a fitted passenger model.
-export const SECTION_MODEL_VERSION = 'ordered-stop-scenario-v1';
-export const SECTION_MODEL_NOTE =
-  'Модельная оценка по маршруту, остановкам и времени суток. Места валидаций и направление каждого вагона неизвестны.';
 type Phase = 'morning' | 'evening' | 'neutral';
 type Segment = Network['segments'][number];
 interface PatternModel {

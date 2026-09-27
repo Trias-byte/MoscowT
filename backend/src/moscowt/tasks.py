@@ -3,21 +3,15 @@
 import json
 import time
 import uuid
+from contextlib import contextmanager
 
+from .constants.tasks import (
+    GENERAL_KINDS as GENERAL_KINDS,
+    MODEL_KINDS as MODEL_KINDS,
+)
 from .domain import DomainError
 from .jobs import JobRepository
 from .storage import canonical, digest
-
-MODEL_KINDS = ("train", "forecast", "scenario_run", "model_import", "model_reweight", "model_export")
-GENERAL_KINDS = (
-    "import_preview",
-    "import_apply",
-    "schedule_import",
-    "period_export",
-    "bundle_export",
-    "weather_fetch",
-    "factor_fetch",
-)
 
 
 class WorkQueue:
@@ -37,6 +31,9 @@ class WorkQueue:
                 );
                 CREATE INDEX IF NOT EXISTS work_pending ON work_items(status, created_at);
             """)
+            db.execute("BEGIN IMMEDIATE")
+            if "checkpoint" not in {r[1] for r in db.execute("PRAGMA table_info(work_items)")}:
+                db.execute("ALTER TABLE work_items ADD COLUMN checkpoint TEXT NOT NULL DEFAULT '{}'")
 
     def connect(self):
         return self.database.connect()
@@ -68,9 +65,10 @@ class WorkQueue:
             return self.public(db.execute("SELECT * FROM work_items WHERE id=?", (ident,)).fetchone())
 
     def public(self, row):
-        return {
+        result = {
             key: (json.loads(row[key]) if row[key] and row["status"] == "ready" else None)
-            if key == "result" else row[key]
+            if key == "result"
+            else row[key]
             for key in (
                 "id",
                 "kind",
@@ -85,6 +83,76 @@ class WorkQueue:
                 "error",
             )
         }
+        checkpoint = json.loads(row["checkpoint"] or "{}")
+        result["update"] = {
+            key: checkpoint[key]
+            for key in (
+                "dataset_id",
+                "model_id",
+                "forecast_id",
+                "evaluation_id",
+                "origin",
+                "excluded_routes",
+                "publication_status",
+                "error_code",
+            )
+            if key in checkpoint
+        }
+        return result
+
+    @contextmanager
+    def guarded(self, ident, owner):
+        """Serialize the publication commit against cancellation and lease takeover."""
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT * FROM work_items WHERE id=?", (ident,)).fetchone()
+            if (
+                not row
+                or row["status"] != "running"
+                or row["owner"] != owner
+                or row["cancel_requested"]
+                or row["lease_until"] < time.time()
+            ):
+                raise DomainError("JOB_INTERRUPTED", "Задание отменено или передано другому worker", 409)
+            yield db
+
+    def checkpoint(self, ident, owner, phase, progress, **changes):
+        with self.guarded(ident, owner) as db:
+            saved = json.loads(
+                db.execute("SELECT checkpoint FROM work_items WHERE id=?", (ident,)).fetchone()[0]
+            )
+            saved.update(changes)
+            db.execute(
+                "UPDATE work_items SET checkpoint=?,phase=?,progress=?,updated_at=? WHERE id=?",
+                (canonical(saved).decode(), phase, progress, time.time(), ident),
+            )
+        return saved
+
+    def retry(self, ident):
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT * FROM work_items WHERE id=?", (ident,)).fetchone()
+            if not row or row["kind"] != "model_refresh" or row["status"] not in ("failed", "cancelled"):
+                raise DomainError(
+                    "JOB_NOT_RETRYABLE", "Повтор доступен для прерванного обновления модели", 409
+                )
+            count = db.execute(
+                "SELECT count(*) FROM work_items WHERE status IN ('pending','running')"
+            ).fetchone()[0]
+            if count >= self.limit:
+                raise DomainError("QUEUE_FULL", "Очередь заполнена", 429)
+            db.execute(
+                "UPDATE work_items SET status='pending',owner=NULL,lease_until=NULL,attempts=0,cancel_requested=0,error=NULL,updated_at=? WHERE id=?",
+                (time.time(), ident),
+            )
+        return self.public(self.get(ident))
+
+    def interrupted(self, ident, owner):
+        with self.connect() as db:
+            db.execute(
+                "UPDATE work_items SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' WHEN attempts>=3 THEN 'failed' ELSE 'pending' END,owner=NULL,lease_until=NULL,error='Worker interrupted',updated_at=? WHERE id=? AND owner=? AND status='running'",
+                (time.time(), ident, owner),
+            )
 
     def get(self, ident):
         with self.connect() as db:
@@ -130,7 +198,7 @@ class WorkQueue:
     def finish(self, ident, owner, result=None, error=None):
         with self.connect() as db:
             db.execute(
-                "UPDATE work_items SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' WHEN ? IS NOT NULL THEN 'failed' ELSE 'ready' END,progress=CASE WHEN ? IS NULL THEN 1 ELSE progress END,phase='finished',result=?,error=?,updated_at=?,lease_until=NULL WHERE id=? AND owner=? AND status='running'",
+                "UPDATE work_items SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' WHEN ? IS NOT NULL THEN 'failed' ELSE 'ready' END,progress=CASE WHEN ? IS NULL THEN 1 ELSE progress END,phase=CASE WHEN kind='model_refresh' THEN phase ELSE 'finished' END,result=?,error=?,updated_at=?,lease_until=NULL WHERE id=? AND owner=? AND status='running'",
                 (
                     error,
                     error,

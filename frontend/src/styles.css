@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;450;500;550;600;650;700;750;800&display=swap');
+@font-face {
+  font-family: 'Golos Text';
+  src: url('/assets/fonts/GolosText.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+}
 :root {
   font-family: 'Golos Text', Arial, sans-serif;
   color: #253c35;
@@ -4952,6 +4958,18 @@ dialog::backdrop {
 .scenario-panel label {
   min-width: 0;
 }
+.scenario-panel .scenario-factors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.scenario-panel .scenario-factors label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scenario-panel .scenario-factors input {
+  width: auto;
+}
 .scenario-panel input,
 .scenario-panel select {
   max-width: 100%;
@@ -4960,6 +4978,10 @@ dialog::backdrop {
 .scenario-panel .scenario-run {
   display: grid;
   gap: 6px;
+}
+.scenario-panel button.v2-primary {
+  background: #08796b;
+  color: #fff;
 }
 .scenario-panel td button {
   white-space: normal;
@@ -4979,4 +5001,137 @@ dialog::backdrop {
 .export-body input,
 .export-body select {
   min-width: 0;
+}
+/* Passenger research views use the same panels and typography as route analytics. */
+.passenger-panel {
+  padding: 12px 16px;
+  max-height: 520px;
+  overflow: auto;
+}
+.passenger-subtabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.passenger-subtabs button {
+  border: 1px solid var(--line, #dce5df);
+  border-radius: 6px;
+  padding: 7px 12px;
+  background: #fff;
+  color: #324a42;
+}
+.passenger-subtabs button[aria-selected='true'] {
+  color: #fff;
+  background: #187e6d;
+  border-color: #187e6d;
+}
+.passenger-panel h3,
+.passenger-composition h3 {
+  margin: 12px 0 8px;
+  font-size: 14px;
+}
+.passenger-chart {
+  height: 230px;
+  min-height: 180px;
+}
+.passenger-table {
+  overflow: auto;
+  max-height: 290px;
+  margin: 10px 0;
+}
+.passenger-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.passenger-table th,
+.passenger-table td {
+  padding: 8px 10px;
+  text-align: right;
+  border-bottom: 1px solid #e4ebe7;
+}
+.passenger-table th {
+  position: sticky;
+  top: 0;
+  background: #f3f7f4;
+  z-index: 1;
+  font-weight: 600;
+}
+.passenger-table th:first-child,
+.passenger-table td:first-child {
+  text-align: left;
+}
+.passenger-version {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #718279;
+  margin-top: 10px;
+}
+.passenger-panel details {
+  margin: 12px 0;
+}
+.passenger-panel summary,
+.infrastructure-details summary,
+.passenger-passport summary {
+  cursor: pointer;
+}
+.infrastructure-controls,
+.infrastructure-details {
+  border-top: 1px solid #e0e7e2;
+  padding: 12px 0;
+  margin-top: 12px;
+}
+.infrastructure-details .infra-count {
+  display: contents;
+}
+.infrastructure-details dl {
+  max-height: 260px;
+  overflow: auto;
+}
+.passenger-composition {
+  margin: 12px 0;
+}
+.passenger-poi-card {
+  position: absolute;
+  z-index: 5;
+  right: 55px;
+  top: 12px;
+  width: min(320px, calc(100% - 75px));
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #dce5df;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px #243d3526;
+  font-size: 13px;
+}
+.passenger-poi-card h3 {
+  padding-right: 15px;
+  margin: 8px 0;
+}
+.poi-close {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  border: 0;
+  background: transparent;
+  font-size: 23px;
+  cursor: pointer;
+}
+.v2-analytics:has(.passenger-panel) {
+  height: auto;
+  max-height: 610px;
+  flex: 0 1 auto;
+}
+.v2-tabs {
+  overflow-x: auto;
+}
+@media (max-width: 700px) {
+  .passenger-panel {
+    padding: 10px;
+    max-height: 460px;
+  }
+  .passenger-table {
+    max-height: 230px;
+  }
 }

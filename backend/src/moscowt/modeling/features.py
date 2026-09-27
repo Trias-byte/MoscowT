@@ -9,7 +9,9 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 
-FEATURE_VERSION = "fixed-origin-hourly-factors-v3"
+from ..constants.modeling_features import (
+    FEATURE_VERSION as FEATURE_VERSION,
+)
 
 
 class FeatureBuilder:
@@ -159,13 +161,8 @@ class FeatureBuilder:
                 target,
                 origin,
                 history.attrs.get("observed_factors", False),
+                history.attrs.get("weather_forecast_id"),
             )
-            if history.attrs.get("weather_forecast_id"):
-                from ..external import OpenMeteoForecastProvider
-
-                weather = OpenMeteoForecastProvider(history.attrs["external_root"]).select_hourly(
-                    history.attrs["weather_forecast_id"], target.timestamp, origin
-                )
             overrides = history.attrs.get("factor_overrides")
             if overrides:
                 mask = (

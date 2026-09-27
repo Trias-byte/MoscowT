@@ -23,6 +23,8 @@ test('scenario job survives reload; finished result agrees with map and API', as
   );
   await panel.getByRole('button', { name: 'Рассчитать сценарий', exact: true }).click();
   const job = await (await queued).json();
+  // Wait for the UI to receive and save the server response before reloading it.
+  await expect(panel.getByRole('region', { name: 'Результаты режимов' })).toBeVisible();
   await page.reload();
   await expect(panel).toBeVisible();
   await expect
@@ -71,7 +73,7 @@ test('scenario job survives reload; finished result agrees with map and API', as
   await expect.poll(() => new URL(page.url()).searchParams.get('view')).not.toContain(result.id);
 });
 
-test('data/model navigation and annual adapter selection', async ({ page }) => {
+test('data/model navigation and annual period keeps the chosen model', async ({ page }) => {
   await expect(page.locator('.v2-header-actions button')).toHaveCount(1);
   await page.getByRole('button', { name: 'Данные и модели', exact: true }).click();
   const panel = page.getByRole('complementary', { name: 'Данные и модели', exact: true });
@@ -80,8 +82,11 @@ test('data/model navigation and annual adapter selection', async ({ page }) => {
   await panel.getByLabel('Название набора').fill('Другой эксперимент');
   await expect(panel).toContainText('Редакция — сохранённое состояние');
   await expect(panel.getByText('Поправки, бюджет и выгрузка')).toHaveCount(0);
+  const adapter = await panel.getByLabel('Адаптер модели').inputValue();
+  const model = await panel.getByLabel('Обученная модель').inputValue();
   await panel.getByRole('button', { name: 'Год', exact: true }).click();
-  await expect(panel.getByLabel('Адаптер модели')).toHaveValue('annual_scenario');
+  await expect(panel.getByLabel('Адаптер модели')).toHaveValue(adapter);
+  await expect(panel.getByLabel('Обученная модель')).toHaveValue(model);
   await expect(panel.getByLabel('Обученная модель')).not.toHaveValue('');
 });
 

@@ -9,24 +9,12 @@ from functools import lru_cache
 
 import pandas as pd
 
+from .constants.schedules import (
+    MONTHS as MONTHS,
+    WEEKDAYS as WEEKDAYS,
+)
 from .domain import TZ, DomainError, TimeRange
 from .storage import SnapshotStore, atomic_write, digest, file_hash
-
-WEEKDAYS = {name: index for index, name in enumerate(("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"))}
-MONTHS = (
-    "январь",
-    "февраль",
-    "март",
-    "апрель",
-    "май",
-    "июнь",
-    "июль",
-    "август",
-    "сентябрь",
-    "октябрь",
-    "ноябрь",
-    "декабрь",
-)
 
 
 def minute(value):
@@ -82,9 +70,28 @@ def integrate(intervals, time_range: TimeRange):
     return hours, conflicts
 
 
-@lru_cache(maxsize=16)
 def schedule_table(root, ident):
-    return pd.read_parquet(SnapshotStore(root).path("schedules", ident, "parquet"))
+    store = SnapshotStore(root)
+    manifest = store.read("schedules", ident)
+    path = store.path("schedules", ident, "parquet")
+    try:
+        stat = path.stat()
+        return _schedule_table(str(path), stat.st_mtime_ns, stat.st_size, manifest["sha256"])
+    except (OSError, ValueError, KeyError) as error:
+        raise DomainError(
+            "SCHEDULE_CORRUPTED",
+            "Файл расписания отсутствует или повреждён. Загрузите расписание заново.",
+            503,
+        ) from error
+
+
+@lru_cache(maxsize=16)
+def _schedule_table(path, modified, size, checksum):
+    from pathlib import Path
+
+    if file_hash(Path(path)) != checksum:
+        raise ValueError("Schedule checksum mismatch")
+    return pd.read_parquet(path)
 
 
 class ScheduleService:

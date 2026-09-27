@@ -6,10 +6,11 @@ from functools import lru_cache
 
 import pandas as pd
 
+from .constants.spatial import (
+    VERSION as VERSION,
+)
 from .domain import DomainError
 from .network_history import resolve_network
-
-VERSION = "ordered-stop-scenario-v2"
 
 
 def meters(a, b):

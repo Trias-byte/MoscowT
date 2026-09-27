@@ -12,7 +12,7 @@ import pandas as pd
 from ..data.repository import DatasetRepository
 from ..domain import TZ, DomainError
 from ..storage import SnapshotStore, atomic_write, digest, file_hash
-from .adapters import ADAPTERS
+from .adapters import ADAPTERS, target_grid
 from .contracts import ForecastSpec, TrainingSpec
 
 
@@ -155,6 +155,8 @@ class ModelService:
             raise DomainError("ROUTE_NOT_TRAINED", "Для новых маршрутов требуется обучение модели")
         if (spec.time_range.end - spec.origin).total_seconds() > self.max_hours * 3600:
             raise DomainError("HORIZON_UNSUPPORTED", f"Максимум {self.max_hours} часов от origin")
+        if pd.Timestamp(spec.time_range.end) > pd.Timestamp(spec.origin) + pd.DateOffset(years=1):
+            raise DomainError("HORIZON_UNSUPPORTED", "Максимум один календарный год от момента выпуска")
         if spec.dataset_id != training.dataset_id:
             raise DomainError(
                 "MODEL_DATASET_MISMATCH",
@@ -162,17 +164,28 @@ class ModelService:
                 409,
             )
         if (
-            training.model_type != "annual_scenario"
+            training.model_type not in ("annual_scenario", "lgb_cb_rf")
             and (spec.time_range.end - spec.origin).total_seconds() > 62 * 24 * 3600
         ):
             raise DomainError(
-                "HORIZON_UNSUPPORTED", "Для горизонта более 62 суток выберите годовой сценарный адаптер"
+                "HORIZON_UNSUPPORTED",
+                "Для горизонта более 62 суток выберите ансамбль или годовой сценарный адаптер",
             )
         adapter = ADAPTERS[training.model_type]
+        if (
+            training.model_type == "competition_catboost"
+            and (spec.time_range.end - spec.origin).total_seconds() > 61 * 24 * 3600
+        ):
+            raise DomainError("HORIZON_UNSUPPORTED", "База CatBoost поддерживает до 61 дня от выпуска")
         history = self._history(
-            spec.dataset_id, spec.route_ids, training.time_range.start, spec.origin, adapter.minimum_days
+            spec.dataset_id,
+            training.route_ids if training.model_type == "competition_catboost" else spec.route_ids,
+            training.time_range.start,
+            spec.origin,
+            adapter.minimum_days,
         )
         history.attrs["observed_factors"] = spec.diagnostic_observed_factors
+        history.attrs["model_threads"] = self.threads
         history.attrs["factor_overrides"] = overrides
         if overrides and any(v is not None for v in overrides.get("weather", {}).values()):
             if "weather" not in training.feature_groups or not training.weather_hourly_id:
@@ -184,11 +197,6 @@ class ModelService:
             if "weather" not in training.feature_groups or training.model_type != "lgb_cb_rf":
                 raise DomainError(
                     "WEATHER_MODEL_REQUIRED", "Выбранная модель не обучена с погодными признаками"
-                )
-            if (spec.time_range.end - spec.origin).total_seconds() > 24 * 3600:
-                raise DomainError(
-                    "WEATHER_HORIZON_UNSUPPORTED",
-                    "Оперативный погодный выпуск применяется только к горизонту до суток",
                 )
             history.attrs["weather_forecast_id"] = spec.weather_forecast_id
         inference_code = {path.name: file_hash(path) for path in Path(__file__).parent.glob("*.py")}
@@ -208,13 +216,27 @@ class ModelService:
         with self.store.lock("forecast"):
             if persist and self.store.path("forecast_runs", ident).exists():
                 return self.store.read("forecast_runs", ident)
-            predicted = adapter.predict(model, history, spec)
+            # Bound feature memory, keeping the same information cutoff for every chunk.
+            chunks, start = [], pd.Timestamp(spec.time_range.start)
+            while start < spec.time_range.end:
+                end = min(start + pd.offsets.MonthBegin(1), pd.Timestamp(spec.time_range.end))
+                chunk = spec.model_copy(
+                    update={"time_range": spec.time_range.model_copy(update={"start": start, "end": end})}
+                )
+                chunks.append(adapter.predict(model, history, chunk))
+                start = end
+            predicted = (
+                pd.concat(chunks, ignore_index=True)
+                .sort_values(["route", "timestamp"])
+                .reset_index(drop=True)
+            )
             expected = len(spec.route_ids) * int(
                 (spec.time_range.end - spec.time_range.start).total_seconds() / 3600
             )
             if (
                 len(predicted) != expected
                 or predicted.duplicated(["route", "timestamp"]).any()
+                or not predicted[["route", "timestamp"]].equals(target_grid(spec))
                 or not np.isfinite(predicted.value).all()
                 or (predicted.value < 0).any()
             ):
@@ -241,12 +263,19 @@ class ModelService:
                 if spec.diagnostic_observed_factors
                 else "Невалидированный годовой сценарий"
                 if training.model_type == "annual_scenario"
+                else "Годовой прогноз ансамбля; точность дальнего горизонта требует отдельной временной проверки"
+                if (spec.time_range.end - spec.origin).days > 62
                 else "Качество см. в отчёте временной проверки",
                 "model_type": training.model_type,
                 "purpose": training.purpose,
                 "external_snapshot_id": training.external_snapshot_id,
                 "route_applicability": manifest.get("route_coverage", {}),
-                "weather_method": "received_forecast_unvalidated_transfer"
+                "horizon_hours": int((spec.time_range.end - spec.origin).total_seconds() / 3600),
+                "forecast_strategy": "direct_fixed_origin",
+                "long_horizon_quality": "not_validated"
+                if (spec.time_range.end - spec.origin).days > 62
+                else "see_evaluation",
+                "weather_method": "received_forecast_then_climatology"
                 if spec.weather_forecast_id
                 else "prior_year_climatology"
                 if "weather" in training.feature_groups

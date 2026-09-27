@@ -10,13 +10,13 @@ from pathlib import Path
 
 from pydantic import Field, model_validator
 
+from ..constants.modeling_packages import (
+    RF_TRUSTED_TYPES as RF_TRUSTED_TYPES,
+)
 from ..domain import TZ, DomainError, StrictModel
 from ..storage import canonical, digest, file_hash
 from .contracts import TrainingSpec
 from .features import FeatureBuilder
-
-# Required by RandomForestRegressor with sklearn 1.9 / skops 0.14. Never trust types from the file itself.
-RF_TRUSTED_TYPES = ["sklearn.tree._tree.Tree"]
 
 
 class EnsembleWeights(StrictModel):
@@ -43,7 +43,17 @@ class ModelPackageService:
     def encode(manifest, model):
         spec = TrainingSpec.model_validate(manifest["spec"])
         files, estimators = {}, []
-        if spec.model_type == "lgb_cb_rf":
+        if spec.model_type == "competition_catboost":
+            from .competition import SEEDS
+
+            with tempfile.TemporaryDirectory() as temp:
+                for seed, (weight, estimator) in zip(SEEDS, model["models"], strict=True):
+                    name = f"catboost_{seed}.cbm"
+                    estimator.save_model(str(Path(temp) / name))
+                    files[name] = (Path(temp) / name).read_bytes()
+                    estimators.append({"file": name, "kind": "catboost", "weight": weight})
+            params = {k: v for k, v in model.items() if k != "models"}
+        elif spec.model_type == "lgb_cb_rf":
             import skops.io as sio
             from catboost import CatBoostRegressor
             from lightgbm import LGBMRegressor
@@ -100,12 +110,12 @@ class ModelPackageService:
                 archive.writestr(name, content)
         return buffer.getvalue()
 
-    def inspect(self, path):
+    def inspect(self, path, *, dataset_id=None):
         try:
             with zipfile.ZipFile(path) as archive:
                 entries = archive.infolist()
                 if (
-                    len(entries) > 5
+                    len(entries) > 6
                     or len({x.filename for x in entries}) != len(entries)
                     or sum(x.file_size for x in entries) > 1024**3
                 ):
@@ -116,15 +126,67 @@ class ModelPackageService:
                     *meta["files"],
                 }:
                     raise ValueError("Неизвестный формат пакета")
+                from .competition import SEEDS
+
+                allowed = {"catboost.cbm", "lightgbm.txt", "random_forest.skops"}
+                allowed.update(f"catboost_{seed}.cbm" for seed in SEEDS)
                 for name, sha in meta["files"].items():
-                    if (
-                        name not in ("catboost.cbm", "lightgbm.txt", "random_forest.skops")
-                        or hashlib.sha256(archive.read(name)).hexdigest() != sha
-                    ):
+                    if name not in allowed or hashlib.sha256(archive.read(name)).hexdigest() != sha:
                         raise ValueError("Неверный файл или контрольная сумма")
                 spec = TrainingSpec.model_validate(meta["manifest"]["spec"])
-                self.models.data.manifest(spec.dataset_id)
-                if spec.model_type == "lgb_cb_rf":
+                if dataset_id is not None:
+                    if spec.model_type != "competition_catboost":
+                        raise ValueError("Перепривязка доступна только базе с хешем истории")
+                    meta["manifest"]["spec"]["dataset_id"] = dataset_id
+                    spec = spec.model_copy(update={"dataset_id": dataset_id})
+                try:
+                    self.models.data.manifest(spec.dataset_id)
+                except DomainError as error:
+                    if spec.model_type != "competition_catboost" or error.code != "VERSION_NOT_FOUND":
+                        raise
+                    from .baseline_features import history_fingerprint
+
+                    matching = None
+                    for candidate in self.models.data.catalog.datasets():
+                        if set(spec.route_ids) - set(candidate["routes"]):
+                            continue
+                        history = self.models.data.frame(
+                            candidate["id"],
+                            route_ids=spec.route_ids,
+                            start=spec.time_range.start,
+                            end=spec.time_range.end,
+                        )
+                        if history_fingerprint(history) == meta["parameters"]["history_sha256"]:
+                            matching = candidate["id"]
+                            break
+                    if matching is None:
+                        raise DomainError(
+                            "MODEL_DATASET_MISMATCH", "В приложении нет истории, соответствующей пакету"
+                        )
+                    meta["manifest"]["spec"]["dataset_id"] = matching
+                    spec = spec.model_copy(update={"dataset_id": matching})
+                if spec.model_type == "competition_catboost":
+                    from .baseline_features import FEATURES
+                    from .competition import CompetitionAdapter
+
+                    params = meta["parameters"]
+                    expected = [
+                        {"file": f"catboost_{seed}.cbm", "kind": "catboost", "weight": 0.2} for seed in SEEDS
+                    ]
+                    if (
+                        meta["estimators"] != expected
+                        or set(meta["files"]) != {e["file"] for e in expected}
+                        or params["features"] != FEATURES
+                        or params["seeds"] != SEEDS
+                        or sorted(params["routes"]) != sorted(spec.route_ids)
+                        or set(params["zero_routes"]) - set(spec.route_ids)
+                        or datetime.fromisoformat(params["start"]) != spec.time_range.start
+                        or meta["manifest"]["recipe"] != CompetitionAdapter.version
+                        or spec.feature_groups != ["calendar"]
+                        or len(params["history_sha256"]) != 64
+                    ):
+                        raise ValueError("Пакет не соответствует контракту базовой модели")
+                elif spec.model_type == "lgb_cb_rf":
                     kinds = [e["kind"] for e in meta["estimators"]]
                     if sorted(kinds) != ["catboost", "lightgbm", "random_forest"]:
                         raise ValueError("Требуются три компонента CB/LGB/RF")
@@ -157,11 +219,27 @@ class ModelPackageService:
         except (ValueError, KeyError, zipfile.BadZipFile, TypeError) as exc:
             raise DomainError("INVALID_MODEL_PACKAGE", str(exc)) from exc
 
-    def import_package(self, path):
-        meta = self.inspect(path)
+    def import_package(self, path, *, dataset_id=None):
+        meta = self.inspect(path, dataset_id=dataset_id)
         spec = TrainingSpec.model_validate(meta["manifest"]["spec"])
         model = dict(meta["parameters"])
-        if spec.model_type == "lgb_cb_rf":
+        if spec.model_type == "competition_catboost":
+            from catboost import CatBoostRegressor
+
+            from .baseline_features import FEATURES
+
+            model["models"] = []
+            with zipfile.ZipFile(path) as archive, tempfile.TemporaryDirectory() as temp:
+                for entry in meta["estimators"]:
+                    p = Path(temp) / entry["file"]
+                    p.write_bytes(archive.read(entry["file"]))
+                    estimator = CatBoostRegressor().load_model(str(p))
+                    if estimator.feature_names_ != FEATURES or estimator.get_cat_feature_indices() != [0]:
+                        raise DomainError(
+                            "INVALID_MODEL_PACKAGE", "Признаки CatBoost не соответствуют паспорту"
+                        )
+                    model["models"].append((entry["weight"], estimator))
+        elif spec.model_type == "lgb_cb_rf":
             import skops.io as sio
             from catboost import CatBoostRegressor
             from lightgbm import Booster
@@ -184,13 +262,26 @@ class ModelPackageService:
                             raise DomainError("INVALID_RF", "Ожидается RandomForestRegressor")
                     model["models"].append((entry["weight"], estimator))
         # Build real features and run all components before publishing an imported model.
+        from .adapters import ADAPTERS
+
         history = self.models._history(
-            spec.dataset_id, spec.route_ids, spec.time_range.start, spec.time_range.end, 56
+            spec.dataset_id,
+            spec.route_ids,
+            spec.time_range.start,
+            spec.time_range.end,
+            ADAPTERS[spec.model_type].minimum_days,
         )
+        if spec.model_type == "competition_catboost":
+            from .baseline_features import BaselineFeatures, history_fingerprint
+
+            builder = BaselineFeatures(history, spec.route_ids, spec.time_range.start, spec.time_range.end)
+            if history_fingerprint(history) != model["history_sha256"] or sorted(
+                builder.zero_routes()
+            ) != sorted(model["zero_routes"]):
+                raise DomainError("MODEL_DATASET_MISMATCH", "История не совпадает с историей базовой модели")
         import numpy as np
         import pandas as pd
 
-        from .adapters import ADAPTERS
         from .contracts import ForecastSpec
 
         sample = ForecastSpec(
@@ -203,7 +294,9 @@ class ModelPackageService:
         values = ADAPTERS[spec.model_type].predict(model, history, sample).value
         if not np.isfinite(values).all():
             raise DomainError("INVALID_MODEL_OUTPUT", "Пакет возвращает некорректные значения")
-        return self._save(model, meta["manifest"], {"package_sha256": file_hash(path)})
+        return self._save(
+            model, meta["manifest"], {"package_sha256": file_hash(path), "bound_dataset_id": spec.dataset_id}
+        )
 
     def reweight(self, ident, weights):
         manifest, model = self.models.load(ident)

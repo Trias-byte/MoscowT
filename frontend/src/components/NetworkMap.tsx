@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import maplibregl, { type GeoJSONSource } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import type { GeoJSONSource } from 'maplibre-gl';
 import type { FeatureCollection } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Network, GeometrySelection, ObjectSelection } from '../lib/contracts';
@@ -7,7 +8,10 @@ import type { SectionLoad } from '../lib/sectionLoad';
 import { number, valueColor } from '../lib/domain';
 import { mapStyle } from '../data/mapStyle';
 import type { Incident } from '../lib/scenario';
+import type { PoiCollection } from '../lib/passengers';
 interface Props {
+  poi?: PoiCollection;
+  onPoiSelect?: (id: string) => void;
   incidents?: Incident[];
   placingIncident?: boolean;
   onIncidentPlace?: (longitude: number, latitude: number) => void;
@@ -102,13 +106,21 @@ export function NetworkMap(p: Props) {
       : p.selected?.kind === 'route' && p.selected.id === segment.routeId;
   const thresholds = p.loadThresholds;
   useEffect(() => {
+    if (!ready || !instance.current) return;
+    (instance.current.getSource('passenger-poi') as GeoJSONSource).setData(
+      p.poi
+        ? { type: 'FeatureCollection', features: p.poi.features }
+        : { type: 'FeatureCollection', features: [] },
+    );
+  }, [ready, p.poi]);
+  useEffect(() => {
     setReady(false);
     setBaseError(false);
     let map: maplibregl.Map;
     try {
       map = new maplibregl.Map({
         container: element.current!,
-        style: import.meta.env.VITE_MAP_STYLE_URL || mapStyle,
+        style: mapStyle,
         center: [37.62, 55.75],
         zoom: 10.1,
         attributionControl: { compact: false },
@@ -136,11 +148,7 @@ export function NetworkMap(p: Props) {
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     map.on('error', (event) => {
-      if (
-        ('sourceId' in event && event.sourceId === 'city') ||
-        event.error.message.includes('tile.openstreetmap.org')
-      )
-        setBaseError(true);
+      if ('sourceId' in event && event.sourceId === 'city') setBaseError(true);
     });
     map.once('style.load', () => {
       const empty: FeatureCollection = { type: 'FeatureCollection', features: [] };
@@ -151,6 +159,13 @@ export function NetworkMap(p: Props) {
           '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       });
       map.addSource('section-arrows', { type: 'geojson', data: empty });
+      map.addSource('passenger-poi', {
+        type: 'geojson',
+        data: empty,
+        cluster: true,
+        clusterRadius: 35,
+        attribution: '© OpenStreetMap contributors · ODbL 1.0',
+      });
       map.addSource('reference-stops', {
         type: 'geojson',
         data: empty,
@@ -333,6 +348,51 @@ export function NetworkMap(p: Props) {
       map.on('mouseleave', 'route-lines', () => {
         map.getCanvas().style.cursor = '';
         popup.remove();
+      });
+      map.addLayer({
+        id: 'passenger-poi-clusters',
+        type: 'circle',
+        source: 'passenger-poi',
+        filter: ['has', 'point_count'],
+        paint: { 'circle-color': '#3267a8', 'circle-radius': 15, 'circle-opacity': 0.85 },
+      });
+      map.addLayer({
+        id: 'passenger-poi-count',
+        type: 'symbol',
+        source: 'passenger-poi',
+        filter: ['has', 'point_count'],
+        layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 11 },
+        paint: { 'text-color': '#ffffff' },
+      });
+      map.addLayer({
+        id: 'passenger-poi-points',
+        type: 'circle',
+        source: 'passenger-poi',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': '#3267a8',
+          'circle-radius': 5,
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+      map.on('click', 'passenger-poi-points', (e) => {
+        if (!latest.current.placingIncident)
+          latest.current.onPoiSelect?.(String(e.features?.[0]?.properties?.object_id));
+      });
+      map.on('click', 'passenger-poi-clusters', async (e) => {
+        const feature = e.features?.[0];
+        if (!feature || feature.geometry.type !== 'Point') return;
+        const zoom = await (
+          map.getSource('passenger-poi') as GeoJSONSource
+        ).getClusterExpansionZoom(Number(feature.properties.cluster_id));
+        map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom });
+      });
+      map.on('mouseenter', 'passenger-poi-points', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'passenger-poi-points', () => {
+        map.getCanvas().style.cursor = '';
       });
       setReady(true);
       const targetIds = new Set(
@@ -548,7 +608,7 @@ export function NetworkMap(p: Props) {
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
           © OpenStreetMap · ODbL
         </a>
-        {baseError && <small>Подложка недоступна; пути и остановки сохранены.</small>}
+        {baseError && <small>Справочная схема недоступна; выбранные маршруты сохранены.</small>}
       </div>
       <div className="v2-legend">
         <b>Участки · модельная оценка</b>

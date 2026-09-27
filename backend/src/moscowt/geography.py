@@ -4,10 +4,11 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
+from .constants.geography import (
+    GEOGRAPHY_FILE as GEOGRAPHY_FILE,
+)
 from .domain import ROUTES
 from .storage import SnapshotStore, digest, file_hash
-
-GEOGRAPHY_FILE = "moscow-trams-2025-01-01.json"
 
 
 def ordered_path(ways, stop_ids):

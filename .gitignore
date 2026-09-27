@@ -32,5 +32,10 @@ playwright-report/
 **/service.sqlite3*
 /backend/openapi.tmp.json
 /dataset/*.csv
-/dataset/labels/*.csv
-/dataset/spravochniki/*.xlsx
+/passenger_dataset/
+
+# Temporary logs and assembled delivery archive
+*.log
+/deliverables/platform-demo.tar.gz
+!/dataset/test_submission.csv
+/ML/

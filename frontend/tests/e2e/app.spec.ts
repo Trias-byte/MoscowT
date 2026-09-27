@@ -405,7 +405,7 @@ test('user CSV contains the selected 12 hours and full submission stays complete
   await page.getByRole('button', { name: 'Экспорт', exact: true }).click();
   const d = page.getByRole('dialog');
   await expect(d.getByLabel('Маршруты', { exact: true })).toHaveValue('17');
-  await d.getByRole('button', { name: 'Подготовить CSV' }).click();
+  await d.getByRole('button', { name: 'Подробный CSV', exact: true }).click();
   await expect(d.getByRole('link', { name: 'Скачать файл' })).toBeVisible();
   let pending = page.waitForEvent('download');
   await d.getByRole('link', { name: 'Скачать файл' }).click();

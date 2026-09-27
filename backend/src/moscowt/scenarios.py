@@ -26,6 +26,13 @@ class Coefficients(StrictModel):
         return self.weather * self.event * self.season
 
 
+class EnabledFactors(StrictModel):
+    weather: bool = True
+    season: bool = True
+    incidents: bool = True
+    schedule: bool = True
+
+
 class ScenarioSpec(StrictModel):
     forecast_id: str
     route_ids: list[str] = Field(min_length=1, max_length=1000)
@@ -37,26 +44,30 @@ class ScenarioSpec(StrictModel):
     weather: "WeatherChanges" = Field(default_factory=lambda: WeatherChanges())
     incidents: list["Incident"] = Field(default_factory=list, max_length=100)
     schedule: "ScheduleChanges" = Field(default_factory=lambda: ScheduleChanges())
+    enabled: EnabledFactors = Field(default_factory=EnabledFactors)
     mode: Literal["combined", "weather", "season", "incidents", "schedule"] = "combined"
 
     @model_validator(mode="before")
     @classmethod
     def isolate_mode(cls, value):
-        if not isinstance(value, dict) or value.get("mode", "combined") == "combined":
+        if not isinstance(value, dict):
             return value
         value = dict(value)
-        mode = value.get("mode")
+        mode = value.get("mode", "combined")
+        enabled = EnabledFactors.model_validate(value.get("enabled", {})).model_dump()
+        active = {key: on and mode in ("combined", key) for key, on in enabled.items()}
+        value["enabled"] = active
         coefficients = dict(value.get("coefficients") or {})
         value["coefficients"] = {
-            "weather": coefficients.get("weather", 1) if mode == "weather" else 1,
-            "event": coefficients.get("event", 1) if mode == "incidents" else 1,
-            "season": coefficients.get("season", 1) if mode == "season" else 1,
+            "weather": coefficients.get("weather", 1) if active["weather"] else 1,
+            "event": coefficients.get("event", 1) if active["incidents"] else 1,
+            "season": coefficients.get("season", 1) if active["season"] else 1,
         }
-        if mode != "weather":
+        if not active["weather"]:
             value["weather"] = {}
-        if mode != "incidents":
+        if not active["incidents"]:
             value["incidents"] = []
-        if mode != "schedule":
+        if not active["schedule"]:
             schedule = value.get("schedule") or {}
             value["schedule"] = {
                 key: schedule[key]

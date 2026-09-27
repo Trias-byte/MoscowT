@@ -40,8 +40,17 @@ def main():
     restore = sub.add_parser("restore")
     restore.add_argument("archive", type=Path)
     sub.add_parser("bundle")
+    passengers = sub.add_parser("passenger-prepare")
+    passengers.add_argument("--source", type=Path, required=True)
+    passengers.add_argument("--output", type=Path, required=True)
+    install = sub.add_parser("passenger-install")
+    install.add_argument("archive", type=Path)
+    activate = sub.add_parser("passenger-activate")
+    activate.add_argument("id")
+    baseline = sub.add_parser("baseline-install")
+    baseline.add_argument("archive", type=Path)
+    baseline.add_argument("--publish", action="store_true")
     args = parser.parse_args()
-    settings = Settings()
     settings = Settings(
         **{
             name: getattr(args, name)
@@ -49,10 +58,26 @@ def main():
             if getattr(args, name) is not None
         }
     )
+    if args.command == "baseline-install":
+        from .modeling.baseline_install import install_baseline
+
+        print(json.dumps(install_baseline(settings, args.archive, publish=args.publish), ensure_ascii=False))
+        return
     if args.command == "restore":
         from .bundles import restore_bundle
 
         print(json.dumps(restore_bundle(args.archive, settings)))
+        return
+    if args.command.startswith("passenger-"):
+        from .passenger_package import activate_package, build_package, install_package
+
+        if args.command == "passenger-prepare":
+            result = build_package(args.source, args.output)
+        elif args.command == "passenger-install":
+            result = install_package(settings.data_root, args.archive)
+        else:
+            result = activate_package(settings.data_root, args.id)
+        print(json.dumps(result))
         return
     store = SnapshotStore(settings.state_dir)
     logging.basicConfig(level=logging.INFO, format="%(message)s")

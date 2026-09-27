@@ -1,57 +1,29 @@
 name: moscowt
-x-common: &common
-  image: moscowt:platform
-  build:
-    context: .
-    network: ${MOSCOWT_BUILD_NETWORK:-default}
-  init: true
-  restart: unless-stopped
-  environment: &environment
-    MOSCOWT_WORKER_ENABLED: "false"
-    MOSCOWT_MODEL_THREADS: 2
-    MOSCOWT_QUEUE_LIMIT: 32
-    MOSCOWT_CACHE_ENTRIES: 64
-    MOSCOWT_CACHE_BYTES: 67108864
 services:
-  api:
-    <<: *common
-    entrypoint: ["python", "-m", "moscowt.entrypoint"]
+  service:
+    image: moscowt:${MOSCOWT_IMAGE_TAG:-platform}
+    build:
+      context: .
+      network: ${MOSCOWT_BUILD_NETWORK:-default}
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    entrypoint: ["python", "-m", "moscowt.standalone"]
     environment:
-      <<: *environment
       MOSCOWT_DEMO: "true"
+      MOSCOWT_WORKER_ENABLED: "false"
+      MOSCOWT_MODEL_THREADS: 2
+      MOSCOWT_QUEUE_LIMIT: 32
+      MOSCOWT_CACHE_ENTRIES: 64
+      MOSCOWT_CACHE_BYTES: 67108864
     ports:
       - "127.0.0.1:${MOSCOWT_PORT:-8080}:8000"
     volumes:
       - state:/data/state
       - shared:/data/shared
-    cpus: 2.0
-    mem_limit: 2g
-  worker:
-    <<: *common
-    command: ["worker", "--channel", "general"]
-    depends_on:
-      api:
-        condition: service_healthy
-    volumes:
-      - state:/data/state
-      - shared:/data/shared
-    cpus: 1.0
-    mem_limit: 2g
-    healthcheck:
-      disable: true
-  model-worker:
-    <<: *common
-    command: ["worker", "--channel", "model"]
-    depends_on:
-      api:
-        condition: service_healthy
-    volumes:
-      - state:/data/state
-      - shared:/data/shared:ro
-    cpus: 2.0
-    mem_limit: 6g
-    healthcheck:
-      disable: true
+    cpus: 4.0
+    mem_limit: 4g
+    memswap_limit: 4g
 volumes:
   state:
   shared:

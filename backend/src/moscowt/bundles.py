@@ -10,37 +10,14 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .constants.bundles import (
+    DATA_KINDS as DATA_KINDS,
+    STATE_KINDS as STATE_KINDS,
+)
 from .data.catalog import DataCatalog
 from .data.repository import DatasetRepository
 from .domain import DomainError
 from .storage import canonical, file_hash
-
-STATE_KINDS = (
-    "histories",
-    "networks",
-    "route_imports",
-    "models",
-    "trained_models",
-    "forecasts",
-    "forecast_runs",
-    "fleets",
-    "snapshots",
-    "scenarios",
-    "scenario_results",
-    "evaluations",
-    "reports",
-)
-DATA_KINDS = (
-    "canonical",
-    "raw",
-    "schedules",
-    "schedule_sources",
-    "external",
-    "weather_forecasts",
-    "weather_hourly",
-    "accidents",
-    "accident_links",
-)
 
 
 def create_bundle(settings, ident):
@@ -51,6 +28,10 @@ def create_bundle(settings, ident):
         path = settings.state_dir / name
         if path.is_file():
             captured["state/" + name] = path.read_bytes()
+    for name in ("current.json", "release.json"):
+        path = settings.data_root / "passengers" / name
+        if path.is_file():
+            captured["data/passengers/" + name] = path.read_bytes()
     data = DatasetRepository(settings.data_root)
     catalog = data.catalog.export_snapshot()
     for dataset in catalog["datasets"]:
@@ -77,8 +58,9 @@ def create_bundle(settings, ident):
             sources.extend(
                 (path, f"{prefix}/{path.relative_to(root)}")
                 for path in (root / directory).rglob("*")
-                if path.is_file() and not path.name.startswith(".")
+                if path.is_file() and not any(p.startswith(".") for p in path.relative_to(root).parts)
             )
+    sources = [(p, name) for p, name in sources if name not in captured]
     entries = [
         {"path": name, "sha256": file_hash(path), "bytes": path.stat().st_size}
         for path, name in sorted(sources, key=lambda pair: pair[1])

@@ -50,7 +50,8 @@ def service_availability(stamp, start_minute, end_minute, restrictions):
     seconds = sum((b - a).total_seconds() for a, b in intervals)
     return (
         sum((b - a).total_seconds() * availability(a, b, restrictions) for a, b in intervals) / seconds
-        if seconds else 0.0
+        if seconds
+        else 0.0
     )
 
 

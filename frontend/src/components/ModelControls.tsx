@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { Job, Loose, platform, upload } from '../lib/platform';
 import type { PlatformData } from '../lib/usePlatform';
 import { dates, Period } from './PlatformFields';
+import { dateTimeInput, forecastPeriod, inputTimestamp } from '../lib/modelDates';
 
 export function ModelControls({
   data,
@@ -14,6 +15,7 @@ export function ModelControls({
   scheduleId,
   reuse,
   onPublished,
+  completedUpdate,
 }: {
   data: PlatformData;
   datasetId: string;
@@ -23,13 +25,14 @@ export function ModelControls({
   scheduleId: string;
   reuse: boolean;
   onPublished?: () => void;
+  completedUpdate?: { model_id?: string; forecast_id?: string };
 }) {
   const [modelId, setModelId] = useState(''),
-    [modelType, setModelType] = useState('lgb_cb_rf'),
+    [modelType, setModelType] = useState('competition_catboost'),
     [forecastId, setForecastId] = useState('');
-  const [training, setTraining] = useState<[string, string]>(['2025-01-01', '2025-11-01']);
-  const [forecast, setForecast] = useState<[string, string]>(['2025-11-01', '2025-11-02']);
-  const [origin, setOrigin] = useState('2025-11-01'),
+  const [training, setTraining] = useState<[string, string]>(['', '']);
+  const [forecast, setForecast] = useState<[string, string]>(['', '']);
+  const [origin, setOrigin] = useState(''),
     [groups, setGroups] = useState(['calendar']);
   const [weatherId, setWeatherId] = useState(''),
     [accidentId, setAccidentId] = useState(''),
@@ -56,6 +59,38 @@ export function ModelControls({
   const [uploadId, setUploadId] = useState(''),
     [preview, setPreview] = useState<object | null>(null);
   const selected = data.models.find((m) => m.id === modelId);
+  const initialized = useRef('');
+  useEffect(() => {
+    const dataset = data.datasets.versions.find((d) => d.id === datasetId);
+    if (!dataset || initialized.current === datasetId) return;
+    initialized.current = datasetId;
+    const at = dateTimeInput(dataset.forecast_origin || dataset.end);
+    setTraining([dateTimeInput(dataset.first_observation || dataset.start), at]);
+    setOrigin(at);
+    const published = data.forecasts.find(
+      (f) =>
+        f.id === data.capabilities.current_snapshot.forecastId && f.spec.dataset_id === datasetId,
+    );
+    const model = data.models.find((m) => m.id === published?.spec.model_id);
+    setForecast(
+      forecastPeriod(
+        at,
+        !model || model.spec.model_type === 'competition_catboost' ? '61days' : 'year',
+      ),
+    );
+    setModelId(model?.id || '');
+    if (model) {
+      setModelType(model.spec.model_type);
+      setGroups(model.spec.feature_groups || ['calendar']);
+      setWeatherId(model.spec.weather_hourly_id || '');
+      setAccidentId(model.spec.accident_links_id || '');
+    }
+  }, [data, datasetId]);
+  useEffect(() => {
+    if (completedUpdate?.model_id) setModelId(completedUpdate.model_id);
+    if (completedUpdate?.forecast_id) setForecastId(completedUpdate.forecast_id);
+  }, [completedUpdate]);
+
   const selectedForecast = data.forecasts.find((f) => f.id === forecastId);
   useEffect(() => {
     const published = data.capabilities.current_snapshot.forecastId;
@@ -81,12 +116,13 @@ export function ModelControls({
               if (e.target.value !== 'lgb_cb_rf') setGroups(['calendar']);
             }}
           >
+            <option value="competition_catboost">Базовая · CatBoost × 5 · 61 день</option>
             <option value="lgb_cb_rf">CatBoost / LightGBM / Random Forest</option>
             <option value="seasonal">Недельный профиль</option>
             <option value="annual_scenario">Годовой сценарий</option>
           </select>
         </label>
-        <Period label="Период обучения" value={training} onChange={setTraining} />
+        <Period hourly label="Период обучения" value={training} onChange={setTraining} />
         <p>
           Набор: {data.datasets.versions.find((d) => d.id === datasetId)?.name || datasetId}.
           Маршруты: {routeIds.join(', ')}.
@@ -111,7 +147,7 @@ export function ModelControls({
                 platform('/factor-datasets', Job, {
                   kind: 'weather',
                   start: `${Number(training[0].slice(0, 4)) - 1}-01-01`,
-                  end: training[1],
+                  end: training[1].slice(0, 10),
                 }),
               )
             }
@@ -181,9 +217,9 @@ export function ModelControls({
                 route_ids: routeIds,
                 time_range: dates(...training),
                 feature_groups: groups,
-                weather_hourly_id: weatherId || null,
-                accident_links_id: accidentId || null,
-                external_snapshot_id: externalId || null,
+                weather_hourly_id: modelType === 'lgb_cb_rf' ? weatherId || null : null,
+                accident_links_id: modelType === 'lgb_cb_rf' ? accidentId || null : null,
+                external_snapshot_id: modelType === 'lgb_cb_rf' ? externalId || null : null,
               }),
             )
           }
@@ -192,17 +228,45 @@ export function ModelControls({
         </button>
         <label>
           Обученная модель
-          <select value={modelId} onChange={(e) => setModelId(e.target.value)}>
+          <select
+            value={modelId}
+            onChange={(e) => {
+              setModelId(e.target.value);
+              if (
+                origin &&
+                data.models.find((m) => m.id === e.target.value)?.spec.model_type ===
+                  'competition_catboost'
+              )
+                setForecast(forecastPeriod(origin, '61days'));
+            }}
+          >
             <option value="">Выберите модель</option>
             {data.models
               .filter((m) => m.spec.dataset_id === datasetId)
               .map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.spec.model_type} · до {m.spec.time_range.end.slice(0, 10)} · {m.id.slice(-8)}
+                  {m.label ||
+                    (m.spec.model_type === 'competition_catboost'
+                      ? 'Базовая · CatBoost × 5'
+                      : m.spec.model_type)}
+                  {m.competition_result
+                    ? ` · score ${m.competition_result.score.toLocaleString('ru')}`
+                    : ''}{' '}
+                  · до {m.spec.time_range.end.slice(0, 10)} · {m.id.slice(-8)}
                 </option>
               ))}
           </select>
         </label>
+        {selected?.competition_result && (
+          <p role="note">
+            Конкурсный score: <b>{selected.competition_result.score.toLocaleString('ru')}</b> —
+            результат отправленного прогноза за ноябрь–декабрь 2025, сообщённый пользователем. После
+            переобучения качество проверяется заново.
+          </p>
+        )}
+        {selected?.spec.model_type === 'competition_catboost' && (
+          <p>Календарь и история спроса. Выпуск в 00:00 МСК, горизонт до 61 дня.</p>
+        )}
         {selected && (
           <details>
             <summary>Паспорт модели и ограничения</summary>
@@ -300,63 +364,63 @@ export function ModelControls({
         <summary>3. Выпуски прогноза</summary>
         <label>
           Момент выпуска
-          <input type="date" value={origin} onChange={(e) => setOrigin(e.target.value)} />
+          <input type="datetime-local" value={origin} onChange={(e) => setOrigin(e.target.value)} />
         </label>
         <div>
-          {(['day', 'month', 'year'] as const).map((h) => (
+          {(['day', 'month', '61days', 'year'] as const).map((h) => (
             <button
               key={h}
+              disabled={h === 'year' && selected?.spec.model_type === 'competition_catboost'}
               onClick={() => {
-                const end = new Date(`${origin}T00:00:00Z`);
-                if (h === 'day') end.setUTCDate(end.getUTCDate() + 1);
-                if (h === 'month') end.setUTCMonth(end.getUTCMonth() + 1);
-                if (h === 'year') {
-                  end.setUTCFullYear(end.getUTCFullYear() + 1);
-                  setModelType('annual_scenario');
-                  setModelId(
-                    data.models.find(
-                      (m) =>
-                        m.spec.model_type === 'annual_scenario' && m.spec.dataset_id === datasetId,
-                    )?.id || '',
-                  );
-                }
-                setForecast([origin, end.toISOString().slice(0, 10)]);
+                if (origin) setForecast(forecastPeriod(origin, h));
               }}
             >
-              {{ day: 'День', month: 'Месяц', year: 'Год' }[h]}
+              {{ day: 'День', month: 'Месяц', '61days': '61 день', year: 'Год' }[h]}
             </button>
           ))}
         </div>
-        <Period label="Период прогноза" value={forecast} onChange={setForecast} />
-        <label>
-          Погодный выпуск для суток
-          <select value={releaseId} onChange={(e) => setReleaseId(e.target.value)}>
-            <option value="">Климатология / без погоды</option>
-            {data.weather.map((w) => (
-              <option key={w.id} value={w.id}>
-                Получен {w.available_at}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button disabled={busy} onClick={() => act(() => platform('/weather-forecasts', Job, {}))}>
-          Получить текущий погодный выпуск
-        </button>
-        <p>
-          Выпуск погоды должен быть получен до момента прогноза. Годовой результат —
-          невалидированный сценарий.
-        </p>
+        <Period hourly label="Период прогноза" value={forecast} onChange={setForecast} />
+        {selected?.spec.feature_groups?.includes('weather') && (
+          <>
+            <label>
+              Погодный выпуск для суток
+              <select value={releaseId} onChange={(e) => setReleaseId(e.target.value)}>
+                <option value="">Климатология / без погоды</option>
+                {data.weather.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    Получен {w.available_at}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              disabled={busy}
+              onClick={() => act(() => platform('/weather-forecasts', Job, {}))}
+            >
+              Получить текущий погодный выпуск
+            </button>
+            <p>
+              Погода выпуска используется в пределах первых суток и доступных часов, далее —
+              климатология. Год рассчитывает выбранная модель. Точность дальнего горизонта смотрите
+              в отчёте проверки.
+            </p>
+          </>
+        )}
         <button
-          disabled={busy || !modelId || !datasetId}
+          disabled={
+            busy || !modelId || !datasetId || selected?.spec.dataset_id !== datasetId || !origin
+          }
           onClick={() =>
             act(() =>
               platform('/forecast-runs', Job, {
                 model_id: modelId,
                 dataset_id: datasetId,
-                origin: `${origin}T00:00:00+03:00`,
+                origin: inputTimestamp(origin),
                 time_range: dates(...forecast),
                 route_ids: routeIds,
-                weather_forecast_id: releaseId || null,
+                weather_forecast_id: selected?.spec.feature_groups?.includes('weather')
+                  ? releaseId || null
+                  : null,
               }),
             )
           }

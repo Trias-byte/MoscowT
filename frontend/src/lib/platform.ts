@@ -1,27 +1,19 @@
+import { API_V2_BASE } from '../constants/api';
+import { ApiClient } from '../services/ApiClient';
 import { z } from 'zod';
 import type { Scope } from './contracts';
 import type { SectionLoad } from './sectionLoad';
 
-const BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/api\/v1\/?$/, '/api/v2');
-export async function platform<T>(
+const client = new ApiClient(API_V2_BASE, true);
+export function platform<T>(
   path: string,
   schema: z.ZodType<T>,
   body?: unknown,
   signal?: AbortSignal,
 ): Promise<T> {
-  const response = await fetch(`${BASE}${path}`, {
-    method: body === undefined ? 'GET' : 'POST',
-    signal,
-    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-  const value = await response.json();
-  if (!response.ok)
-    throw new Error(
-      value.error?.message || JSON.stringify(value.detail) || `HTTP ${response.status}`,
-    );
-  return schema.parse(value);
+  return client.request(path, schema, { body, signal });
 }
+export { platformErrorMessage } from '../services/ApiClient';
 export const Loose = z.object({}).catchall(z.unknown());
 export const Dataset = z
   .object({
@@ -35,12 +27,34 @@ export const Dataset = z
     name: z.string().optional(),
     revision: z.number().optional(),
     created_at: z.string().optional(),
+    first_observation: z.string().nullable().optional(),
+    last_observation: z.string().nullable().optional(),
+    forecast_origin: z.string().nullable().optional(),
+    route_coverage: z
+      .record(
+        z.string(),
+        z.object({
+          known_hours: z.number(),
+          missing_hours: z.number(),
+          last_observation: z.string().nullable(),
+        }),
+      )
+      .optional(),
   })
   .passthrough();
 export const Model = z
   .object({
     id: z.string(),
     recipe: z.string(),
+    label: z.string().optional(),
+    competition_result: z
+      .object({
+        score: z.number(),
+        source: z.string(),
+        submission_sha256: z.string(),
+      })
+      .passthrough()
+      .optional(),
     spec: z.object({
       dataset_id: z.string(),
       model_type: z.string(),
@@ -72,6 +86,16 @@ export const Job = z
     kind: z.string(),
     status: z.enum(['pending', 'running', 'ready', 'failed', 'cancelled']),
     progress: z.number(),
+    phase: z.string().optional(),
+    update: z
+      .object({
+        dataset_id: z.string().optional(),
+        model_id: z.string().optional(),
+        forecast_id: z.string().optional(),
+        evaluation_id: z.string().optional(),
+        excluded_routes: z.record(z.string(), z.string()).optional(),
+      })
+      .optional(),
     error: z.string().nullable(),
     result: Loose.nullable(),
   })
@@ -86,16 +110,10 @@ export const Schedule = z
   })
   .passthrough();
 export async function upload(file: File, kind: 'data' | 'model' = 'data') {
-  const response = await fetch(`${BASE}/blobs?kind=${kind}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/octet-stream' },
-    body: file,
-  });
-  const value = await response.json();
-  if (!response.ok) throw new Error(value.error?.message || 'Не удалось загрузить файл');
-  return z.object({ id: z.string() }).parse(value).id;
+  const value = await client.upload(`/blobs?kind=${kind}`, file, z.object({ id: z.string() }));
+  return value.id;
 }
-export const downloadUrl = (id: string) => `${BASE}/jobs/${id}/download`;
+export const downloadUrl = (id: string) => client.url(`/jobs/${encodeURIComponent(id)}/download`);
 const Section = z.object({
   segmentId: z.string(),
   routeId: z.string(),

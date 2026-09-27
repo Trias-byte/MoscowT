@@ -105,7 +105,7 @@ def prepare_labels(store: SnapshotStore, dataset: Path):
         "coverage": "Completeness of the extract is not proven",
         "rawAudit": {
             "executed": False,
-            "reference": "analysis/dataset/reconciliation.json",
+            "reference": "dataset/labels/reconciliation.json",
             "reportedHistoricalDifferences": 0 if known else None,
         },
     }

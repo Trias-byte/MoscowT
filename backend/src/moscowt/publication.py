@@ -8,11 +8,22 @@ from .domain import DomainError
 from .storage import digest
 
 
+def is_research(store, run):
+    model = store.read("trained_models", run["spec"]["model_id"])
+    return run.get("purpose") == "research" or model["spec"].get("purpose") == "research"
+
+
 def publish_forecast(settings, data, models, request, *, base_snapshot=None, activate=True):
     store = models.store
     current = base_snapshot or store.current()
     run, frame = models.frame(request.forecast_id)
     spec = run["spec"]
+    if activate and is_research(store, run):
+        raise DomainError(
+            "RESEARCH_ONLY",
+            "Исследовательский выпуск доступен только в локальном представлении сценария",
+            409,
+        )
     if spec.get("diagnostic_observed_factors"):
         raise DomainError(
             "DIAGNOSTIC_ONLY", "Ретроспективную диагностику нельзя публиковать как оперативный прогноз"
@@ -86,7 +97,7 @@ def annual_options(root, dataset_id, origin, routes, revision):
         run = json.loads(path.read_bytes())
         spec = run["spec"]
         if (
-            run.get("model_type") == "annual_scenario"
+            run.get("model_type") in ("annual_scenario", "lgb_cb_rf")
             and spec["dataset_id"] == dataset_id
             and spec["origin"] == origin
             and set(routes).issubset(spec["route_ids"])
@@ -98,8 +109,8 @@ def annual_options(root, dataset_id, origin, routes, revision):
                     "id": run["id"],
                     **spec["time_range"],
                     "origin": origin,
-                    "kind": "annual_scenario",
+                    "kind": "annual_scenario" if run.get("model_type") == "annual_scenario" else "primary",
                     "qualityNote": run.get("quality_note", "Невалидированный годовой сценарий"),
                 }
             )
-    return result
+    return sorted(result, key=lambda r: (r["kind"] == "annual_scenario", r["end"], r["id"]))

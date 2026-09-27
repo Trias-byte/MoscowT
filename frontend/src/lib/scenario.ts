@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { PREFIX } from '../constants/scenario';
+import { useEffect, useRef, useState } from 'react';
 export interface Incident {
   id: string;
   longitude: number;
@@ -10,6 +11,7 @@ export interface Incident {
 }
 export interface ScenarioDraft {
   engine: 'recompute';
+  enabled: { weather: boolean; season: boolean; incidents: boolean; schedule: boolean };
   name: string;
   forecast_id: string;
   route_ids: string[];
@@ -36,6 +38,7 @@ export interface ScenarioDraft {
 }
 export const emptyScenario: ScenarioDraft = {
   engine: 'recompute',
+  enabled: { weather: true, season: true, incidents: true, schedule: true },
   name: 'Новый сценарий',
   forecast_id: '',
   route_ids: [],
@@ -86,23 +89,28 @@ export const stable = (value: unknown): string =>
 
 export function scenarioInput(draft: ScenarioDraft, mode: ScenarioMode): ScenarioInput {
   const spec = structuredClone(draft);
-  if (mode !== 'combined') {
-    if (mode !== 'weather') spec.weather = structuredClone(emptyScenario.weather);
-    if (mode !== 'incidents') spec.incidents = [];
-    spec.coefficients = {
-      weather: mode === 'weather' ? draft.coefficients.weather : 1,
-      event: mode === 'incidents' ? draft.coefficients.event : 1,
-      season: mode === 'season' ? draft.coefficients.season : 1,
+  const active = Object.fromEntries(
+    Object.entries(draft.enabled || emptyScenario.enabled).map(([key, enabled]) => [
+      key,
+      enabled && (mode === 'combined' || mode === key),
+    ]),
+  ) as ScenarioDraft['enabled'];
+  spec.enabled = active;
+  if (!active.weather) spec.weather = structuredClone(emptyScenario.weather);
+  if (!active.incidents) spec.incidents = [];
+  spec.coefficients = {
+    weather: active.weather ? draft.coefficients.weather : 1,
+    event: active.incidents ? draft.coefficients.event : 1,
+    season: active.season ? draft.coefficients.season : 1,
+  };
+  if (!active.schedule) {
+    spec.additional_vehicle_hours = 0;
+    spec.schedule = {
+      ...structuredClone(emptyScenario.schedule),
+      base_schedule_id: draft.schedule.base_schedule_id,
+      allow_period_reuse: draft.schedule.allow_period_reuse,
+      elasticity: draft.schedule.elasticity,
     };
-    if (mode !== 'schedule') {
-      spec.additional_vehicle_hours = 0;
-      spec.schedule = {
-        ...structuredClone(emptyScenario.schedule),
-        base_schedule_id: draft.schedule.base_schedule_id,
-        allow_period_reuse: draft.schedule.allow_period_reuse,
-        elasticity: draft.schedule.elasticity,
-      };
-    }
   }
   return { ...spec, mode };
 }
@@ -124,7 +132,7 @@ export function mergeEdits<T>(latest: T, before: T, after: T): T {
     next[key] = mergeEdits(latest[key], before[key], after[key]);
   return next;
 }
-const PREFIX = 'potok-scenario-record-v2:';
+
 function readRecords(): ScenarioRecord[] {
   const records: ScenarioRecord[] = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -138,7 +146,13 @@ function readRecords(): ScenarioRecord[] {
         record.mode in scenarioModes &&
         record.runs
       )
-        records.push(record);
+        records.push({
+          ...record,
+          draft: {
+            ...record.draft,
+            enabled: { ...emptyScenario.enabled, ...record.draft.enabled },
+          },
+        });
     } catch {
       /* Skip damaged entries. */
     }
@@ -156,7 +170,7 @@ function initialRecords() {
   try {
     const old = JSON.parse(localStorage.getItem('potok-scenario-draft-v1') || 'null');
     if (old?.engine === 'recompute' && old.schedule && old.weather && Array.isArray(old.incidents))
-      draft = old;
+      draft = { ...old, enabled: { ...emptyScenario.enabled, ...old.enabled } };
   } catch {
     /* Start a new draft. */
   }
@@ -166,6 +180,12 @@ function initialRecords() {
 }
 export function useScenarioWorkspace() {
   const [records, setRecords] = useState(initialRecords);
+  const pendingWrites = useRef<{ id: string; change: (r: ScenarioRecord) => ScenarioRecord }[]>([]);
+  const withPendingEdits = (saved: ScenarioRecord[]) =>
+    pendingWrites.current.reduce(
+      (current, edit) => current.map((r) => (r.id === edit.id ? edit.change(r) : r)),
+      saved,
+    );
   const [activeId, setActiveId] = useState(
     () => sessionStorage.getItem('potok-active-scenario') || records[0].id,
   );
@@ -174,7 +194,7 @@ export function useScenarioWorkspace() {
   }, [activeId]);
   const record = records.find((r) => r.id === activeId) || records[0];
   useEffect(() => {
-    const reload = () => setRecords(readRecords());
+    const reload = () => setRecords(withPendingEdits(initialRecords()));
     window.addEventListener('storage', reload);
     window.addEventListener('potok-scenarios', reload);
     return () => {
@@ -187,9 +207,18 @@ export function useScenarioWorkspace() {
     setActiveId(id);
   };
   const update = (id: string, change: (r: ScenarioRecord) => ScenarioRecord) => {
-    const latest = readRecords().find((r) => r.id === id);
-    if (latest) saveRecord(change(latest));
-    setRecords(readRecords());
+    const edit = { id, change };
+    pendingWrites.current.push(edit);
+    // Controlled inputs respond in the current event; persistence remains serialized.
+    setRecords((current) => current.map((r) => (r.id === id ? change(r) : r)));
+    const write = () => {
+      const latest = readRecords().find((r) => r.id === id);
+      pendingWrites.current = pendingWrites.current.filter((pending) => pending !== edit);
+      if (latest) saveRecord(change(latest));
+      setRecords(withPendingEdits(readRecords()));
+    };
+    if (navigator.locks) void navigator.locks.request(PREFIX + id, write);
+    else write();
   };
   return {
     records,

@@ -5,16 +5,13 @@ from copy import deepcopy
 from datetime import date
 from pathlib import Path
 
+from .constants.network_history import (
+    HISTORY_INDEX as HISTORY_INDEX,
+    HISTORY_WARNING as HISTORY_WARNING,
+)
 from .domain import ROUTES, DomainError
 from .geography import prepare_osm_network
 from .storage import SnapshotStore, digest
-
-HISTORY_INDEX = "history-2025/index.json"
-HISTORY_WARNING = (
-    "Архив OSM за 2025 год: версия выбирается по дате. Даты правок карты могут отличаться "
-    "от дат изменения движения; временные изменения могут отсутствовать. "
-    "Подложка OpenStreetMap современная, архивными являются трассы и остановки."
-)
 
 
 def prepare_history(store: SnapshotStore, directory: Path):

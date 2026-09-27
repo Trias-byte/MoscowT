@@ -28,7 +28,15 @@ import {
   DEMO,
 } from './lib/api';
 import { initialView, saveView, readUi, saveUi } from './lib/state';
-import { makeScope, dateBounds, intervalLabel, dateLabel, windowLabel } from './lib/time';
+import {
+  hourViewAt,
+  moscowDateTime,
+  makeScope,
+  dateBounds,
+  intervalLabel,
+  dateLabel,
+  windowLabel,
+} from './lib/time';
 import {
   number,
   frameSource,
@@ -47,6 +55,13 @@ import { getSections, platform } from './lib/platform';
 import { PlatformPanel } from './components/PlatformPanel';
 import { ScenarioPanel } from './components/ScenarioPanel';
 import { ExportPanel } from './components/ExportPanel';
+import { PassengerComposition } from './components/Passengers';
+import {
+  InfrastructureControls,
+  InfrastructureDetails,
+  PoiCard,
+} from './components/PassengerInfrastructure';
+import { parameters, PoiCollection, type PoiFeature } from './lib/passengers';
 import { scenarioModes, useScenarioWorkspace, visibleIncidents } from './lib/scenario';
 interface Draft {
   scope: Scope;
@@ -56,6 +71,7 @@ export default function App() {
   const capabilities = useQuery({
     queryKey: ['capabilities'],
     queryFn: ({ signal }) => getCapabilities(signal),
+    refetchInterval: DEMO ? false : 5000,
   });
   if (capabilities.isError)
     return (
@@ -87,6 +103,29 @@ function Workspace({
   refresh: () => Promise<unknown>;
 }) {
   const [view, setView] = useState<ViewState>(() => initialView(c));
+  useEffect(() => {
+    setView((previous) => {
+      if (
+        previous.scenarioId ||
+        (previous.publishedSnapshotId ?? previous.snapshotId) === c.snapshotId
+      )
+        return previous;
+      const bounds = dateBounds(c);
+      return {
+        ...previous,
+        snapshotId: c.snapshotId,
+        publishedSnapshotId: c.snapshotId,
+        forecastId: c.forecastId || undefined,
+        scenarioRange: undefined,
+        date:
+          previous.date >= bounds.min && previous.date <= bounds.max
+            ? previous.date
+            : c.defaultDate,
+        routeIds: previous.routeIds.filter((id) => c.targetRouteIds.includes(id)),
+        geometry: { ...previous.geometry, patternIds: [], section: null },
+      };
+    });
+  }, [c.snapshotId]);
   const [selected, setSelected] = useState<ObjectSelection>({ kind: 'route', id: '1' });
   const [left, setLeft] = useState(() => readUi('v2-left', window.innerWidth >= 900)),
     [right, setRight] = useState(() => readUi('v2-right', window.innerWidth > 900)),
@@ -103,6 +142,10 @@ function Workspace({
     [showStops, setShowStops] = useState(true),
     [viewportOnly, setViewportOnly] = useState(false),
     [bounds, setBounds] = useState<[number, number, number, number] | null>(null);
+  const [showInfrastructure, setShowInfrastructure] = useState(false);
+  const [infrastructureRadius, setInfrastructureRadius] = useState<500 | 1000>(500);
+  const [poiCategory, setPoiCategory] = useState('');
+  const [selectedPoi, setSelectedPoi] = useState<PoiFeature | null>(null);
   const [from, setFrom] = useState(''),
     [to, setTo] = useState(''),
     [toast, setToast] = useState('');
@@ -135,6 +178,22 @@ function Workspace({
     [view, viewportOnly, bounds],
   );
   const mapDate = view.date;
+  const poiParams = parameters({
+    snapshot_id: view.snapshotId,
+    date: mapDate,
+    route_ids: scope.routeIds,
+    categories: poiCategory ? [poiCategory] : [],
+    radius: infrastructureRadius,
+    bbox: bounds,
+  });
+  const poi = useQuery({
+    queryKey: ['passengers', 'poi', poiParams],
+    queryFn: ({ signal }) =>
+      platform(`/passengers/poi?${poiParams}`, PoiCollection, undefined, signal),
+    enabled: showInfrastructure && !DEMO,
+    staleTime: 60000,
+  });
+  useEffect(() => setSelectedPoi(null), [poiParams, showInfrastructure]);
   // The day total still offers an active hourly cursor; moving it selects an hour.
   const lastHour = view.windowHours === 12 ? 12 : 23;
   const numericScope: Scope = {
@@ -353,6 +412,8 @@ function Workspace({
 
       {!DEMO && (
         <ScenarioPanel
+          selectedObject={selected}
+          selectedRouteId={focused}
           activeForecastId={view.forecastId ?? c.forecastId}
           open={toolsPanel === 'scenarios'}
           workspace={scenarioWorkspace}
@@ -662,6 +723,20 @@ function Workspace({
               />
               Геометрия в видимой области
             </label>
+            {!DEMO && (
+              <InfrastructureControls
+                enabled={showInfrastructure}
+                onEnabled={setShowInfrastructure}
+                radius={infrastructureRadius}
+                onRadius={setInfrastructureRadius}
+                category={poiCategory}
+                onCategory={setPoiCategory}
+                data={poi.data}
+                error={poi.error}
+                loading={poi.isFetching}
+                onSelect={setSelectedPoi}
+              />
+            )}
           </aside>
         )}
         <section className="v2-center">
@@ -693,6 +768,10 @@ function Workspace({
           <div className="v2-map-container">
             {networkData ? (
               <NetworkMap
+                poi={showInfrastructure ? poi.data : undefined}
+                onPoiSelect={(id) =>
+                  setSelectedPoi(poi.data?.features.find((f) => f.id === id) ?? null)
+                }
                 network={networkData}
                 sectionLoads={sectionLoads}
                 geometry={geometry.data}
@@ -705,7 +784,8 @@ function Workspace({
                 incidents={visibleIncidents(
                   !hideDraftIncidents &&
                     toolsPanel === 'scenarios' &&
-                    ['combined', 'incidents'].includes(scenarioMode)
+                    ['combined', 'incidents'].includes(scenarioMode) &&
+                    scenarioDraft.enabled.incidents
                     ? scenarioDraft.incidents
                     : view.scenarioId
                       ? view.scenarioIncidents || []
@@ -736,10 +816,7 @@ function Workspace({
                         longitude,
                         latitude,
                         route_ids: [],
-                        start:
-                          new Date(Date.parse(sectionScope.timeRange.start))
-                            .toLocaleString('sv-SE', { timeZone: 'Europe/Moscow' })
-                            .replace(' ', 'T') + '+03:00',
+                        start: moscowDateTime(sectionScope.timeRange.start),
                         duration_minutes: 60,
                         reduction: 0.5,
                       },
@@ -752,6 +829,9 @@ function Workspace({
               />
             ) : (
               <div className="v2-empty">Загружаем справочную сеть…</div>
+            )}
+            {showInfrastructure && selectedPoi && (
+              <PoiCard feature={selectedPoi} onClose={() => setSelectedPoi(null)} />
             )}
             <div className="v2-total">
               <span>{sourceLabel(frameSource(frame))}</span>
@@ -899,6 +979,7 @@ function Workspace({
           </button>
           {analyticsOpen && data.data && view.routeIds.length > 0 && (
             <Analytics
+              passengerScope={sectionScope}
               data={data.data}
               scope={scope}
               frame={frame}
@@ -907,13 +988,7 @@ function Workspace({
               onSelect={(id, i) => {
                 select({ kind: 'route', id });
                 if (i !== undefined && data.data?.frames[i]) {
-                  const stamp = new Date(data.data.frames[i].start);
-                  const moscow = stamp.toLocaleString('sv-SE', { timeZone: 'Europe/Moscow' });
-                  patch({
-                    windowHours: 1,
-                    date: moscow.slice(0, 10),
-                    index: Number(moscow.slice(11, 13)),
-                  });
+                  patch(hourViewAt(data.data.frames[i].start));
                 }
               }}
             />
@@ -939,6 +1014,15 @@ function Workspace({
                 ? `${sectionLoad?.fromName ?? networkData?.stops.find((s) => s.id === selectedSegment.fromId)?.name ?? 'Остановка'} → ${sectionLoad?.toName ?? networkData?.stops.find((s) => s.id === selectedSegment.toId)?.name ?? 'Остановка'}`
                 : (selectedStop?.name ?? route?.name ?? `Маршрут № ${focused}`)}
             </h2>
+            {!DEMO && !selectedSegment && (
+              <InfrastructureDetails
+                snapshotId={view.snapshotId}
+                date={mapDate}
+                route={focused}
+                stopId={selectedStop?.id}
+                radius={infrastructureRadius}
+              />
+            )}
             {selectedSegment ? (
               <SectionDetails
                 load={sectionLoad}
@@ -999,6 +1083,9 @@ function Workspace({
                     предполагается присутствие вагона. Праздники и рабочие субботы учитываются в
                     прогнозном профиле. Это оценка активности, не подтверждённый выпуск.
                   </p>
+                )}
+                {!DEMO && (
+                  <PassengerComposition compact scope={{ ...sectionScope, routeIds: [focused] }} />
                 )}
                 <RouteSections
                   loads={Object.values(sectionLoads).filter(

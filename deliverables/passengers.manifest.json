@@ -1,0 +1,13 @@
+{
+  "id": "passengers-b5f95aa70ee532c7750800b8",
+  "coverage": {
+    "end": "2025-11-01T00:00:00+03:00",
+    "start": "2025-01-01T00:00:00+03:00"
+  },
+  "total_boardings": 59667191,
+  "unique_cards": 4979766,
+  "source_manifest_sha256": "a126c52a0646a5bba1a68b82cd5c00257715ff7d795935d35b537d0a70f3b5b8",
+  "bytes": 28498312,
+  "sha256": "2d289cd42e8a98c20bfb449c79d941222017e8734f21f4e2cb6b9dd7075964b1",
+  "files": 49
+}

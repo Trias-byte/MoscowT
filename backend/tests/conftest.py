@@ -25,7 +25,7 @@ def dataset(tmp_path_factory):
         (directory / item.name).symlink_to(item, target_is_directory=item.is_dir())
     for name in ("labels", "test_submission.csv", "spravochniki"):
         target = directory / name
-        if not (DATASET / name).exists() or name in ("labels", "spravochniki"):
+        if not target.exists() and (source / name).exists():
             target.unlink(missing_ok=True)
             target.symlink_to(source / name, target_is_directory=(source / name).is_dir())
     return directory

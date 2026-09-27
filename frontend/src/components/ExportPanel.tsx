@@ -6,6 +6,8 @@ import type { Scope } from '../lib/contracts';
 import { Modal } from './Dialogs';
 import { ids } from './PlatformFields';
 import { scenarioModes, type ScenarioMode } from '../lib/scenario';
+import { moscowDateTime } from '../lib/time';
+import { exportPeriodError } from '../lib/exportPeriod';
 
 export function ExportPanel({
   scope,
@@ -22,7 +24,10 @@ export function ExportPanel({
   const [forecastId, setForecastId] = useState<string | null>(null),
     [scenarioId, setScenarioId] = useState(scope.scenarioId || '');
   const [routes, setRoutes] = useState(scope.routeIds.join(',')),
-    [period, setPeriod] = useState(timeRange);
+    [period, setPeriod] = useState(() => ({
+      start: moscowDateTime(timeRange.start),
+      end: moscowDateTime(timeRange.end),
+    }));
   const [sourceMode, setSourceMode] = useState(scope.scenarioId ? 'forecast' : scope.mode);
   const [grain, setGrain] = useState('hour'),
     [metric, setMetric] = useState('route'),
@@ -41,6 +46,12 @@ export function ExportPanel({
   const forecasts = data.data?.forecasts || [];
   const choices = run && !forecasts.some((f) => f.id === run.id) ? [...forecasts, run] : forecasts;
   const job = jobs.data?.find((j) => j.id === jobId);
+  const periodError = exportPeriodError(period, grain);
+  function changePeriod(boundary: 'start' | 'end', value: string) {
+    setPeriod((previous) => ({ ...previous, [boundary]: value }));
+    setError('');
+    setJobId('');
+  }
   const completed =
     jobs.data?.filter(
       (j) => j.kind === 'scenario_run' && j.status === 'ready' && typeof j.result?.id === 'string',
@@ -48,6 +59,7 @@ export function ExportPanel({
   async function create(path: string, payload: unknown) {
     setBusy(true);
     setError('');
+    setJobId('');
     try {
       const j = await platform(path, Job, payload);
       setJobId(j.id);
@@ -76,10 +88,12 @@ export function ExportPanel({
             }}
           >
             <option value="">История</option>
+            {!!chosenId && !run && <option value={chosenId}>Загрузка выбранного выпуска…</option>}
             {choices.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.spec.time_range.start.slice(0, 10)}—{f.spec.time_range.end.slice(0, 10)} ·{' '}
                 {f.id.slice(-8)}
+                {f.purpose === 'research' ? ' · Исследование' : ''}
               </option>
             ))}
           </select>
@@ -94,7 +108,10 @@ export function ExportPanel({
               const spec = completed.find((j) => j.result?.id === e.target.value)?.result?.spec as
                 { time_range: typeof period; route_ids: string[] } | undefined;
               if (spec) {
-                setPeriod(spec.time_range);
+                setPeriod({
+                  start: moscowDateTime(spec.time_range.start),
+                  end: moscowDateTime(spec.time_range.end),
+                });
                 setRoutes(spec.route_ids.join(','));
               }
               setSourceMode('forecast');
@@ -137,17 +154,52 @@ export function ExportPanel({
         </label>
         <fieldset>
           <legend>Период · МСК · конец не включён</legend>
-          {(['start', 'end'] as const).map((k) => (
-            <input
-              key={k}
-              aria-label={`Экспорт: ${k}`}
-              type="datetime-local"
-              step={3600}
-              value={period[k].slice(0, 16)}
-              onChange={(e) => setPeriod({ ...period, [k]: e.target.value + ':00+03:00' })}
-            />
-          ))}
+          {(['start', 'end'] as const).map((k) => {
+            const name = k === 'start' ? 'Начало выгрузки' : 'Конец выгрузки';
+            const [date, time = '00'] = period[k].split('T');
+            return (
+              <div key={k}>
+                <label>
+                  {name}: дата
+                  <input
+                    aria-label={`${name}: дата`}
+                    type="date"
+                    value={date}
+                    onChange={(e) =>
+                      changePeriod(k, `${e.target.value}T${time.slice(0, 2)}:00:00+03:00`)
+                    }
+                  />
+                </label>
+                <label>
+                  {name}: час
+                  <select
+                    aria-label={`${name}: час`}
+                    value={time.slice(0, 2)}
+                    onChange={(e) => changePeriod(k, `${date}T${e.target.value}:00:00+03:00`)}
+                  >
+                    {Array.from({ length: 24 }, (_, hour) => {
+                      const value = String(hour).padStart(2, '0');
+                      return (
+                        <option key={value} value={value}>
+                          {value}:00
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+              </div>
+            );
+          })}
         </fieldset>
+        <p>
+          Данные выгружаются по целым часам. Чтобы включить сутки полностью, укажите конец в 00:00
+          следующего дня.
+        </p>
+        {periodError && (
+          <p role="alert" className="platform-error">
+            {periodError}
+          </p>
+        )}
         <label>
           Шаг выгрузки
           <select value={grain} onChange={(e) => setGrain(e.target.value)}>
@@ -175,6 +227,8 @@ export function ExportPanel({
             key={format}
             disabled={
               busy ||
+              !!periodError ||
+              !ids(routes).length ||
               !data.data ||
               (!!chosenId && !run) ||
               (format === 'submission' && (grain !== 'hour' || metric !== 'route'))
@@ -211,7 +265,7 @@ export function ExportPanel({
             Полный архив артефактов
           </button>
           <button
-            disabled={busy || !chosenId || !!scenarioId}
+            disabled={busy || !chosenId || !!scenarioId || run?.purpose === 'research'}
             onClick={() => create('/competition-exports', { forecast_id: chosenId })}
           >
             Конкурсный CSV

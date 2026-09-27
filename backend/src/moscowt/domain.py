@@ -1,16 +1,16 @@
-from datetime import date as CalendarDate
-from datetime import datetime, timedelta
+from datetime import date as CalendarDate, datetime, timedelta
 from typing import Literal
-from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-ROUTES = (1, 5, 7, 11, 12, 17, 25, 26, 28, 50)
-TZ = ZoneInfo("Europe/Moscow")
-HISTORY_START = datetime(2025, 1, 1, tzinfo=TZ)
-HISTORY_END = datetime(2025, 11, 1, tzinfo=TZ)
-FINAL_END = datetime(2026, 1, 1, tzinfo=TZ)
-METRIC = "successful_validations"
+from .constants.domain import (
+    FINAL_END as FINAL_END,
+    HISTORY_END as HISTORY_END,
+    HISTORY_START as HISTORY_START,
+    METRIC as METRIC,
+    ROUTES as ROUTES,
+    TZ as TZ,
+)
 
 
 class DomainError(Exception):

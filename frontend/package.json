@@ -17,7 +17,7 @@
     "@tanstack/react-query": "^5.90.0",
     "echarts": "^6.0.0",
     "lucide-react": "^0.468.0",
-    "maplibre-gl": "^5.8.0",
+    "maplibre-gl": "6.11.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "zod": "^4.1.5"

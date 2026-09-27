@@ -77,8 +77,9 @@ class PeriodExporter:
                 validate="one_to_one",
             )
             known = frame.observation.notna()
-            frame.loc[known, "value"] = frame.loc[known, "observation"]
-            frame.loc[known, "provenance"] = "observation"
+            if known.any():
+                frame.loc[known, "value"] = frame.loc[known, "observation"]
+                frame.loc[known, "provenance"] = "observation"
             frame.drop(columns="observation", inplace=True)
         frame["vehicle_hours"], frame["fleet_method"] = np.nan, "missing"
         frame["schedule_scenario"] = spec.schedule_scenario
@@ -183,8 +184,15 @@ class PeriodExporter:
 
     def write(self, spec, ident):
         if spec.format == "submission" and (spec.grain != "hour" or spec.metric_scope != "route"):
-            raise DomainError("INVALID_SUBMISSION_EXPORT", "Формат submission требует маршруты и почасовой шаг")
+            raise DomainError(
+                "INVALID_SUBMISSION_EXPORT", "Формат submission требует маршруты и почасовой шаг"
+            )
         frame = self.frame(spec)
+        baseline = (
+            bool(spec.forecast_id)
+            and self.models.store.read("forecast_runs", spec.forecast_id).get("model_type")
+            == "competition_catboost"
+        )
         metadata = {
             "spec": spec.model_dump(mode="json"),
             "rows": len(frame),
@@ -195,9 +203,11 @@ class PeriodExporter:
         if spec.format == "competition":
             frame = self._competition(spec, frame)
         elif spec.format == "submission":
-            frame = submission_columns(frame)
+            frame = submission_columns(frame, half_even=baseline)
         if spec.format in ("submission", "competition"):
             metadata["float_policy"] = "round_half_up_nonnegative_integer"
+            if baseline:
+                metadata["float_policy"] = "round_half_even_nonnegative_integer"
         if spec.format == "parquet":
             extension = "zip"
             buffer, parquet = io.BytesIO(), io.BytesIO()
@@ -207,7 +217,9 @@ class PeriodExporter:
                 output.writestr("manifest.json", canonical(metadata))
             content = buffer.getvalue()
         else:
-            content = frame.to_csv(index=False, sep=";", lineterminator="\n").encode("utf-8-sig")
+            content = frame.to_csv(index=False, sep=";", lineterminator="\n").encode(
+                "utf-8" if baseline and spec.format == "competition" else "utf-8-sig"
+            )
         path = self.models.store.path("exports", ident, extension)
         atomic_write(path, content)
         return {
@@ -227,6 +239,12 @@ class PeriodExporter:
         ):
             raise DomainError("INVALID_COMPETITION_EXPORT", "Конкурсный экспорт требует почасовой прогноз")
         run = self.models.store.read("forecast_runs", spec.forecast_id)
+        from .publication import is_research
+
+        if is_research(self.models.store, run):
+            raise DomainError(
+                "RESEARCH_ONLY", "Исследовательский выпуск нельзя использовать в конкурсном экспорте", 409
+            )
         if run["spec"].get("diagnostic_observed_factors"):
             raise DomainError(
                 "DIAGNOSTIC_ONLY",
@@ -252,23 +270,30 @@ class PeriodExporter:
             or (result.value < 0).any()
         ):
             raise DomainError("INCOMPLETE_COMPETITION_EXPORT", "Прогноз не покрывает все ключи шаблона")
-        result["prediction"] = np.floor(result.pop("value") + 0.5).astype(np.int64)
+        values = result.pop("value")
+        result["prediction"] = (
+            np.rint(values) if run.get("model_type") == "competition_catboost" else np.floor(values + 0.5)
+        ).astype(np.int64)
         return result
 
 
-def submission_columns(frame):
+def submission_columns(frame, *, half_even=False):
     """The submission contract for any selected route-hour window, including scenarios."""
     if frame.value.isna().any() or not np.isfinite(frame.value).all() or (frame.value < 0).any():
         raise DomainError("INCOMPLETE_SUBMISSION_EXPORT", "Выбранный период содержит часы без данных")
     if (frame.value >= np.iinfo(np.int64).max).any():
         raise DomainError("INVALID_SUBMISSION_EXPORT", "Значение не помещается в целое число")
     timestamps = frame.timestamp.dt.tz_convert("Europe/Moscow")
-    return pd.DataFrame({
-        "route": frame.route,
-        "date": timestamps.dt.strftime("%Y-%m-%d"),
-        "hour": timestamps.dt.hour,
-        "prediction": np.floor(frame.value + 0.5).astype(np.int64),
-    })
+    return pd.DataFrame(
+        {
+            "route": frame.route,
+            "date": timestamps.dt.strftime("%Y-%m-%d"),
+            "hour": timestamps.dt.hour,
+            "prediction": (np.rint(frame.value) if half_even else np.floor(frame.value + 0.5)).astype(
+                np.int64
+            ),
+        }
+    )
 
 
 def aggregate_timestamp(timestamps, grain):

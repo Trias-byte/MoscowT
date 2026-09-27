@@ -9,7 +9,7 @@ from ..domain import StrictModel, TimeRange
 
 class TrainingSpec(StrictModel):
     dataset_id: str
-    model_type: Literal["seasonal", "lgb_cb_rf", "annual_scenario"] = "seasonal"
+    model_type: Literal["seasonal", "lgb_cb_rf", "annual_scenario", "competition_catboost"] = "seasonal"
     route_ids: list[str] = Field(min_length=1, max_length=1000)
     time_range: TimeRange
     parameters: dict[str, Any] = Field(default_factory=dict)
@@ -62,7 +62,10 @@ class ModelAdapter(ABC):
             "recipe_version": self.version,
             "minimum_history_days": self.minimum_days,
             "route_policy": "retrain_to_add_route",
-            "maximum_horizon_days": 366 if self.name == "annual_scenario" else 62,
+            "maximum_horizon_days": 366 if self.name in ("annual_scenario", "lgb_cb_rf") else 62,
+            "maximum_horizon": "calendar_year"
+            if self.name in ("annual_scenario", "lgb_cb_rf")
+            else "62_days",
             "quality_status": "unvalidated_scenario"
             if self.name == "annual_scenario"
             else "see_fixed_origin_evaluation",

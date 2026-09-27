@@ -6,10 +6,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ..constants.data_normalization import (
+    KEYS as KEYS,
+)
 from ..domain import TZ, DomainError
 from .schemas import ImportSpec
-
-KEYS = ["route", "timestamp"]
 
 
 @dataclass

@@ -7,11 +7,12 @@ from functools import lru_cache
 from math import floor
 from statistics import median
 
+from .constants.fleet import (
+    VEHICLE_LOAD_THRESHOLDS as VEHICLE_LOAD_THRESHOLDS,
+)
 from .domain import HISTORY_END, HISTORY_START, ROUTES, TZ, DomainError
 from .service_calendar import profile_weekday
 from .storage import digest
-
-VEHICLE_LOAD_THRESHOLDS = [5, 20, 34, 50]
 
 
 def prepare_fleet(store, dataset):

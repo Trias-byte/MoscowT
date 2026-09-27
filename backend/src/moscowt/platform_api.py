@@ -11,10 +11,13 @@ from fastapi.responses import FileResponse
 from .data.catalog import RouteDefinition
 from .data.schemas import ImportSpec
 from .domain import DomainError, Scope, StrictModel, TimeRange
+from .factor_context import FactorContextRequest, factor_context, weather_profile as read_weather_profile
 from .fleet import VEHICLE_LOAD_THRESHOLDS
 from .modeling.adapters import ADAPTERS
 from .modeling.contracts import ForecastSpec, TrainingSpec
+from .modeling.coverage import dataset_coverage
 from .modeling.packages import EnsembleWeights, ModelPackageService
+from .modeling.refresh import is_descendant, update_payload
 from .modeling.service import ModelService
 from .platform_exports import PeriodExporter, PeriodExportSpec
 from .scenarios import ScenarioService, ScenarioSpec
@@ -26,6 +29,14 @@ from .tasks import WorkQueue
 class UploadRequest(StrictModel):
     blob_id: str
     spec: ImportSpec
+
+
+class ImportApplyRequest(StrictModel):
+    update_forecast: bool | None = None
+
+
+class RefreshRequest(StrictModel):
+    source_model_id: str | None = None
 
 
 class ScheduleRequest(StrictModel):
@@ -98,42 +109,11 @@ def router(settings, data, store, view_cache):
 
     @api.post("/forecast-runs/{ident}/weather-profile")
     def weather_profile(ident: str, body: TimeRange):
-        import pandas as pd
+        return read_weather_profile(settings, store, ident, body)
 
-        from .external import OpenMeteoForecastProvider
-        from .factors import hourly_weather
-
-        run = store.read("forecast_runs", ident)
-        spec = ForecastSpec.model_validate(run["spec"])
-        model = store.read("trained_models", spec.model_id)
-        source_id = model["spec"].get("weather_hourly_id")
-        if not source_id or "weather" not in model["spec"].get("feature_groups", []):
-            raise DomainError("WEATHER_UNSUPPORTED", "У модели нет почасовых погодных признаков")
-        if body.start < spec.time_range.start or body.end > spec.time_range.end:
-            raise DomainError("INVALID_SCENARIO_RANGE", "Период должен быть внутри выпуска")
-        target = pd.DataFrame({"timestamp": pd.date_range(body.start, body.end, freq="h", inclusive="left")})
-        profile = hourly_weather(
-            str(settings.data_root), source_id, target, spec.origin, spec.diagnostic_observed_factors
-        )
-        method = "retrospective_actual" if spec.diagnostic_observed_factors else "prior_year_climatology"
-        if spec.weather_forecast_id:
-            profile = OpenMeteoForecastProvider(settings.data_root).select_hourly(
-                spec.weather_forecast_id, target.timestamp, spec.origin
-            )
-            method = "available_forecast_release"
-        return {
-            "forecast_id": ident,
-            "source_id": spec.weather_forecast_id or source_id,
-            "method": method,
-            "fields": {
-                key: {
-                    "min": float(profile[key].min()),
-                    "max": float(profile[key].max()),
-                    "mean": float(profile[key].mean()),
-                }
-                for key in profile.columns
-            },
-        }
+    @api.post("/forecast-runs/{ident}/factor-context")
+    def scenario_context(ident: str, body: FactorContextRequest):
+        return factor_context(settings, store, ident, body)
 
     @api.post("/blobs", status_code=201)
     async def upload_blob(request: Request, kind: Literal["data", "model"] = "data"):
@@ -170,21 +150,53 @@ def router(settings, data, store, view_cache):
         return data.get_preview(ident)
 
     @api.post("/uploads/{ident}/apply", status_code=202)
-    def apply(ident: str, idempotency_key: str = Header(alias="Idempotency-Key")):
-        data.get_preview(ident)
+    def apply(
+        ident: str,
+        body: ImportApplyRequest | None = None,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ):
+        preview = data.get_preview(ident)
+        current = store.current()
+        base = preview.get("base_dataset_id")
+        working = bool(base and current.get("datasetId") and is_descendant(data, base, current["datasetId"]))
+        update = body.update_forecast if body and body.update_forecast is not None else working
+        if update:
+            if not working:
+                raise DomainError(
+                    "WORKING_DATASET_REQUIRED", "Автообновление доступно для редакций рабочего набора", 409
+                )
+            return queue.enqueue(
+                "model_refresh", update_payload(data, store, upload_id=ident), idempotency_key
+            )
         return queue.enqueue("import_apply", {"upload_id": ident}, idempotency_key)
+
+    @api.post("/datasets/{ident}/refresh-model", status_code=202)
+    def refresh_model(
+        ident: str, body: RefreshRequest, idempotency_key: str = Header(alias="Idempotency-Key")
+    ):
+        if not is_descendant(data, ident, store.current().get("datasetId")):
+            raise DomainError("WORKING_DATASET_REQUIRED", "Выберите редакцию рабочего набора", 409)
+        return queue.enqueue(
+            "model_refresh",
+            update_payload(data, store, dataset_id=ident, model_id=body.source_model_id),
+            idempotency_key,
+        )
 
     @api.get("/datasets")
     def datasets():
-        return {"current_id": data.catalog.current_id(), "versions": data.catalog.datasets()}
+        return {
+            "current_id": data.catalog.current_id(),
+            "versions": [{**d, **dataset_coverage(str(data.root), d["id"])} for d in data.catalog.datasets()],
+        }
 
     @api.get("/datasets/{ident}")
     def dataset(ident: str):
         manifest = data.manifest(ident)
         return {
             **manifest,
+            **dataset_coverage(str(data.root), ident),
             "dependent_models": [m["id"] for m in models.list_models() if m["spec"]["dataset_id"] == ident],
-            "recalculation_policy": "explicit",
+            "recalculation_policy": "automatic_for_working_dataset",
             "is_default": ident == data.catalog.current_id(),
         }
 
@@ -395,8 +407,12 @@ def router(settings, data, store, view_cache):
         return [adapter.capabilities() for adapter in ADAPTERS.values()]
 
     @api.get("/models")
-    def list_models():
-        return [m for m in models.list_models() if m["spec"].get("purpose", "service") == "service"]
+    def list_models(include_research: bool = False):
+        return [
+            m
+            for m in models.list_models()
+            if include_research or m["spec"].get("purpose", "service") == "service"
+        ]
 
     @api.get("/model-evaluations")
     def model_evaluations():
@@ -404,6 +420,10 @@ def router(settings, data, store, view_cache):
             json.loads(path.read_bytes())
             for path in sorted((store.root / "reports").glob("validation-*.json"))
         ]
+
+    @api.get("/model-evaluations/{ident}")
+    def model_evaluation(ident: str):
+        return store.read("reports", ident)
 
     @api.post("/training-runs", status_code=202)
     def train(body: TrainingSpec, idempotency_key: str = Header(alias="Idempotency-Key")):
@@ -417,11 +437,12 @@ def router(settings, data, store, view_cache):
         return queue.enqueue("forecast", body.model_dump(mode="json"), idempotency_key)
 
     @api.get("/forecast-runs")
-    def forecast_runs():
+    def forecast_runs(include_research: bool = False):
         return [
             f
             for f in models.list_forecasts()
-            if f.get("purpose", "service") == "service" and not f["spec"].get("diagnostic_observed_factors")
+            if (include_research or f.get("purpose", "service") == "service")
+            and not f["spec"].get("diagnostic_observed_factors")
         ]
 
     @api.get("/forecast-runs/{ident}")
@@ -503,8 +524,13 @@ def router(settings, data, store, view_cache):
     @api.post("/competition-exports", status_code=202)
     def competition_export(body: CompetitionRequest, idempotency_key: str = Header(alias="Idempotency-Key")):
         from .domain import FINAL_END, HISTORY_END, ROUTES
+        from .publication import is_research
 
         run = store.read("forecast_runs", body.forecast_id)
+        if is_research(store, run):
+            raise DomainError(
+                "RESEARCH_ONLY", "Исследовательский выпуск нельзя использовать в конкурсном экспорте", 409
+            )
         spec = PeriodExportSpec(
             dataset_id=run["spec"]["dataset_id"],
             forecast_id=body.forecast_id,
@@ -539,13 +565,21 @@ def router(settings, data, store, view_cache):
     def cancel(ident: str):
         return queue.cancel(ident)
 
+    @api.post("/jobs/{ident}/retry", status_code=202)
+    def retry_job(ident: str):
+        return queue.retry(ident)
+
     @api.get("/jobs/{ident}/download")
     def download(ident: str):
         job = queue.public(queue.get(ident))
         if job["status"] != "ready" or not job["result"].get("filename"):
             raise DomainError("EXPORT_NOT_READY", "Файл ещё не готов", 409)
         filename = job["result"]["filename"]
-        download_name = "submission.csv" if job["result"].get("spec", {}).get("format") in ("submission", "competition") else filename
+        download_name = (
+            "submission.csv"
+            if job["result"].get("spec", {}).get("format") in ("submission", "competition")
+            else filename
+        )
         return FileResponse(store.root / "exports" / filename, filename=download_name)
 
     return api
