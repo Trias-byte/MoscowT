@@ -48,7 +48,7 @@ class RouteValue(WireModel):
     provenance: Literal["observation", "forecast", "mixed", "missing"]
     value: float | None = Field(ge=0)
     baseValue: float | None = Field(default=None, ge=0)
-    additionalVehicleHours: float = Field(default=0, ge=0)
+    additionalVehicleHours: float = 0
     baseline: float | None = Field(ge=0)
     baselineCount: float | None
     valueOrigins: list[str]
@@ -59,7 +59,13 @@ class RouteValue(WireModel):
     vehicleHours: float | None = Field(default=None, ge=0)
     loadPerVehicleHour: float | None = Field(default=None, ge=0)
     fleetSource: Literal[
-        "observed", "estimated", "mixed", "missing", "planned_duty", "stop_timetable_estimate"
+        "observed",
+        "estimated",
+        "mixed",
+        "missing",
+        "planned_duty",
+        "stop_timetable_estimate",
+        "scenario_service_assumption",
     ] = "missing"
     fleetSampleDays: int = 0
     fleetCoverage: float | None = Field(default=None, ge=0, le=1)
@@ -181,11 +187,12 @@ class CapabilitiesResponse(WireModel):
     networkSnapshotId: str | None
     metrics: list[Literal["successful_validations"]]
     modes: list[Literal["auto", "history", "forecast"]]
-    horizons: list[Literal["day", "month", "competition_61d"]]
+    horizons: list[Literal["day", "month", "year", "competition_61d"]]
     stream: Literal[False]
     historyRange: Range | None
     forecastRange: Range | None
     forecastId: str | None
+    forecastOptions: list[dict] = Field(default_factory=list)
     defaultDate: str
     targetRouteIds: list[str]
     absoluteThresholds: list[float]

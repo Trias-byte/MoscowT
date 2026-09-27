@@ -68,11 +68,23 @@ export const CapabilitiesSchema = z.object({
   networkSnapshotId: z.string().nullable(),
   metrics: z.array(z.literal('successful_validations')),
   modes: z.array(z.enum(['auto', 'history', 'forecast'])),
-  horizons: z.array(z.enum(['day', 'month', 'competition_61d'])),
+  horizons: z.array(z.enum(['day', 'month', 'year', 'competition_61d'])),
   stream: z.literal(false),
   historyRange: RangeSchema.nullable(),
   forecastRange: RangeSchema.nullable(),
   forecastId: z.string().nullable(),
+  forecastOptions: z
+    .array(
+      z.object({
+        id: z.string(),
+        start: z.string(),
+        end: z.string(),
+        origin: z.string(),
+        kind: z.enum(['primary', 'annual_scenario']),
+        qualityNote: z.string(),
+      }),
+    )
+    .optional(),
   defaultDate: z.string(),
   targetRouteIds: z.array(z.string()),
   absoluteThresholds: z.array(z.number()),
@@ -112,7 +124,7 @@ export const ValueSchema = z.object({
   provenance: ProvenanceSchema,
   value: nullable,
   baseValue: nullable.optional(),
-  additionalVehicleHours: z.number().nonnegative().optional(),
+  additionalVehicleHours: z.number().optional(),
   baseline: nullable,
   baselineCount: nullable,
   valueOrigins: z.array(z.string()),
@@ -123,7 +135,15 @@ export const ValueSchema = z.object({
   vehicleHours: nullable.optional(),
   loadPerVehicleHour: nullable.optional(),
   fleetSource: z
-    .enum(['observed', 'estimated', 'mixed', 'missing', 'planned_duty', 'stop_timetable_estimate'])
+    .enum([
+      'observed',
+      'estimated',
+      'mixed',
+      'missing',
+      'planned_duty',
+      'stop_timetable_estimate',
+      'scenario_service_assumption',
+    ])
     .optional(),
   fleetSampleDays: z.number().int().nonnegative().optional(),
   fleetCoverage: z.number().min(0).max(1).nullable().optional(),
@@ -217,6 +237,8 @@ export interface ViewState {
   windowHours: WindowHours;
   date: string;
   snapshotId: string;
+  forecastId?: string;
+  publishedSnapshotId?: string;
   scenarioId?: string;
   index: number;
   geometry: GeometryScope;

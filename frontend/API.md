@@ -137,3 +137,34 @@ Content-Type: application/json
 `geometry` может фильтровать видимость/участок, но не маршрутные суммы; `metricScope` здесь всегда route. Сценарные участки той же области рассчитывает `POST /api/v2/sections`. ID снимка и сценария входят в ключи кэша; числовое представление у двух API общее. Старые `/exports`, `/submissions`, `/jobs/{id}` сохраняют прежний протокол карты. Географический CSV импортируется через существующий `/route-imports` и не создаёт автоматически числовые факты.
 
 Ошибки предметной области: `{error:{code,message}}`; ошибки схемы — стандартный HTTP 422 с `detail`. Внешний запуск без аутентификации не предусмотрен: Compose привязывает порт к localhost.
+
+## Сценарии с пересчётом и перенос моделей
+
+Все пути ниже имеют префикс `/api/v2`; фоновые операции требуют `Idempotency-Key` и возвращают задание. `/jobs/{id}` отслеживает выполнение, `/jobs/{id}/download` выдаёт файл готовой выгрузки.
+
+| Метод / путь                                    | Назначение                                                                                                                     |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /uploads`                                 | В `spec`: `new_dataset=true`, `dataset_name` для самостоятельного набора; либо `base_dataset_id` для новой редакции выбранного |
+| `POST /blobs?kind=model`                        | Поток ZIP, максимум 1 ГиБ; CSV остаётся `kind=data`                                                                            |
+| `POST /models/import-preview`, `/models/import` | `{blob_id}`: проверка пакета / фоновый импорт                                                                                  |
+| `POST /models/{id}/export`                      | Переносимый ZIP модели                                                                                                         |
+| `POST /models/{id}/weights?forecast_id=…`       | `{catboost:0.7,lightgbm:0.1,random_forest:0.2}`; новая модель, опциональный пересчёт указанного выпуска                        |
+| `GET /factor-datasets`, `POST /factor-datasets` | Сохранённые источники; получение `{kind:weather,start,end}` или `{kind:accidents,network_id}`                                  |
+| `GET /accidents`                                | Исторические точки с фильтром по `dataset_id`, `start`, `end`, `west/south/east/north`                                         |
+| `GET /accident-candidates`                      | `longitude`, `latitude`, `date`, `snapshot_id`; возможные маршруты в 100 м                                                     |
+| `POST /forecast-runs/{id}/weather-profile`      | `{start,end}` внутри выпуска; минимум/среднее/максимум исходных почасовых погодных входов                                      |
+| `POST /scenarios`                               | Создание неизменяемого черновика с `engine=recompute`                                                                          |
+| `POST /scenarios/{id}/runs`                     | Фоновый расчёт; завершённый `job.result.id` отличается от ID черновика                                                         |
+| `GET /scenarios/{id}`                           | Черновик либо завершённый результат с lineage, итогами и чувствительностью; незавершённый результат недоступен                 |
+
+Сценарий содержит `forecast_id`, `route_ids`, `time_range`, `weather` (temperature_2m / relative_humidity_2m / precipitation, `null` сохраняет профиль), `coefficients`, `incidents`, `schedule` и `additional_vehicle_hours`. ДТП задаёт `id`, `longitude`, `latitude`, подтверждённые `route_ids`, `start` с часовым поясом, `duration_minutes` и `reduction` 0…1. Расписание: `base_schedule_id` или `base_headway_minutes`, `schedule_id` либо `headway_minutes`, границы `service_start_minute`/`service_end_minute`, список `departures`, `elasticity` 0…1 и явный `allow_period_reuse`.
+
+Для карты передавайте завершённый `scenarioId` в v1/v2 Scope; для `/forecasts/query` и `/exports` — `scenario_id`. Базовый выпуск сохраняется. `/api/v1` и старые коэффициентные сценарии совместимы. Старый `engine=legacy` не принимает физические погодные поля/ДТП/расписание.
+
+`TrainingSpec` поддерживает `weather_hourly_id`, `accident_links_id`, `feature_groups` и `purpose=research` для исследовательских артефактов. `ForecastSpec.diagnostic_observed_factors=true` допускает факты окна только в маркированном исследовании; такой выпуск нельзя опубликовать или экспортировать конкурсным профилем.
+
+## Годовой выпуск в календаре
+
+`GET /api/v1/capabilities` возвращает `forecastOptions`: основной выпуск и готовые годовые сценарии для тех же данных, маршрутов и момента выпуска. `start` включён, `end` исключён; `kind=annual_scenario` и `qualityNote` сохраняют отметку о невалидированном горизонте.
+
+`POST /api/v2/forecast-map-views` принимает `forecast_id` и `snapshot_id`, проверяет совпадение набора данных и возвращает неизменяемый снимок для просмотра. Общая публикация не переключается. Запросы карты используют возвращённый `snapshotId`, экспорт — выбранный `forecast_id`. В демонстрации доступен период до 31.10.2026 включительно, ровно год от 01.11.2025. За его пределами требуется новый выпуск; продолжение исторической геометрии не предполагается.

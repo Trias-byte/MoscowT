@@ -228,6 +228,58 @@ def test_monthly_aggregation_and_unsupported_horizon(model_data):
         service.predict(spec.model_copy(update={"model_id": seasonal["id"]}))
 
 
+def test_annual_map_view_does_not_change_publication(model_data, store):
+    data, ident, local = model_data
+    shutil.copytree(store.root / "networks", local.root / "networks")
+    local.publish(networkId=store.current()["networkId"])
+    service = ModelService(data, local)
+    settings = Settings(state_dir=local.root, data_root=data.root, worker_enabled=False)
+    runs = []
+    for kind, end in (("seasonal", "2026-04-01"), ("annual_scenario", "2027-03-01")):
+        model = service.train(specs(ident, kind))
+        runs.append(
+            service.predict(
+                ForecastSpec(
+                    model_id=model["id"],
+                    dataset_id=ident,
+                    route_ids=["5", "new-101"],
+                    origin="2026-03-01T00:00:00+03:00",
+                    time_range={"start": "2026-03-01T00:00:00+03:00", "end": end + "T00:00:00+03:00"},
+                )
+            )
+        )
+    with TestClient(create_app(settings)) as client:
+        primary = client.post("/api/v2/publications", json={"forecast_id": runs[0]["id"]}).json()
+        caps = client.get("/api/v1/capabilities").json()
+        assert "year" in caps["horizons"]
+        assert caps["forecastOptions"][1]["end"].startswith("2027-03-01")
+        response = client.post(
+            "/api/v2/forecast-map-views",
+            json={"forecast_id": runs[1]["id"], "snapshot_id": primary["snapshotId"]},
+        )
+        assert response.status_code == 200, response.text
+        annual = response.json()
+        assert local.current() == primary
+        assert client.get("/api/v1/capabilities").json()["forecastId"] == runs[0]["id"]
+        period = {"start": "2027-02-28T00:00:00+03:00", "end": "2027-03-01T00:00:00+03:00"}
+        view = client.post(
+            "/api/v1/map-snapshot",
+            json={"snapshotId": annual["snapshotId"], "routeIds": ["5"], "timeRange": period},
+        ).json()
+        expected = client.post(
+            "/api/v2/forecasts/query",
+            json={
+                "dataset_id": ident,
+                "forecast_id": runs[1]["id"],
+                "route_ids": ["5"],
+                "time_range": period,
+                "mode": "forecast",
+            },
+        ).json()
+        assert [f["values"][0]["value"] for f in view["frames"]] == [r["value"] for r in expected["rows"]]
+        assert all(f["values"][0]["value"] > 0 for f in view["frames"])
+
+
 def test_bundle_remains_consistent_during_publication(model_data, tmp_path, monkeypatch):
     import tarfile
 

@@ -14,10 +14,13 @@ class TrainingSpec(StrictModel):
     time_range: TimeRange
     parameters: dict[str, Any] = Field(default_factory=dict)
     external_snapshot_id: str | None = None
-    feature_groups: list[Literal["calendar", "weather", "events"]] = Field(
-        default_factory=lambda: ["calendar"], max_length=3
+    weather_hourly_id: str | None = None
+    accident_links_id: str | None = None
+    feature_groups: list[Literal["calendar", "weather", "events", "accidents"]] = Field(
+        default_factory=lambda: ["calendar"], max_length=4
     )
     seed: int = Field(default=42, ge=0, le=2**31 - 1)
+    purpose: Literal["service", "research"] = "service"
 
     @field_validator("route_ids")
     @classmethod
@@ -34,6 +37,7 @@ class ForecastSpec(StrictModel):
     time_range: TimeRange
     route_ids: list[str] = Field(min_length=1, max_length=1000)
     weather_forecast_id: str | None = None
+    diagnostic_observed_factors: bool = False
 
     _hour = field_validator("origin")(TimeRange.aware_hour.__func__)
     _routes = field_validator("route_ids")(TrainingSpec.unique_routes.__func__)

@@ -151,29 +151,44 @@ class RouteAnalyticsService:
                 flags_by_hour[positions] = matrix["qualityFlag"][row, indices[positions]]
                 sources[positions] = source
             base_values = numeric["value"].copy()
-            scenario_budget = 0.0
+            fleet_hours = self.fleet.hours(
+                snapshot,
+                scope.timeRange.start,
+                str(route),
+                sources.tolist(),
+                run["issuedAt"] if run else None,
+            )
+            scenario_delta = np.zeros(len(sources))
             if scope.scenarioId:
-                from .scenarios import ScenarioSpec
+                from .scenarios import ScenarioService
 
-                scenario = ScenarioSpec.model_validate(self.store.read("scenarios", scope.scenarioId)["spec"])
-                if scenario.forecast_id != snapshot.get("forecastId"):
-                    raise DomainError(
-                        "SCENARIO_FORECAST_MISMATCH", "Сценарий относится к другому прогнозу", 409
-                    )
-                times = pd.date_range(scope.timeRange.start, periods=len(sources), freq="h")
-                mask = (
-                    (times >= scenario.time_range.start) & (times < scenario.time_range.end) & (sources == 2)
+                scenario_frame = pd.DataFrame(
+                    {
+                        "route": str(route),
+                        "timestamp": pd.date_range(scope.timeRange.start, periods=len(sources), freq="h"),
+                        "value": numeric["value"],
+                        "vehicle_hours": [r["vehicles"] for r in fleet_hours],
+                        "fleet_method": [r["source"] for r in fleet_hours],
+                        "provenance": [
+                            "forecast" if x == 2 else "observation" if x == 1 else "missing" for x in sources
+                        ],
+                    }
                 )
-                if route in scenario.route_ids:
-                    numeric["value"][mask] *= scenario.coefficients.multiplier
-                    cells = (
-                        len(scenario.route_ids)
-                        * (scenario.time_range.end - scenario.time_range.start).total_seconds()
-                        / 3600
-                    )
-                    scenario_budget = scenario.additional_vehicle_hours / cells
-                else:
-                    mask[:] = False
+                adjusted = ScenarioService(self.store).apply(
+                    scenario_frame, scope.scenarioId, snapshot.get("forecastId")
+                )
+                numeric["value"] = adjusted.value.to_numpy(dtype=float)
+                scenario_delta = adjusted.additional_vehicle_hours.fillna(0).to_numpy()
+                fleet_hours = [
+                    {
+                        **r,
+                        "vehicles": None
+                        if pd.isna(adjusted.vehicle_hours.iloc[i])
+                        else float(adjusted.vehicle_hours.iloc[i]),
+                        "source": adjusted.fleet_method.iloc[i],
+                    }
+                    for i, r in enumerate(fleet_hours)
+                ]
             used_sources.update(sources.tolist())
             values, baseline, counts = [], [], []
             for name, target in (("value", values), ("baseline", baseline), ("baselineCount", counts)):
@@ -190,14 +205,6 @@ class RouteAnalyticsService:
             origins_by_hour = origins_by_hour.tolist()
             flags_by_hour = flags_by_hour.tolist()
             sources = sources.tolist()
-            fleet_hours = self.fleet.hours(
-                snapshot, scope.timeRange.start, str(route), sources, run["issuedAt"] if run else None
-            )
-            if scope.scenarioId and scenario_budget:
-                fleet_hours = [dict(record) for record in fleet_hours]
-                for index, selected in enumerate(mask):
-                    if selected and fleet_hours[index]["vehicles"] is not None:
-                        fleet_hours[index]["vehicles"] += scenario_budget
             for i in range(frame_count):
                 positions = [j for j in range(i * hours, (i + 1) * hours) if sources[j]]
                 origins = sorted({origins_by_hour[j] for j in positions})
@@ -209,9 +216,7 @@ class RouteAnalyticsService:
                         "provenance": source,
                         "value": values[i],
                         "baseValue": number(base_values[i * hours : (i + 1) * hours].sum()),
-                        "additionalVehicleHours": float(
-                            scenario_budget * mask[i * hours : (i + 1) * hours].sum()
-                        )
+                        "additionalVehicleHours": float(scenario_delta[i * hours : (i + 1) * hours].sum())
                         if scope.scenarioId
                         else 0.0,
                         "baseline": baseline[i],

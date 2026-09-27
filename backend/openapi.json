@@ -862,16 +862,89 @@
         }
       }
     },
+    "/api/v2/forecast-runs/{ident}/weather-profile": {
+      "post": {
+        "summary": "Weather Profile",
+        "operationId": "weather_profile_api_v2_forecast_runs__ident__weather_profile_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimeRange"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/blobs": {
       "post": {
         "summary": "Upload Blob",
         "operationId": "upload_blob_api_v2_blobs_post",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "data",
+                "model"
+              ],
+              "type": "string",
+              "default": "data",
+              "title": "Kind"
+            }
+          }
+        ],
         "responses": {
           "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -1325,6 +1398,475 @@
         }
       }
     },
+    "/api/v2/scenarios/{ident}/runs": {
+      "post": {
+        "summary": "Scenario Run",
+        "operationId": "scenario_run_api_v2_scenarios__ident__runs_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/factor-datasets": {
+      "get": {
+        "summary": "Factors",
+        "operationId": "factors_api_v2_factor_datasets_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Fetch Factors",
+        "operationId": "fetch_factors_api_v2_factor_datasets_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FactorFetchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/accidents": {
+      "get": {
+        "summary": "Accidents",
+        "operationId": "accidents_api_v2_accidents_get",
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "End"
+            }
+          },
+          {
+            "name": "west",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 36.5,
+              "title": "West"
+            }
+          },
+          {
+            "name": "south",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 54.9,
+              "title": "South"
+            }
+          },
+          {
+            "name": "east",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 38.3,
+              "title": "East"
+            }
+          },
+          {
+            "name": "north",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 56.2,
+              "title": "North"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/accident-candidates": {
+      "get": {
+        "summary": "Accident Candidates",
+        "operationId": "accident_candidates_api_v2_accident_candidates_get",
+        "parameters": [
+          {
+            "name": "longitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "title": "Longitude"
+            }
+          },
+          {
+            "name": "latitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "title": "Latitude"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Date"
+            }
+          },
+          {
+            "name": "snapshot_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Snapshot Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/models/import-preview": {
+      "post": {
+        "summary": "Model Preview",
+        "operationId": "model_preview_api_v2_models_import_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/models/import": {
+      "post": {
+        "summary": "Model Import",
+        "operationId": "model_import_api_v2_models_import_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/models/{ident}/weights": {
+      "post": {
+        "summary": "Model Weights",
+        "operationId": "model_weights_api_v2_models__ident__weights_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          },
+          {
+            "name": "forecast_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Forecast Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnsembleWeights"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/models/{ident}/export": {
+      "post": {
+        "summary": "Model Export",
+        "operationId": "model_export_api_v2_models__ident__export_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/model-types": {
       "get": {
         "summary": "Model Types",
@@ -1678,6 +2220,42 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/forecast-map-views": {
+      "post": {
+        "summary": "Forecast Map View",
+        "operationId": "forecast_map_view_api_v2_forecast_map_views_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapViewRequest"
               }
             }
           },
@@ -2167,6 +2745,7 @@
               "enum": [
                 "day",
                 "month",
+                "year",
                 "competition_61d"
               ]
             },
@@ -2208,6 +2787,14 @@
               }
             ],
             "title": "Forecastid"
+          },
+          "forecastOptions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Forecastoptions"
           },
           "defaultDate": {
             "type": "string",
@@ -2384,6 +2971,70 @@
         ],
         "title": "CompetitionRequest"
       },
+      "DepartureEdit": {
+        "properties": {
+          "route_id": {
+            "type": "string",
+            "title": "Route Id"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "change": {
+            "type": "integer",
+            "enum": [
+              -1,
+              1
+            ],
+            "title": "Change",
+            "default": 1
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "maximum": 1440.0,
+            "minimum": 1.0,
+            "title": "Duration Minutes",
+            "default": 60
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "route_id",
+          "timestamp"
+        ],
+        "title": "DepartureEdit"
+      },
+      "EnsembleWeights": {
+        "properties": {
+          "catboost": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Catboost",
+            "default": 0.7
+          },
+          "lightgbm": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Lightgbm",
+            "default": 0.1
+          },
+          "random_forest": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Random Forest",
+            "default": 0.2
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EnsembleWeights"
+      },
       "ExportRequest": {
         "properties": {
           "scope": {
@@ -2414,6 +3065,45 @@
           "scope"
         ],
         "title": "ExportRequest"
+      },
+      "FactorFetchRequest": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "weather",
+              "accidents"
+            ],
+            "title": "Kind"
+          },
+          "start": {
+            "type": "string",
+            "title": "Start",
+            "default": "2024-01-01"
+          },
+          "end": {
+            "type": "string",
+            "title": "End",
+            "default": "2025-12-31"
+          },
+          "network_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "FactorFetchRequest"
       },
       "ForecastSpec": {
         "properties": {
@@ -2452,6 +3142,11 @@
               }
             ],
             "title": "Weather Forecast Id"
+          },
+          "diagnostic_observed_factors": {
+            "type": "boolean",
+            "title": "Diagnostic Observed Factors",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -2775,6 +3470,35 @@
             "type": "boolean",
             "title": "Complete",
             "default": false
+          },
+          "dataset_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Name"
+          },
+          "base_dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Dataset Id"
+          },
+          "new_dataset": {
+            "type": "boolean",
+            "title": "New Dataset",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -2783,6 +3507,66 @@
           "time_range"
         ],
         "title": "ImportSpec"
+      },
+      "Incident": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Id"
+          },
+          "longitude": {
+            "type": "number",
+            "maximum": 38.3,
+            "minimum": 36.5,
+            "title": "Longitude"
+          },
+          "latitude": {
+            "type": "number",
+            "maximum": 56.2,
+            "minimum": 54.9,
+            "title": "Latitude"
+          },
+          "route_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Route Ids"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "maximum": 10080.0,
+            "minimum": 1.0,
+            "title": "Duration Minutes",
+            "default": 60
+          },
+          "reduction": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Reduction",
+            "default": 0.5
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "longitude",
+          "latitude",
+          "route_ids",
+          "start"
+        ],
+        "title": "Incident"
       },
       "JobResponse": {
         "properties": {
@@ -2837,6 +3621,25 @@
           "error"
         ],
         "title": "JobResponse"
+      },
+      "MapViewRequest": {
+        "properties": {
+          "forecast_id": {
+            "type": "string",
+            "title": "Forecast Id"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "title": "Snapshot Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forecast_id",
+          "snapshot_id"
+        ],
+        "title": "MapViewRequest"
       },
       "Meta": {
         "properties": {
@@ -3060,6 +3863,20 @@
           "coverageNote"
         ],
         "title": "Meta"
+      },
+      "ModelImportRequest": {
+        "properties": {
+          "blob_id": {
+            "type": "string",
+            "title": "Blob Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "blob_id"
+        ],
+        "title": "ModelImportRequest"
       },
       "NetworkResponse": {
         "properties": {
@@ -3558,7 +4375,6 @@
           },
           "additionalVehicleHours": {
             "type": "number",
-            "minimum": 0.0,
             "title": "Additionalvehiclehours",
             "default": 0
           },
@@ -3651,7 +4467,8 @@
               "mixed",
               "missing",
               "planned_duty",
-              "stop_timetable_estimate"
+              "stop_timetable_estimate",
+              "scenario_service_assumption"
             ],
             "title": "Fleetsource",
             "default": "missing"
@@ -3717,6 +4534,36 @@
             "minimum": 0.0,
             "title": "Additional Vehicle Hours",
             "default": 0
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "legacy",
+              "recompute"
+            ],
+            "title": "Engine",
+            "default": "legacy"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "default": "Сценарий"
+          },
+          "weather": {
+            "$ref": "#/components/schemas/WeatherChanges"
+          },
+          "incidents": {
+            "items": {
+              "$ref": "#/components/schemas/Incident"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Incidents"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleChanges"
           }
         },
         "additionalProperties": false,
@@ -3727,6 +4574,107 @@
           "time_range"
         ],
         "title": "ScenarioSpec"
+      },
+      "ScheduleChanges": {
+        "properties": {
+          "base_schedule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Schedule Id"
+          },
+          "schedule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Id"
+          },
+          "allow_period_reuse": {
+            "type": "boolean",
+            "title": "Allow Period Reuse",
+            "default": false
+          },
+          "base_headway_minutes": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 240.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Headway Minutes"
+          },
+          "headway_minutes": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 240.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headway Minutes"
+          },
+          "service_start_minute": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1439.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Start Minute"
+          },
+          "service_end_minute": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1439.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service End Minute"
+          },
+          "elasticity": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Elasticity",
+            "default": 0.3
+          },
+          "departures": {
+            "items": {
+              "$ref": "#/components/schemas/DepartureEdit"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "Departures"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ScheduleChanges"
       },
       "ScheduleRequest": {
         "properties": {
@@ -4128,17 +5076,40 @@
             ],
             "title": "External Snapshot Id"
           },
+          "weather_hourly_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weather Hourly Id"
+          },
+          "accident_links_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accident Links Id"
+          },
           "feature_groups": {
             "items": {
               "type": "string",
               "enum": [
                 "calendar",
                 "weather",
-                "events"
+                "events",
+                "accidents"
               ]
             },
             "type": "array",
-            "maxItems": 3,
+            "maxItems": 4,
             "title": "Feature Groups"
           },
           "seed": {
@@ -4147,6 +5118,15 @@
             "minimum": 0.0,
             "title": "Seed",
             "default": 42
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "service",
+              "research"
+            ],
+            "title": "Purpose",
+            "default": "service"
           }
         },
         "additionalProperties": false,
@@ -4215,6 +5195,52 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WeatherChanges": {
+        "properties": {
+          "temperature_2m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 60.0,
+                "minimum": -60.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature 2M"
+          },
+          "relative_humidity_2m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative Humidity 2M"
+          },
+          "precipitation": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 200.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precipitation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "WeatherChanges"
       }
     }
   }

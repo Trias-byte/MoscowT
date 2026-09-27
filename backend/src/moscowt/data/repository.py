@@ -5,6 +5,7 @@ import io
 import json
 import re
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -142,7 +143,9 @@ class DatasetRepository:
         ident = "upload-" + uuid.uuid4().hex
         folder = self._upload_dir(ident)
         folder.mkdir(parents=True)
-        base = self.catalog.current_id()
+        base = None if spec.new_dataset else spec.base_dataset_id or self.catalog.current_id()
+        if base:
+            self.manifest(base)
         source_meta, paths = {}, []
         for index, source in enumerate(sources):
             meta, path = self._source(source, folder, index)
@@ -154,6 +157,9 @@ class DatasetRepository:
             "sources": sorted(source_meta),
             "spec": spec.model_dump(mode="json"),
         }
+        # Explicit branches are independent of the mutable current pointer.
+        if spec.base_dataset_id or spec.new_dataset:
+            definition["base_dataset_id"] = base
         fingerprint = digest(definition)
         report = {
             "id": ident,
@@ -206,13 +212,14 @@ class DatasetRepository:
         if old:
             return {**old, "duplicate": True, "current_dataset_id": self.catalog.current_id()}
         base = report["base_dataset_id"]
-        if self.catalog.current_id() != base:
+        spec = ImportSpec.model_validate(report["spec"])
+        activate = not (spec.new_dataset or spec.base_dataset_id)
+        if activate and self.catalog.current_id() != base:
             raise DomainError("DATASET_CHANGED", "Данные изменились; проверьте загрузку повторно", 409)
         versions = {r["id"]: r["version"] for r in self.catalog.routes()}
         for route_id in report["routes"]:
             if versions.get(route_id) != report["route_versions"].get(route_id):
                 raise DomainError("ROUTE_CHANGED", "Маршрут изменился; проверьте загрузку повторно", 409)
-        spec = ImportSpec.model_validate(report["spec"])
         if spec.mode == "append" and report["conflict_keys"]:
             raise DomainError("DATA_CONFLICT", "Есть отличающиеся значения; выберите режим исправления", 409)
         folder = self._upload_dir(ident)
@@ -252,6 +259,12 @@ class DatasetRepository:
         routes = sorted(frame.route.unique().tolist())
         manifest = {
             "id": dataset_id,
+            "name": spec.dataset_name
+            or (self.manifest(base).get("name") if base else None)
+            or "История валидаций",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "collection_id": self.manifest(base).get("collection_id", base) if base else dataset_id,
+            "revision": self.manifest(base).get("revision", 1) + 1 if base else 1,
             "schema_version": self.SCHEMA_VERSION,
             "parent_id": base,
             "timezone": "Europe/Moscow",
@@ -273,9 +286,9 @@ class DatasetRepository:
             "rows": len(frame),
             "routes": routes,
             "duplicate": False,
-            "current_dataset_id": dataset_id,
+            "current_dataset_id": dataset_id if activate else self.catalog.current_id(),
         }
-        return self.catalog.publish(manifest, report["fingerprint"], result, base)
+        return self.catalog.publish(manifest, report["fingerprint"], result, base, activate=activate)
 
     def event_batches(self, ident, *, route_ids=None, start=None, end=None):
         """Only yield events still authoritative for the dataset's route-hour keys."""

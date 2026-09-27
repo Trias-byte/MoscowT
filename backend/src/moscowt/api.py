@@ -253,6 +253,34 @@ def create_app(settings: Settings | None = None):
         current = snapshot()
         history = store.read("histories", current["historyId"]) if current.get("historyId") else None
         run = store.read("forecasts", current["forecastId"]) if current.get("forecastId") else None
+        options = []
+        if run:
+            source = store.read("forecast_runs", run["forecastRunId"]) if run.get("forecastRunId") else {}
+            options.append(
+                {
+                    "id": run["id"],
+                    "start": run["start"],
+                    "end": run["end"],
+                    "origin": run["issuedAt"],
+                    "kind": "annual_scenario" if source.get("model_type") == "annual_scenario" else "primary",
+                    "qualityNote": source.get("quality_note", "Основной выпуск"),
+                }
+            )
+            if current.get("datasetId"):
+                from .publication import annual_options
+
+                directory = store.root / "forecast_runs"
+                options.extend(
+                    o
+                    for o in annual_options(
+                        str(store.root),
+                        current["datasetId"],
+                        run["issuedAt"],
+                        tuple(run["routes"]),
+                        directory.stat().st_mtime_ns,
+                    )
+                    if o["id"] != run["id"]
+                )
         return {
             "contractVersion": 2,
             "snapshotId": current["snapshotId"],
@@ -262,6 +290,7 @@ def create_app(settings: Settings | None = None):
             "unsupportedMetricScopes": ["stop", "segment", "direction", "vehicle"],
             "modes": ["auto"] + (["history"] if history else []) + (["forecast"] if run else []),
             "horizons": ["day", "month"]
+            + (["year"] if any(o["kind"] == "annual_scenario" for o in options) else [])
             + (["competition_61d"] if run and run["horizon"] == "competition_61d" else []),
             "grains": ["hour", "day"],
             "exportFormats": ["csv"],
@@ -272,6 +301,7 @@ def create_app(settings: Settings | None = None):
             "historyRange": {"start": history["start"], "end": history["end"]} if history else None,
             "forecastRange": {"start": run["start"], "end": run["end"]} if run else None,
             "forecastId": run["id"] if run else None,
+            "forecastOptions": options,
             "fleetId": current.get("fleetId"),
             "vehicleLoadThresholds": VEHICLE_LOAD_THRESHOLDS,
             "currentTime": history["end"] if history else None,

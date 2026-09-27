@@ -99,9 +99,13 @@ class SnapshotStore:
             current = self.current()
             if expected_snapshot_id is not None and current.get("snapshotId") != expected_snapshot_id:
                 raise DomainError("SNAPSHOT_CHANGED", "Текущий снимок изменился; обновите выбор", 409)
-            current.update(changes)
-            current.pop("snapshotId", None)
-            current["snapshotId"] = "snapshot-" + digest(current)
-            self.put("snapshots", current["snapshotId"], current)
+            current = self.create_snapshot(current, **changes)
             write_json(self.root / "current.json", current)
             return current
+
+    def create_snapshot(self, base, **changes):
+        value = {**base, **changes}
+        value.pop("snapshotId", None)
+        value["snapshotId"] = "snapshot-" + digest(value)
+        self.put("snapshots", value["snapshotId"], value)
+        return value

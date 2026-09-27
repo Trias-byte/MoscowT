@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
 import {
   Activity,
   Download,
-  Upload,
   CalendarDays,
   MapPin,
   RefreshCw,
@@ -13,7 +13,6 @@ import {
   PanelRightClose,
   Play,
   Pause,
-  Info,
   ChevronDown,
   ChevronUp,
   TramFront,
@@ -44,8 +43,11 @@ import { Modal } from './components/Dialogs';
 import { RouteUpload } from './components/RouteUpload';
 import { RouteSections, SectionDetails } from './components/SectionDetails';
 import { buildSectionModel, estimateSections } from './lib/sectionLoad';
-import { getSections } from './lib/platform';
+import { getSections, platform } from './lib/platform';
 import { PlatformPanel } from './components/PlatformPanel';
+import { ScenarioPanel } from './components/ScenarioPanel';
+import { ExportPanel } from './components/ExportPanel';
+import { useScenarioDraft } from './lib/scenario';
 interface Draft {
   scope: Scope;
   timeRange: Scope['timeRange'];
@@ -104,6 +106,13 @@ function Workspace({
   const [from, setFrom] = useState(''),
     [to, setTo] = useState(''),
     [toast, setToast] = useState('');
+  const [toolsPanel, setToolsPanel] = useState(() => localStorage.getItem('workspace-tools') || '');
+  const [scenarioDraft, setScenarioDraft] = useScenarioDraft();
+  const [placingIncident, setPlacingIncident] = useState(false);
+  const [selectedIncident, setSelectedIncident] = useState<string | null>(null);
+  useEffect(() => {
+    localStorage.setItem('workspace-tools', toolsPanel);
+  }, [toolsPanel]);
   const previousGeometryVersion = useRef<string | null>(null);
   const detailsPanel = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -206,7 +215,12 @@ function Workspace({
   useEffect(() => saveView(view), [view]);
   useEffect(() => {
     if (c.fleetId && data.data && !data.data.meta.fleetId && view.snapshotId !== c.snapshotId)
-      patch({ snapshotId: c.snapshotId });
+      patch({
+        snapshotId: c.snapshotId,
+        publishedSnapshotId: c.snapshotId,
+        forecastId: c.forecastId || undefined,
+        scenarioId: undefined,
+      });
   }, [c.fleetId, c.snapshotId, data.data, view.snapshotId, patch]);
   useEffect(() => saveUi('v2-left', left), [left]);
   useEffect(() => saveUi('v2-right', right), [right]);
@@ -271,14 +285,38 @@ function Workspace({
         .slice(0, 8)
     : [];
   return (
-    <main className="workspace-v2">
+    <main
+      className={`workspace-v2 ${toolsPanel ? 'tools-open' : ''} ${placingIncident ? 'placing-incident' : ''}`}
+    >
+      {!DEMO && (
+        <nav className="workspace-tools" aria-label="Работа с данными">
+          <button
+            aria-pressed={toolsPanel === 'data'}
+            onClick={() => setToolsPanel(toolsPanel === 'data' ? '' : 'data')}
+          >
+            Данные и модели
+          </button>
+          <button
+            aria-pressed={toolsPanel === 'scenarios'}
+            onClick={() => setToolsPanel(toolsPanel === 'scenarios' ? '' : 'scenarios')}
+          >
+            Сценарии
+          </button>
+        </nav>
+      )}
       {!DEMO && (
         <PlatformPanel
+          open={toolsPanel === 'data'}
+          onClose={() => setToolsPanel('')}
+          onUploadRoute={() => setUploadOpen(true)}
+          onHelp={() => setHelp(true)}
           onPublished={() => {
             refresh();
             getCapabilities().then((caps) =>
               patch({
                 snapshotId: caps.snapshotId,
+                publishedSnapshotId: caps.snapshotId,
+                forecastId: caps.forecastId || undefined,
                 date: caps.defaultDate,
                 routeIds: caps.targetRouteIds,
                 scenarioId: undefined,
@@ -286,7 +324,40 @@ function Workspace({
               }),
             );
           }}
-          onScenario={(id) => patch({ scenarioId: id })}
+        />
+      )}
+
+      {!DEMO && (
+        <ScenarioPanel
+          activeForecastId={view.forecastId ?? c.forecastId}
+          open={toolsPanel === 'scenarios'}
+          draft={scenarioDraft}
+          setDraft={setScenarioDraft}
+          placing={placingIncident}
+          setPlacing={(value) => {
+            setPlacingIncident(value);
+            if (value) setAnalyticsOpen(false);
+          }}
+          snapshotId={view.snapshotId}
+          selectedIncident={selectedIncident}
+          selectIncident={setSelectedIncident}
+          onApply={(id) =>
+            patch({
+              scenarioId: id || undefined,
+              ...(id
+                ? {
+                    date: scenarioDraft.time_range.start.slice(0, 10),
+                    index: Number(scenarioDraft.time_range.start.slice(11, 13)),
+                    windowHours:
+                      Number(scenarioDraft.time_range.start.slice(11, 13)) === 0 ? 24 : 1,
+                  }
+                : {}),
+            })
+          }
+          onClose={() => {
+            setToolsPanel('');
+            setPlacingIncident(false);
+          }}
         />
       )}
 
@@ -308,16 +379,6 @@ function Workspace({
             <i />
             {DEMO ? 'Демонстрация' : 'Данные и прогноз'}
           </span>
-          <button aria-label="О данных" onClick={() => setHelp(true)}>
-            <Info size={19} />
-          </button>
-          <button
-            className="v2-outline"
-            disabled={DEMO || !networkData?.historyRange}
-            onClick={() => setUploadOpen(true)}
-          >
-            <Upload size={16} /> Загрузить маршрут
-          </button>
           <button
             className="v2-outline"
             disabled={!frame}
@@ -338,7 +399,9 @@ function Workspace({
           Демонстрационный режим: значения синтетические, конкурсный экспорт отключён.
         </div>
       )}
-      <div className={`v2-workarea ${left ? 'left-open' : ''} ${right ? 'right-open' : ''}`}>
+      <div
+        className={`v2-workarea ${left ? 'left-open' : ''} ${right && !toolsPanel ? 'right-open' : ''}`}
+      >
         {left && (
           <aside className="v2-sidebar" aria-label="Управление маршрутами">
             <div className="v2-panel-heading">
@@ -602,6 +665,41 @@ function Workspace({
                 showReference={showReference}
                 showStops={showStops}
                 loadThresholds={thresholds}
+                incidents={scenarioDraft.incidents}
+                placingIncident={placingIncident}
+                onIncidentSelect={(id) => {
+                  setSelectedIncident(id);
+                  setToolsPanel('scenarios');
+                }}
+                onIncidentMove={(id, longitude, latitude) =>
+                  setScenarioDraft((previous) => ({
+                    ...previous,
+                    incidents: previous.incidents.map((i) =>
+                      i.id === id ? { ...i, longitude, latitude } : i,
+                    ),
+                  }))
+                }
+                onIncidentPlace={(longitude, latitude) => {
+                  const id = crypto.randomUUID();
+                  setScenarioDraft((previous) => ({
+                    ...previous,
+                    incidents: [
+                      ...previous.incidents,
+                      {
+                        id,
+                        longitude,
+                        latitude,
+                        route_ids: [],
+                        start: previous.time_range.start,
+                        duration_minutes: 60,
+                        reduction: 0.5,
+                      },
+                    ],
+                  }));
+                  setSelectedIncident(id);
+                  setPlacingIncident(false);
+                  setToolsPanel('scenarios');
+                }}
               />
             ) : (
               <div className="v2-empty">Загружаем справочную сеть…</div>
@@ -631,7 +729,12 @@ function Workspace({
                   className="v2-text"
                   onClick={async () => {
                     await refresh();
-                    patch({ snapshotId: c.snapshotId });
+                    patch({
+                      snapshotId: c.snapshotId,
+                      publishedSnapshotId: c.snapshotId,
+                      forecastId: c.forecastId || undefined,
+                      scenarioId: undefined,
+                    });
                   }}
                 >
                   Открыть доступный снимок
@@ -655,6 +758,10 @@ function Workspace({
                   {frame ? intervalLabel(frame.start, frame.end, scope.grain) : 'Выберите период'}
                 </b>
                 <span>Московское время · {windowLabel(view.windowHours)}</span>
+                {c.forecastOptions?.find((f) => f.id === (view.forecastId ?? c.forecastId))
+                  ?.kind === 'annual_scenario' && (
+                  <span className="annual-forecast-note">Годовой сценарий · невалидированный</span>
+                )}
               </div>
               <div className="v2-segmented">
                 {([1, 12, 24] as const).map((hours) => (
@@ -755,7 +862,7 @@ function Workspace({
             />
           )}
         </section>
-        {right && (
+        {right && !toolsPanel && (
           <aside ref={detailsPanel} className="v2-details" aria-label="Сведения об объекте">
             <div className="v2-panel-heading">
               <span className="v2-eyebrow">
@@ -963,10 +1070,12 @@ function Workspace({
           onClose={() => setUploadOpen(false)}
           onApplied={(result) => {
             setUploadOpen(false);
+            setToolsPanel('');
             setShowReference(true);
             select({ kind: 'route', id: result.routeId });
             patch({
               snapshotId: result.snapshotId,
+              publishedSnapshotId: result.snapshotId,
               date: result.validFrom,
               windowHours: 24,
               index: 0,
@@ -990,8 +1099,18 @@ function Workspace({
           <RefreshCw size={12} />
           Проверить выпуски
         </button>
-        {c.snapshotId !== view.snapshotId && (
-          <button onClick={() => patch({ snapshotId: c.snapshotId, date: c.defaultDate })}>
+        {c.snapshotId !== (view.publishedSnapshotId ?? view.snapshotId) && (
+          <button
+            onClick={() =>
+              patch({
+                snapshotId: c.snapshotId,
+                publishedSnapshotId: c.snapshotId,
+                forecastId: c.forecastId || undefined,
+                scenarioId: undefined,
+                date: c.defaultDate,
+              })
+            }
+          >
             Открыть новый снимок
           </button>
         )}
@@ -1009,7 +1128,15 @@ function Workspace({
           onApply={patch}
         />
       )}
-      {draft && (
+      {draft && !DEMO && (
+        <ExportPanel
+          scope={draft.scope}
+          initialForecastId={view.forecastId ?? data.data?.meta.forecastId ?? c.forecastId}
+          timeRange={draft.timeRange}
+          onClose={() => setDraft(null)}
+        />
+      )}
+      {draft && DEMO && (
         <ExportDialog
           draft={draft}
           canSubmit={c.submissionAvailable && !DEMO}
@@ -1082,18 +1209,55 @@ function DatePicker(p: {
   onClose: () => void;
 }) {
   const [windowHours, setWindowHours] = useState<WindowHours>(p.view.windowHours),
-    [startHour, setStartHour] = useState(p.view.index);
+    [startHour, setStartHour] = useState(p.view.index),
+    [date, setDate] = useState(p.view.date),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState('');
   const bounds = dateBounds(p.capabilities);
   const start = Math.min(startHour, 24 - windowHours);
+  const at = Date.parse(`${date}T00:00:00+03:00`);
+  const options = p.capabilities.forecastOptions || [];
+  const chosen =
+    options.find((f) => Date.parse(f.start) <= at && Date.parse(f.end) >= at + 86400000) ||
+    options.find((f) => f.id === p.capabilities.forecastId);
   return (
     <Modal title="Дата и время" onClose={p.onClose}>
-      <p className="v2-hint">Выберите день в пределах истории и опубликованного прогноза.</p>
+      <p className="v2-hint">
+        История и готовые прогнозы доступны до {bounds.max}. Годовой горизонт считается от момента
+        выпуска, а не от текущей даты.
+      </p>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          const date = String(new FormData(e.currentTarget).get('date'));
-          p.onApply({ date, windowHours, index: start });
-          p.onClose();
+          setBusy(true);
+          setError('');
+          try {
+            let snapshotId = p.view.snapshotId;
+            const changed =
+              chosen && chosen.id !== (p.view.forecastId ?? p.capabilities.forecastId);
+            if (changed) {
+              const result = await platform(
+                '/forecast-map-views',
+                z.object({ snapshotId: z.string() }),
+                { forecast_id: chosen.id, snapshot_id: snapshotId },
+              );
+              snapshotId = result.snapshotId;
+            }
+            p.onApply({
+              date,
+              windowHours,
+              index: start,
+              snapshotId,
+              publishedSnapshotId: p.view.publishedSnapshotId ?? p.view.snapshotId,
+              ...(chosen ? { forecastId: chosen.id } : {}),
+              ...(changed ? { scenarioId: undefined } : {}),
+            });
+            p.onClose();
+          } catch (e) {
+            setError(e instanceof Error ? e.message : String(e));
+          } finally {
+            setBusy(false);
+          }
         }}
       >
         <label className="v2-field">
@@ -1104,7 +1268,8 @@ function DatePicker(p: {
             required
             min={bounds.min}
             max={bounds.max}
-            defaultValue={p.view.date}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
         </label>
         <label className="v2-field">
@@ -1134,8 +1299,16 @@ function DatePicker(p: {
           Будет показана сумма за {String(start).padStart(2, '0')}:00–
           {String(start + windowHours).padStart(2, '0')}:00 по московскому времени.
         </p>
-        <button className="v2-primary full" type="submit">
-          Применить
+        {chosen?.kind === 'annual_scenario' && (
+          <p className="scenario-note">
+            Для этой даты используется годовой сценарий от {chosen.origin.slice(0, 10)}. Он не
+            валидирован; погодные условия будущего года неизвестны. Архив геометрии 2025 не
+            продлевается автоматически.
+          </p>
+        )}
+        {error && <p role="alert">{error}</p>}
+        <button className="v2-primary full" type="submit" disabled={busy}>
+          {busy ? 'Открываем прогноз…' : 'Применить'}
         </button>
       </form>
     </Modal>

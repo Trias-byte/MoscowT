@@ -28,7 +28,7 @@ test('all routes and unsupported endpoint gating', async ({ page }) => {
   });
   await page.reload();
   await page.getByRole('tab', { name: 'Таблица', exact: true }).click();
-  await expect(page.locator('tbody tr')).toHaveCount(10);
+  await expect(page.locator('.v2-table-wrap tbody tr')).toHaveCount(10);
   await page.getByRole('button', { name: 'Выбрать маршрут 17', exact: true }).click();
   await expect(page.locator('.v2-details')).toContainText('Трасса по трамвайным путям');
   await expect(page.locator('.v2-detail-metric strong')).not.toHaveText('Нет данных');
@@ -87,7 +87,7 @@ test('section preserves route totals', async ({ page }) => {
   await page.getByLabel('Конечная остановка', { exact: true }).selectOption({ index: 5 });
   await page.getByRole('button', { name: 'Показать только участок' }).click();
   await expect(page.getByRole('status')).toContainText('только карту');
-  await expect(page.locator('tbody tr')).toHaveCount(10);
+  await expect(page.locator('.v2-table-wrap tbody tr')).toHaveCount(10);
   await expect(page.locator('.v2-total strong')).toHaveText(total);
 });
 test('late-2025 routes have real paths and searchable stops', async ({ page, request }) => {
@@ -158,20 +158,24 @@ test('calendar automatically switches actuals and forecasts across the full year
     ['2025-10-31', 'Фактические данные'],
     ['2025-11-01', 'Прогноз'],
     ['2025-12-31', 'Прогноз'],
+    ['2026-01-15', 'Прогноз'],
+    ['2026-10-31', 'Прогноз'],
+    ['2025-12-31', 'Прогноз'],
   ]) {
     await page.getByRole('button', { name: 'Дата и время', exact: true }).click();
     const input = page.getByRole('dialog').getByLabel('Дата', { exact: true });
     await expect(input).toHaveAttribute('min', '2025-01-01');
-    await expect(input).toHaveAttribute('max', '2025-12-31');
+    await expect(input).toHaveAttribute('max', '2026-10-31');
     await input.fill(date);
     await page.getByRole('button', { name: 'Применить', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     const saved = JSON.parse(new URL(page.url()).searchParams.get('view')!);
     expect(saved.mode).toBe('auto');
     expect(saved.date).toBe(date);
     const explicit = await request.post('/api/v1/map-snapshot', {
       data: {
         routeIds: capabilities.targetRouteIds,
-        snapshotId: capabilities.snapshotId,
+        snapshotId: saved.snapshotId,
         mode: source === 'Прогноз' ? 'forecast' : 'history',
         grain: 'day',
         timeRange: {
@@ -182,18 +186,58 @@ test('calendar automatically switches actuals and forecasts across the full year
     });
     expect(explicit.status()).toBe(200);
     await expect(page.getByLabel('Источник данных', { exact: true })).toHaveText(source);
-    await expect(page.locator('tbody tr')).toHaveCount(10);
-    await expect(page.locator('tbody tr').first()).toContainText(source);
+    await expect(page.locator('.v2-table-wrap tbody tr')).toHaveCount(10);
+    await expect(page.locator('.v2-table-wrap tbody tr').first()).toContainText(source);
     const expected = (await explicit.json()).frames[0].values;
     for (let i = 0; i < expected.length; i++) {
-      await expect(page.locator('tbody tr').nth(i).getByRole('cell').nth(1)).toHaveText(
+      await expect(
+        page.locator('.v2-table-wrap tbody tr').nth(i).getByRole('cell').nth(1),
+      ).toHaveText(
         new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(expected[i].value),
       );
     }
     if (date === '2025-01-01') {
       await page.screenshot({ path: 'test-results/january-actuals.png', fullPage: true });
     }
+    if (date === '2026-10-31') {
+      await page.reload();
+      await page.getByRole('tab', { name: 'Таблица', exact: true }).click();
+      await expect(
+        page.getByText('Годовой сценарий · невалидированный', { exact: true }),
+      ).toBeVisible();
+      await expect(page.locator('.v2-table-wrap tbody tr')).toHaveCount(10);
+      expect(JSON.parse(new URL(page.url()).searchParams.get('view')!).date).toBe(date);
+      expect((await (await request.get('/api/v1/capabilities')).json()).snapshotId).toBe(
+        capabilities.snapshotId,
+      );
+      await page.getByRole('button', { name: 'Экспорт', exact: true }).click();
+      await expect(
+        page.getByRole('dialog').getByRole('combobox', { name: 'Выпуск прогноза', exact: true }),
+      ).toHaveValue(saved.forecastId);
+      await page.keyboard.press('Escape');
+    }
   }
+});
+
+test('expanded dynamics shows all routes and a readable tooltip', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Динамика', exact: true }).click();
+  await expect(page.locator('.dynamics-routes button')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Развернуть график', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Динамика маршрутов', exact: true });
+  const chart = dialog.getByRole('img', { name: 'Динамика маршрутов в большом окне', exact: true });
+  const box = (await chart.boundingBox())!;
+  expect(box.width).toBeGreaterThan(900);
+  expect(box.height).toBeGreaterThan(400);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(dialog.locator('.dynamics-tooltip tbody tr')).toHaveCount(10);
+  await dialog.getByRole('checkbox').check();
+  await dialog.getByRole('button', { name: '№ 17', exact: true }).click();
+  await page.mouse.move(box.x + box.width / 2 + 10, box.y + box.height / 2);
+  await expect(dialog.locator('.dynamics-tooltip tbody tr')).toHaveCount(9);
+  await expect(dialog.locator('.dynamics-tooltip th').last()).toHaveText('Среднее');
+  await page.screenshot({ path: 'test-results/expanded-dynamics.png', fullPage: true });
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Развернуть график', exact: true })).toBeFocused();
 });
 
 test('12-hour and whole-day totals match hourly data and survive reloading', async ({
@@ -233,7 +277,9 @@ test('12-hour and whole-day totals match hourly data and survive reloading', asy
         .slice(start, start + hours)
         .reduce((s: number, f: { values: { value: number }[] }) => s + f.values[r].value, 0);
       total += sum;
-      await expect(page.locator('tbody tr').nth(r).getByRole('cell').nth(1)).toHaveText(fmt(sum));
+      await expect(
+        page.locator('.v2-table-wrap tbody tr').nth(r).getByRole('cell').nth(1),
+      ).toHaveText(fmt(sum));
     }
     await expect(page.locator('.v2-total strong')).toHaveText(fmt(total));
   }
@@ -334,7 +380,8 @@ test('daily service dataset is downloadable and partial archive coverage is expl
   page,
   request,
 }) => {
-  await page.getByRole('button', { name: 'О данных', exact: true }).click();
+  await page.getByRole('button', { name: 'Данные и модели', exact: true }).click();
+  await page.getByRole('button', { name: 'О данных и ограничениях', exact: true }).click();
   const dataset = page.getByTestId('service-dataset');
   await expect(dataset).toContainText('Архив расписаний неполный');
   const link = dataset.getByRole('link', { name: 'По дням · CSV', exact: true });
@@ -356,33 +403,40 @@ test('user CSV contains the selected 12 hours and full submission stays complete
   await page.getByRole('button', { name: 'Только выбранный', exact: true }).click();
   await expect(page.getByText('Загружаем выбранный период…')).toHaveCount(0);
   await page.getByRole('button', { name: 'Экспорт', exact: true }).click();
-  let d = page.getByRole('dialog');
-  await expect(d).toContainText('№ 17');
+  const d = page.getByRole('dialog');
+  await expect(d.getByLabel('Маршруты', { exact: true })).toHaveValue('17');
+  await d.getByRole('button', { name: 'Подготовить CSV' }).click();
+  await expect(d.getByRole('link', { name: 'Скачать файл' })).toBeVisible();
   let pending = page.waitForEvent('download');
-  await d.getByRole('button', { name: 'Скачать CSV' }).click();
+  await d.getByRole('link', { name: 'Скачать файл' }).click();
   let download = await pending;
   let stream = await download.createReadStream();
   let csv = '';
   for await (const chunk of stream!) csv += chunk.toString();
   expect(csv.trim().split(/\r?\n/)).toHaveLength(13);
-  expect(csv).toContain('T12:00:00+03:00');
-  expect(csv).toContain('T23:00:00+03:00');
-  expect(csv).not.toContain('T11:00:00+03:00');
-  expect(csv).toContain('17;successful_validations');
+  const timestamps = csv
+    .trim()
+    .split(/\r?\n/)
+    .slice(1)
+    .map((line) => line.split(';')[1]);
+  expect(timestamps.map((t) => new Date(t).getUTCHours())).toEqual(
+    Array.from({ length: 12 }, (_, i) => i + 9),
+  );
+  expect(csv).toContain('successful_validations');
   expect(csv).toContain('validations_per_vehicle_hour');
-  expect(csv).toContain('fleet_source');
-  await page.getByRole('button', { name: 'Экспорт', exact: true }).click();
-  d = page.getByRole('dialog');
-  await d.getByLabel(/Конкурсный submission/).check();
+  expect(csv).toContain('fleet_method');
+  await d.getByText('Полная поставка и конкурсный профиль', { exact: true }).click();
+  await d.getByRole('button', { name: 'Конкурсный CSV' }).click();
+  await expect(d.getByRole('link', { name: 'Скачать файл' })).toBeVisible();
   pending = page.waitForEvent('download');
-  await d.getByRole('button', { name: 'Скачать CSV' }).click();
+  await d.getByRole('link', { name: 'Скачать файл' }).click();
   download = await pending;
   stream = await download.createReadStream();
   csv = '';
   for await (const chunk of stream!) csv += chunk.toString();
   expect(csv.trim().split(/\r?\n/)).toHaveLength(14641);
   expect(csv).toContain('5;2025-11-01;0;');
-  expect(download.suggestedFilename()).toBe('submission.csv');
+  expect(download.suggestedFilename()).toMatch(/\.csv$/);
 });
 test('section cards distinguish directions and keep route totals intact', async ({ page }) => {
   await page.getByRole('button', { name: 'Дата и время', exact: true }).click();
@@ -492,6 +546,8 @@ test('map follows active day and route 5 opening boundary', async ({ page }) => 
 });
 
 test('separate route CSV upload validates and round-trips current geometry', async ({ page }) => {
+  await page.getByRole('button', { name: 'Данные и модели', exact: true }).click();
+  await page.getByText('Маршруты и геометрия', { exact: true }).click();
   await page.getByRole('button', { name: 'Загрузить маршрут', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Загрузка маршрута из CSV' });
   await dialog.getByLabel('CSV маршрута').setInputFiles({
@@ -522,6 +578,8 @@ test('CSV publication persists and obeys effective dates', async ({ page }) => {
     process.env.MOSCOWT_E2E_MUTATIONS !== 'true',
     'Run only against an isolated state directory',
   );
+  await page.getByRole('button', { name: 'Данные и модели', exact: true }).click();
+  await page.getByText('Маршруты и геометрия', { exact: true }).click();
   await page.getByRole('button', { name: 'Загрузить маршрут', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Загрузка маршрута из CSV' });
   const csv =

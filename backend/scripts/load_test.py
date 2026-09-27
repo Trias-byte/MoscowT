@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import aiohttp
+from stream_workload import ingest
 
 
 async def main(args):
@@ -19,6 +20,7 @@ async def main(args):
     sizes = []
     resource = []
     export_jobs = []
+    cgroup = []
     async with aiohttp.ClientSession(
         base_url=args.url,
         timeout=aiohttp.ClientTimeout(total=15),
@@ -77,11 +79,35 @@ async def main(args):
                     )
                     out, _ = await p.communicate()
                     if out.strip():
-                        resource.append(json.loads(out))
+                        resource.append({**json.loads(out), "atSeconds": time.perf_counter() - start})
+                    p = await asyncio.create_subprocess_exec(
+                        "docker",
+                        "exec",
+                        args.container,
+                        "sh",
+                        "-c",
+                        "cat /sys/fs/cgroup/memory.current /sys/fs/cgroup/memory.swap.current /sys/fs/cgroup/memory.events",
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.DEVNULL,
+                    )
+                    out, _ = await p.communicate()
+                    if out.strip():
+                        lines = out.decode().splitlines()
+                        cgroup.append(
+                            {
+                                "atSeconds": time.perf_counter() - start,
+                                "memoryBytes": int(lines[0]),
+                                "swapBytes": int(lines[1]),
+                                "events": dict(line.split() for line in lines[2:]),
+                            }
+                        )
                 await asyncio.sleep(1)
 
         monitor = asyncio.create_task(stats())
         start = time.perf_counter()
+        ingesting = (
+            asyncio.create_task(ingest(client, args.seconds)) if getattr(args, "ingestion", False) else None
+        )
 
         async def request(i, scheduled):
             path = [
@@ -145,12 +171,19 @@ async def main(args):
         elapsed = time.perf_counter() - start
         if exporting:
             await exporting
+        ingestion = await ingesting if ingesting else None
+        drain_start = time.perf_counter()
         for job in export_jobs:
             if "id" in job:
                 final = json.loads((await fetch("/api/v1/jobs/" + job["id"]))[1])
+                job["statusAtLoadEnd"] = final["status"]
+                while final["status"] in ("pending", "running") and time.perf_counter() - drain_start < 30:
+                    await asyncio.sleep(0.1)
+                    final = json.loads((await fetch("/api/v1/jobs/" + job["id"]))[1])
                 job.update(
                     status=final["status"], checkedAfterSeconds=time.perf_counter() - job.pop("submittedAt")
                 )
+        export_drain = time.perf_counter() - drain_start
         metrics = (await fetch("/metrics"))[1].decode()
         monitor.cancel()
         try:
@@ -184,7 +217,10 @@ async def main(args):
         },
         "scopeVariants": len(variants),
         "resources": resource,
+        "cgroup": cgroup,
+        "ingestion": ingestion,
         "exportJobs": export_jobs,
+        "exportDrainSeconds": export_drain,
         "metrics": metrics,
         "latencyIncludesSchedulingDelay": True,
         "clientConcurrency": 96,
@@ -193,7 +229,12 @@ async def main(args):
     Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=2))
     print(
         json.dumps(
-            {k: v for k, v in report.items() if k not in ["metrics", "resources", "exportJobs"]}, indent=2
+            {
+                k: v
+                for k, v in report.items()
+                if k not in ["metrics", "resources", "exportJobs", "cgroup", "ingestion"]
+            },
+            indent=2,
         )
     )
 
@@ -206,5 +247,10 @@ if __name__ == "__main__":
     parser.add_argument("--rps", type=int, default=300)
     parser.add_argument("--seconds", type=int, default=30)
     parser.add_argument("--exports", action="store_true")
+    parser.add_argument(
+        "--ingestion",
+        action="store_true",
+        help="Continuously commit isolated synthetic CSV microbatches during reads",
+    )
     parser.add_argument("--output", required=True)
     asyncio.run(main(parser.parse_args()))

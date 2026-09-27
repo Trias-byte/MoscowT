@@ -11,7 +11,7 @@ from moscowt.config import Settings
 from moscowt.storage import file_hash, write_json
 
 settings = Settings()
-# The shipped demo has the three selected recipes. Research runs remain in the
+# The shipped demo has the selected recipes. Research runs remain in the
 # live workspace and its full /bundles export, not in every clean installation.
 demo = json.loads((settings.state_dir / "demo.json").read_bytes())
 with tempfile.TemporaryDirectory() as temporary:

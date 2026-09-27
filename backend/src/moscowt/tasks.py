@@ -8,7 +8,7 @@ from .domain import DomainError
 from .jobs import JobRepository
 from .storage import canonical, digest
 
-MODEL_KINDS = ("train", "forecast")
+MODEL_KINDS = ("train", "forecast", "scenario_run", "model_import", "model_reweight", "model_export")
 GENERAL_KINDS = (
     "import_preview",
     "import_apply",
@@ -16,6 +16,7 @@ GENERAL_KINDS = (
     "period_export",
     "bundle_export",
     "weather_fetch",
+    "factor_fetch",
 )
 
 

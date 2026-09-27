@@ -159,7 +159,7 @@ class DataCatalog:
             row = db.execute("SELECT report FROM imports WHERE fingerprint=?", (fingerprint,)).fetchone()
         return json.loads(row[0]) if row else None
 
-    def publish(self, manifest, fingerprint, report, expected_id):
+    def publish(self, manifest, fingerprint, report, expected_id, *, activate=True):
         """Commit last, after files are durable. Reject concurrent stale previews."""
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -169,7 +169,7 @@ class DataCatalog:
             if old_import:
                 return {**json.loads(old_import[0]), "duplicate": True}
             current = db.execute("SELECT value FROM catalog_state WHERE key='dataset'").fetchone()
-            if (current[0] if current else None) != expected_id:
+            if activate and (current[0] if current else None) != expected_id:
                 raise DomainError("DATASET_CHANGED", "Данные изменились; проверьте загрузку повторно", 409)
             now = datetime.now(timezone.utc).isoformat()
             db.execute(
@@ -185,9 +185,10 @@ class DataCatalog:
                 "INSERT INTO imports(fingerprint,dataset_id,report,created_at) VALUES (?,?,?,?)",
                 (fingerprint, manifest["id"], canonical(report).decode(), now),
             )
-            db.execute(
-                "INSERT INTO catalog_state(key,value) VALUES ('dataset',?) "
-                "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
-                (manifest["id"],),
-            )
+            if activate:
+                db.execute(
+                    "INSERT INTO catalog_state(key,value) VALUES ('dataset',?) "
+                    "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                    (manifest["id"],),
+                )
         return report

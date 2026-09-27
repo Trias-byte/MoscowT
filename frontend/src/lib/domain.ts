@@ -73,17 +73,19 @@ export const COLORS = ['#93cdbd', '#46a995', '#167f78', '#e5a344', '#ce6b54'];
 export const HOURLY_LOAD_THRESHOLDS = [200, 600, 1200, 2000];
 export const VEHICLE_LOAD_THRESHOLDS = [5, 20, 34, 50];
 export const fleetSourceLabel = (source?: Frame['values'][number]['fleetSource']) =>
-  source === 'planned_duty'
-    ? 'План по выходам'
-    : source === 'stop_timetable_estimate'
-      ? 'Оценка по остановочному расписанию'
-      : source === 'observed'
-        ? 'Оценка по бортовым номерам'
-        : source === 'estimated'
-          ? 'Оценка по предыдущим 8 неделям'
-          : source === 'mixed'
-            ? 'Бортовые номера и историческая оценка'
-            : 'Нет оценки вагонов';
+  source === 'scenario_service_assumption'
+    ? 'Сценарная оценка выпуска'
+    : source === 'planned_duty'
+      ? 'План по выходам'
+      : source === 'stop_timetable_estimate'
+        ? 'Оценка по остановочному расписанию'
+        : source === 'observed'
+          ? 'Оценка по бортовым номерам'
+          : source === 'estimated'
+            ? 'Оценка по предыдущим 8 неделям'
+            : source === 'mixed'
+              ? 'Бортовые номера и историческая оценка'
+              : 'Нет оценки вагонов';
 export const number = (value: number | null | undefined) =>
   value == null
     ? 'Нет данных'

@@ -2,6 +2,7 @@ import json
 import os
 import uuid
 from datetime import datetime
+from typing import Literal
 
 import anyio
 from fastapi import APIRouter, Header, Query, Request
@@ -13,6 +14,7 @@ from .domain import DomainError, Scope, StrictModel, TimeRange
 from .fleet import VEHICLE_LOAD_THRESHOLDS
 from .modeling.adapters import ADAPTERS
 from .modeling.contracts import ForecastSpec, TrainingSpec
+from .modeling.packages import EnsembleWeights, ModelPackageService
 from .modeling.service import ModelService
 from .platform_exports import PeriodExporter, PeriodExportSpec
 from .scenarios import ScenarioService, ScenarioSpec
@@ -41,9 +43,25 @@ class PublishRequest(StrictModel):
     schedule_scenario: bool = False
 
 
+class MapViewRequest(StrictModel):
+    forecast_id: str
+    snapshot_id: str
+
+
 class RouteRequest(StrictModel):
     route: RouteDefinition
     expected_version: str | None = None
+
+
+class ModelImportRequest(StrictModel):
+    blob_id: str
+
+
+class FactorFetchRequest(StrictModel):
+    kind: Literal["weather", "accidents"]
+    start: str = "2024-01-01"
+    end: str = "2025-12-31"
+    network_id: str | None = None
 
 
 def router(settings, data, store, view_cache):
@@ -60,6 +78,8 @@ def router(settings, data, store, view_cache):
     @api.post("/sections")
     def sections(body: Scope):
         snapshot = store.read("snapshots", body.snapshotId)
+        if body.scenarioId and store.read("scenarios", body.scenarioId)["spec"].get("engine") == "recompute":
+            snapshot = {**snapshot, "scheduleId": None}
         if body.grain != "hour":
             raise DomainError("HOURLY_SPATIAL_REQUIRED", "Для расчёта участков нужен часовой шаг")
         view = view_cache.get(body)
@@ -76,18 +96,59 @@ def router(settings, data, store, view_cache):
             "max_forecast_hours": settings.max_forecast_hours,
         }
 
+    @api.post("/forecast-runs/{ident}/weather-profile")
+    def weather_profile(ident: str, body: TimeRange):
+        import pandas as pd
+
+        from .external import OpenMeteoForecastProvider
+        from .factors import hourly_weather
+
+        run = store.read("forecast_runs", ident)
+        spec = ForecastSpec.model_validate(run["spec"])
+        model = store.read("trained_models", spec.model_id)
+        source_id = model["spec"].get("weather_hourly_id")
+        if not source_id or "weather" not in model["spec"].get("feature_groups", []):
+            raise DomainError("WEATHER_UNSUPPORTED", "У модели нет почасовых погодных признаков")
+        if body.start < spec.time_range.start or body.end > spec.time_range.end:
+            raise DomainError("INVALID_SCENARIO_RANGE", "Период должен быть внутри выпуска")
+        target = pd.DataFrame({"timestamp": pd.date_range(body.start, body.end, freq="h", inclusive="left")})
+        profile = hourly_weather(
+            str(settings.data_root), source_id, target, spec.origin, spec.diagnostic_observed_factors
+        )
+        method = "retrospective_actual" if spec.diagnostic_observed_factors else "prior_year_climatology"
+        if spec.weather_forecast_id:
+            profile = OpenMeteoForecastProvider(settings.data_root).select_hourly(
+                spec.weather_forecast_id, target.timestamp, spec.origin
+            )
+            method = "available_forecast_release"
+        return {
+            "forecast_id": ident,
+            "source_id": spec.weather_forecast_id or source_id,
+            "method": method,
+            "fields": {
+                key: {
+                    "min": float(profile[key].min()),
+                    "max": float(profile[key].max()),
+                    "mean": float(profile[key].mean()),
+                }
+                for key in profile.columns
+            },
+        }
+
     @api.post("/blobs", status_code=201)
-    async def upload_blob(request: Request):
+    async def upload_blob(request: Request, kind: Literal["data", "model"] = "data"):
         ident = "blob-" + uuid.uuid4().hex
-        path = store.path("uploads", ident, "csv")
+        path = store.path("uploads", ident, "zip" if kind == "model" else "csv")
         path.parent.mkdir(parents=True, exist_ok=True)
         size = 0
         try:
             async with await anyio.open_file(path, "wb") as stream:
                 async for chunk in request.stream():
                     size += len(chunk)
-                    if size > 12 * 1024**3:
-                        raise DomainError("UPLOAD_TOO_LARGE", "Файл превышает 12 ГиБ", 413)
+                    if size > (1 if kind == "model" else 12) * 1024**3:
+                        raise DomainError(
+                            "UPLOAD_TOO_LARGE", "Превышен размер загрузки (модель 1 ГиБ; данные 12 ГиБ)", 413
+                        )
                     await stream.write(chunk)
                 await stream.flush()
                 await anyio.to_thread.run_sync(os.fsync, stream.wrapped.fileno())
@@ -124,7 +185,7 @@ def router(settings, data, store, view_cache):
             **manifest,
             "dependent_models": [m["id"] for m in models.list_models() if m["spec"]["dataset_id"] == ident],
             "recalculation_policy": "explicit",
-            "stale": ident != data.catalog.current_id(),
+            "is_default": ident == data.catalog.current_id(),
         }
 
     @api.post("/datasets/{ident}/activate")
@@ -211,7 +272,123 @@ def router(settings, data, store, view_cache):
 
     @api.get("/scenarios/{ident}")
     def get_scenario(ident: str):
-        return store.read("scenarios", ident)
+        record = store.read("scenarios", ident)
+        if record.get("job_id") and queue.get(record["job_id"])["status"] != "ready":
+            raise DomainError("SCENARIO_NOT_READY", "Расчёт сценария не завершён", 409)
+        return record
+
+    @api.post("/scenarios/{ident}/runs", status_code=202)
+    def scenario_run(ident: str, idempotency_key: str = Header(alias="Idempotency-Key")):
+        scenario = store.read("scenarios", ident)
+        if scenario["spec"].get("engine") != "recompute":
+            raise DomainError("SCENARIO_ENGINE_REQUIRED", "Для расчёта нужен сценарий нового формата")
+        return queue.enqueue("scenario_run", {"scenario_id": ident}, idempotency_key)
+
+    @api.get("/factor-datasets")
+    def factors():
+        from .factors import FactorRepository
+
+        repo = FactorRepository(settings.data_root)
+        return {kind: repo.list(kind) for kind in ("weather_hourly", "accidents", "accident_links")}
+
+    @api.post("/factor-datasets", status_code=202)
+    def fetch_factors(body: FactorFetchRequest, idempotency_key: str = Header(alias="Idempotency-Key")):
+        from datetime import date
+
+        try:
+            start, end = date.fromisoformat(body.start), date.fromisoformat(body.end)
+            if start > end or (end - start).days > 3660:
+                raise ValueError()
+        except ValueError:
+            raise DomainError("INVALID_FACTOR_PERIOD", "Укажите даты YYYY-MM-DD, не более 10 лет") from None
+        if body.kind == "accidents":
+            body.network_id = body.network_id or store.current().get("networkId")
+            if not body.network_id:
+                raise DomainError("NETWORK_REQUIRED", "Для ДТП нужна датированная геометрия")
+            store.read("networks", body.network_id)
+        return queue.enqueue("factor_fetch", body.model_dump(), idempotency_key)
+
+    @api.get("/accidents")
+    def accidents(
+        dataset_id: str,
+        start: datetime,
+        end: datetime,
+        west: float = 36.5,
+        south: float = 54.9,
+        east: float = 38.3,
+        north: float = 56.2,
+    ):
+        import pandas as pd
+
+        from .factors import factor_frame
+
+        if start.utcoffset() is None or end.utcoffset() is None or end <= start:
+            raise DomainError("INVALID_ACCIDENT_PERIOD", "Нужен интервал с часовым поясом")
+        manifest, frame = factor_frame(str(settings.data_root), "accidents", dataset_id)
+        selected = frame.loc[
+            frame.timestamp.ge(start)
+            & frame.timestamp.lt(end)
+            & frame.longitude.between(west, east)
+            & frame.latitude.between(south, north)
+        ]
+        return {
+            "dataset_id": dataset_id,
+            "coverage": manifest["coverage"],
+            "records": selected.astype(object).where(pd.notna(selected), None).to_dict("records"),
+        }
+
+    @api.get("/accident-candidates")
+    def accident_candidates(longitude: float, latitude: float, date: str, snapshot_id: str):
+        from datetime import date as civil_date
+
+        from .factors import nearby_routes
+        from .network_history import resolve_network
+
+        try:
+            civil_date.fromisoformat(date)
+        except ValueError:
+            raise DomainError("INVALID_DATE", "Ожидается дата YYYY-MM-DD") from None
+        snapshot = store.read("snapshots", snapshot_id)
+        network = resolve_network(store, store.read("networks", snapshot["networkId"]), date)
+        return {
+            "radius_m": 100,
+            "routes": nearby_routes(network, longitude, latitude),
+            "method": "proximity_candidate_not_confirmed_disruption",
+        }
+
+    @api.post("/models/import-preview")
+    def model_preview(body: ModelImportRequest):
+        if not store.path("uploads", body.blob_id, "zip").is_file():
+            raise DomainError("UPLOAD_NOT_FOUND", "Пакет не найден", 404)
+        meta = ModelPackageService(models).inspect(store.path("uploads", body.blob_id, "zip"))
+        return {"format": meta["format"], "manifest": meta["manifest"], "estimators": meta["estimators"]}
+
+    @api.post("/models/import", status_code=202)
+    def model_import(body: ModelImportRequest, idempotency_key: str = Header(alias="Idempotency-Key")):
+        if not store.path("uploads", body.blob_id, "zip").is_file():
+            raise DomainError("UPLOAD_NOT_FOUND", "Пакет не найден", 404)
+        return queue.enqueue("model_import", body.model_dump(), idempotency_key)
+
+    @api.post("/models/{ident}/weights", status_code=202)
+    def model_weights(
+        ident: str,
+        body: EnsembleWeights,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+        forecast_id: str | None = None,
+    ):
+        store.read("trained_models", ident)
+        if forecast_id and store.read("forecast_runs", forecast_id)["spec"]["model_id"] != ident:
+            raise DomainError("MODEL_FORECAST_MISMATCH", "Выбранный выпуск создан другой моделью")
+        return queue.enqueue(
+            "model_reweight",
+            {"model_id": ident, "weights": body.model_dump(), "forecast_id": forecast_id},
+            idempotency_key,
+        )
+
+    @api.post("/models/{ident}/export", status_code=202)
+    def model_export(ident: str, idempotency_key: str = Header(alias="Idempotency-Key")):
+        store.read("trained_models", ident)
+        return queue.enqueue("model_export", {"model_id": ident}, idempotency_key)
 
     @api.get("/model-types")
     def model_types():
@@ -219,7 +396,7 @@ def router(settings, data, store, view_cache):
 
     @api.get("/models")
     def list_models():
-        return models.list_models()
+        return [m for m in models.list_models() if m["spec"].get("purpose", "service") == "service"]
 
     @api.get("/model-evaluations")
     def model_evaluations():
@@ -241,7 +418,11 @@ def router(settings, data, store, view_cache):
 
     @api.get("/forecast-runs")
     def forecast_runs():
-        return models.list_forecasts()
+        return [
+            f
+            for f in models.list_forecasts()
+            if f.get("purpose", "service") == "service" and not f["spec"].get("diagnostic_observed_factors")
+        ]
 
     @api.get("/forecast-runs/{ident}")
     def forecast_run(ident: str):
@@ -277,6 +458,21 @@ def router(settings, data, store, view_cache):
         from .publication import publish_forecast
 
         return publish_forecast(settings, data, models, body)
+
+    @api.post("/forecast-map-views")
+    def forecast_map_view(body: MapViewRequest):
+        from .publication import publish_forecast
+
+        base = store.read("snapshots", body.snapshot_id)
+        run = store.read("forecast_runs", body.forecast_id)
+        if run["spec"]["dataset_id"] != base.get("datasetId"):
+            raise DomainError("MODEL_DATASET_MISMATCH", "Для другого набора сначала опубликуйте его выпуск")
+        request = PublishRequest(
+            forecast_id=body.forecast_id,
+            schedule_id=base.get("scheduleId"),
+            schedule_scenario=base.get("scheduleScenario", False),
+        )
+        return publish_forecast(settings, data, models, request, base_snapshot=base, activate=False)
 
     @api.get("/schedules")
     def list_schedules():

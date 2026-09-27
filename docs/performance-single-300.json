@@ -1,0 +1,1157 @@
+{
+  "mode": "warm",
+  "offeredRps": 300,
+  "requestedDurationSeconds": 60,
+  "elapsedSeconds": 59.99909540799854,
+  "completed": 18000,
+  "achievedRps": 300.0045230281989,
+  "errors": {},
+  "p50Ms": 2.182669995818287,
+  "p95Ms": 4.202113996143453,
+  "p99Ms": 31.582306997734122,
+  "responseBytes": {
+    "min": 1486,
+    "mean": 15212.841666666667,
+    "max": 133711
+  },
+  "mix": {
+    "map-snapshot": 0.2,
+    "timeseries": 0.2,
+    "route-comparison": 0.2,
+    "heatmap": 0.2,
+    "capabilities": 0.1,
+    "routes": 0.1
+  },
+  "scopeVariants": 24,
+  "resources": [
+    {
+      "BlockIO": "1.11MB / 10.3MB",
+      "CPUPerc": "103.40%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "9.04%",
+      "MemUsage": "370.4MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "535kB / 6.23MB",
+      "PIDs": "16",
+      "atSeconds": 1.0161505040014163
+    },
+    {
+      "BlockIO": "1.11MB / 14.1MB",
+      "CPUPerc": "133.31%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "11.98%",
+      "MemUsage": "490.8MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "1.2MB / 15.7MB",
+      "PIDs": "22",
+      "atSeconds": 3.064009070993052
+    },
+    {
+      "BlockIO": "1.11MB / 17.4MB",
+      "CPUPerc": "92.80%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.17%",
+      "MemUsage": "498.5MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "1.85MB / 25.4MB",
+      "PIDs": "22",
+      "atSeconds": 5.111487207992468
+    },
+    {
+      "BlockIO": "1.11MB / 20.8MB",
+      "CPUPerc": "137.34%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "11.97%",
+      "MemUsage": "490.4MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "2.51MB / 34.9MB",
+      "PIDs": "20",
+      "atSeconds": 7.161447642996791
+    },
+    {
+      "BlockIO": "1.11MB / 24.5MB",
+      "CPUPerc": "89.86%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "11.98%",
+      "MemUsage": "490.7MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "3.17MB / 44.4MB",
+      "PIDs": "20",
+      "atSeconds": 9.21355830799439
+    },
+    {
+      "BlockIO": "1.11MB / 28.1MB",
+      "CPUPerc": "89.61%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "11.98%",
+      "MemUsage": "490.5MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "3.83MB / 53.9MB",
+      "PIDs": "20",
+      "atSeconds": 11.263085113998386
+    },
+    {
+      "BlockIO": "1.11MB / 32.1MB",
+      "CPUPerc": "98.93%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.38%",
+      "MemUsage": "425.2MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "4.48MB / 63.5MB",
+      "PIDs": "18",
+      "atSeconds": 13.309904800989898
+    },
+    {
+      "BlockIO": "1.11MB / 35.8MB",
+      "CPUPerc": "88.58%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.53%",
+      "MemUsage": "431.3MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "5.14MB / 72.9MB",
+      "PIDs": "18",
+      "atSeconds": 15.358952451992081
+    },
+    {
+      "BlockIO": "1.11MB / 38.3MB",
+      "CPUPerc": "120.59%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.04%",
+      "MemUsage": "493.1MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "5.44MB / 82.6MB",
+      "PIDs": "20",
+      "atSeconds": 17.408508541993797
+    },
+    {
+      "BlockIO": "1.11MB / 42.1MB",
+      "CPUPerc": "95.40%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "11.61%",
+      "MemUsage": "475.6MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "6.09MB / 92.1MB",
+      "PIDs": "19",
+      "atSeconds": 19.460980297997594
+    },
+    {
+      "BlockIO": "1.11MB / 46.3MB",
+      "CPUPerc": "106.42%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.80%",
+      "MemUsage": "442.5MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "6.75MB / 102MB",
+      "PIDs": "18",
+      "atSeconds": 21.509823627988226
+    },
+    {
+      "BlockIO": "1.11MB / 49.7MB",
+      "CPUPerc": "104.20%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.32%",
+      "MemUsage": "504.5MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "7.4MB / 111MB",
+      "PIDs": "22",
+      "atSeconds": 23.571888695994858
+    },
+    {
+      "BlockIO": "1.11MB / 53.3MB",
+      "CPUPerc": "94.99%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.31%",
+      "MemUsage": "504.3MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "8.06MB / 121MB",
+      "PIDs": "22",
+      "atSeconds": 25.62266414798796
+    },
+    {
+      "BlockIO": "1.11MB / 57.9MB",
+      "CPUPerc": "136.24%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.21%",
+      "MemUsage": "499.9MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "8.71MB / 130MB",
+      "PIDs": "20",
+      "atSeconds": 27.67292084499786
+    },
+    {
+      "BlockIO": "1.11MB / 61.6MB",
+      "CPUPerc": "86.73%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.20%",
+      "MemUsage": "499.7MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "9.36MB / 140MB",
+      "PIDs": "20",
+      "atSeconds": 29.726837248992524
+    },
+    {
+      "BlockIO": "1.11MB / 65.4MB",
+      "CPUPerc": "94.01%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.09%",
+      "MemUsage": "495MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "10MB / 149MB",
+      "PIDs": "20",
+      "atSeconds": 31.777316328996676
+    },
+    {
+      "BlockIO": "1.11MB / 69.5MB",
+      "CPUPerc": "114.74%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.53%",
+      "MemUsage": "431.3MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "10.7MB / 159MB",
+      "PIDs": "18",
+      "atSeconds": 33.83703911698831
+    },
+    {
+      "BlockIO": "1.11MB / 73.3MB",
+      "CPUPerc": "91.78%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.56%",
+      "MemUsage": "432.4MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "11.3MB / 169MB",
+      "PIDs": "18",
+      "atSeconds": 35.89235177099181
+    },
+    {
+      "BlockIO": "1.11MB / 76.2MB",
+      "CPUPerc": "112.39%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.55%",
+      "MemUsage": "432.2MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "11.6MB / 178MB",
+      "PIDs": "18",
+      "atSeconds": 37.947521117996075
+    },
+    {
+      "BlockIO": "1.11MB / 79.8MB",
+      "CPUPerc": "111.64%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.55%",
+      "MemUsage": "432.1MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "12.3MB / 188MB",
+      "PIDs": "19",
+      "atSeconds": 40.0019606329879
+    },
+    {
+      "BlockIO": "1.11MB / 83.8MB",
+      "CPUPerc": "120.67%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.56%",
+      "MemUsage": "432.4MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "12.9MB / 197MB",
+      "PIDs": "19",
+      "atSeconds": 42.05218056899321
+    },
+    {
+      "BlockIO": "1.11MB / 87.2MB",
+      "CPUPerc": "111.46%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "11.02%",
+      "MemUsage": "451.3MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "13.6MB / 207MB",
+      "PIDs": "19",
+      "atSeconds": 44.11200430599274
+    },
+    {
+      "BlockIO": "1.15MB / 91MB",
+      "CPUPerc": "87.23%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.96%",
+      "MemUsage": "448.7MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "14.2MB / 216MB",
+      "PIDs": "19",
+      "atSeconds": 46.17400128599547
+    },
+    {
+      "BlockIO": "1.27MB / 95MB",
+      "CPUPerc": "135.17%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.36%",
+      "MemUsage": "506.2MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "14.6MB / 226MB",
+      "PIDs": "22",
+      "atSeconds": 48.23246151099738
+    },
+    {
+      "BlockIO": "1.29MB / 98.3MB",
+      "CPUPerc": "108.33%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "12.29%",
+      "MemUsage": "503.3MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "15.2MB / 235MB",
+      "PIDs": "22",
+      "atSeconds": 50.28504927299218
+    },
+    {
+      "BlockIO": "1.3MB / 102MB",
+      "CPUPerc": "112.40%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.81%",
+      "MemUsage": "442.6MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "15.9MB / 245MB",
+      "PIDs": "18",
+      "atSeconds": 52.34303934099444
+    },
+    {
+      "BlockIO": "1.32MB / 106MB",
+      "CPUPerc": "104.05%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.56%",
+      "MemUsage": "432.6MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "16.5MB / 255MB",
+      "PIDs": "19",
+      "atSeconds": 54.3979365619889
+    },
+    {
+      "BlockIO": "1.34MB / 110MB",
+      "CPUPerc": "106.12%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.56%",
+      "MemUsage": "432.6MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "17.2MB / 264MB",
+      "PIDs": "19",
+      "atSeconds": 56.44502635199751
+    },
+    {
+      "BlockIO": "1.34MB / 113MB",
+      "CPUPerc": "84.96%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.91%",
+      "MemUsage": "446.8MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "17.9MB / 274MB",
+      "PIDs": "19",
+      "atSeconds": 58.495843413998955
+    },
+    {
+      "BlockIO": "1.36MB / 117MB",
+      "CPUPerc": "62.35%",
+      "Container": "potok-single-verify-service-1",
+      "ID": "52ad3c6443d3",
+      "MemPerc": "10.83%",
+      "MemUsage": "443.5MiB / 4GiB",
+      "Name": "potok-single-verify-service-1",
+      "NetIO": "18.4MB / 281MB",
+      "PIDs": "19",
+      "atSeconds": 60.54727999199531
+    }
+  ],
+  "cgroup": [
+    {
+      "atSeconds": 1.0497167669964256,
+      "memoryBytes": 415272960,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 3.0968167889950564,
+      "memoryBytes": 544686080,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 5.147848041990073,
+      "memoryBytes": 553295872,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 7.1979062799946405,
+      "memoryBytes": 544268288,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 9.249391898993053,
+      "memoryBytes": 544309248,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 11.297438794994378,
+      "memoryBytes": 545546240,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 13.345192173001124,
+      "memoryBytes": 470474752,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 15.394570460994146,
+      "memoryBytes": 484511744,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 17.446304921992123,
+      "memoryBytes": 548663296,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 19.4964441889897,
+      "memoryBytes": 546709504,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 21.54733439598931,
+      "memoryBytes": 490418176,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 23.609009194988175,
+      "memoryBytes": 555511808,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 25.65821990999393,
+      "memoryBytes": 565297152,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 27.714100314988173,
+      "memoryBytes": 552165376,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 29.763197850988945,
+      "memoryBytes": 552116224,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 31.82296924998809,
+      "memoryBytes": 551469056,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 33.877218199995696,
+      "memoryBytes": 481681408,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 35.931713408994256,
+      "memoryBytes": 482967552,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 37.98778638099611,
+      "memoryBytes": 489267200,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 40.037382853988674,
+      "memoryBytes": 482865152,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 42.0925980059983,
+      "memoryBytes": 483348480,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 44.157785605988465,
+      "memoryBytes": 508436480,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 46.214505213996745,
+      "memoryBytes": 506101760,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 48.270407917996636,
+      "memoryBytes": 485457920,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 50.32687913299014,
+      "memoryBytes": 560787456,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 52.38481975799368,
+      "memoryBytes": 496799744,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 54.431135574996006,
+      "memoryBytes": 494264320,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 56.482033937994856,
+      "memoryBytes": 488816640,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 58.5327719229972,
+      "memoryBytes": 510242816,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    },
+    {
+      "atSeconds": 60.584786167994025,
+      "memoryBytes": 505815040,
+      "swapBytes": 0,
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      }
+    }
+  ],
+  "ingestion": {
+    "transport": "chunked HTTP CSV + queued preview/apply",
+    "synthetic": true,
+    "kind": "validation_events",
+    "recordsPerBatch": 10000,
+    "batches": [
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 36.890372008201666,
+        "commitMs": 1626.4227729989216,
+        "datasetId": "dataset-21bc202aa6592999e36457bd"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 18.225191000965424,
+        "commitMs": 2325.240773992846,
+        "datasetId": "dataset-a9dbbc9db211320f912aef6c"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 20.684388000518084,
+        "commitMs": 2028.8050660019508,
+        "datasetId": "dataset-ee80403392606329db56a074"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 15.316376011469401,
+        "commitMs": 2119.398695009295,
+        "datasetId": "dataset-df346cb2c4fd6937926053f0"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 19.160784999257885,
+        "commitMs": 2027.841085990076,
+        "datasetId": "dataset-bd123399101bf377afe3917b"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 20.444990004762076,
+        "commitMs": 2646.8643580010394,
+        "datasetId": "dataset-260eb23dbc7b2ef5d4e556e9"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 18.255836999742314,
+        "commitMs": 2076.10902300803,
+        "datasetId": "dataset-b323582bbc4b9b73ec2aef60"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 20.368166995467618,
+        "commitMs": 2666.481723994366,
+        "datasetId": "dataset-71e7db00daa2087767bcfffc"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 19.2843359982362,
+        "commitMs": 2129.328002993134,
+        "datasetId": "dataset-6dc3b1df93f1dff76769a967"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 17.954745999304578,
+        "commitMs": 2653.497146005975,
+        "datasetId": "dataset-7d7ccb14d9808e6b4d2910d8"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 21.28363400697708,
+        "commitMs": 1991.6578830016078,
+        "datasetId": "dataset-a443d11113a0ad4ab4cfdaa1"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 18.11903199995868,
+        "commitMs": 2120.750781003153,
+        "datasetId": "dataset-6545e85c7467565b883a7ce1"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 20.728909003082663,
+        "commitMs": 2131.3813110027695,
+        "datasetId": "dataset-f270cee0b43d9d1ce338d0ee"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 15.868283997406252,
+        "commitMs": 2023.8951560022542,
+        "datasetId": "dataset-367667f5c6f5864d9f052e98"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 21.21943399833981,
+        "commitMs": 2762.312323000515,
+        "datasetId": "dataset-ccfb309e7b77a695befceea1"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 19.547033996786922,
+        "commitMs": 2099.1435369942337,
+        "datasetId": "dataset-66f91254d329e7792b6f6509"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 21.78130199899897,
+        "commitMs": 2767.6399470074102,
+        "datasetId": "dataset-d35de7a7bb412996a5192435"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 27.129907000926323,
+        "commitMs": 2048.7977209995734,
+        "datasetId": "dataset-c7b3c44bc55ce9d3f515de2e"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 25.64279299986083,
+        "commitMs": 2880.43742699665,
+        "datasetId": "dataset-0e100680e1f999bfa913fdc5"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 31.702894004411064,
+        "commitMs": 1988.5295900021447,
+        "datasetId": "dataset-4aa4a293d08db3961d277da2"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 23.967187997186556,
+        "commitMs": 2757.2553970094305,
+        "datasetId": "dataset-b7266730082940faae8e1f99"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 17.64131999516394,
+        "commitMs": 2028.4698640025454,
+        "datasetId": "dataset-a95253f1529925e69787e819"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 22.81205299368594,
+        "commitMs": 2770.221276994562,
+        "datasetId": "dataset-c6c9b5775bf6d90e44a598f3"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 16.68876298936084,
+        "commitMs": 2065.304504998494,
+        "datasetId": "dataset-232841ffc916fe00cf321387"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 18.1596559996251,
+        "commitMs": 2655.7067459943937,
+        "datasetId": "dataset-476ab70e5e688fc3ff7e2e1d"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 20.867195999016985,
+        "commitMs": 2030.9399559919257,
+        "datasetId": "dataset-67d49c8e2317d5e671d835ef"
+      },
+      {
+        "records": 10000,
+        "selectedRecords": 10000,
+        "bytes": 350070,
+        "uploadMs": 19.884762994479388,
+        "commitMs": 2022.4108709953725,
+        "datasetId": "dataset-5d2928934b5cbf44b35c27c8"
+      }
+    ],
+    "errors": [],
+    "elapsedSeconds": 61.99612839000474,
+    "committedRouteHours": 270,
+    "committedRecords": 270000,
+    "recordsPerSecond": 4355.110665967497,
+    "sumVerified": true,
+    "rowsVerified": true,
+    "publicationUnchanged": true,
+    "defaultDatasetUnchanged": true
+  },
+  "exportJobs": [
+    {
+      "id": "292dfc154d0547eeb035c817e010fdb2",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 60.977088436993654
+    },
+    {
+      "id": "24d0824b531f49ad9d9388a1dd242ac6",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 55.94031035801163
+    },
+    {
+      "id": "d2dd1a9578594c939b908f0a3ee8f58e",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 50.912790237998706
+    },
+    {
+      "id": "24f83b950c074f138e2e000f2b826d92",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 45.89579956899979
+    },
+    {
+      "id": "9782ae16790e48c08b66e4c2ad2dcf11",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 40.86886586800392
+    },
+    {
+      "id": "9d8fd516a6df4e8eb499511da65b1caa",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 35.84242231299868
+    },
+    {
+      "id": "a136a9a66c8343cf96bb1a40241c576a",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 30.815631646008114
+    },
+    {
+      "id": "d8784e04c3854ec2a65c86c092561fb6",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 25.790230726997834
+    },
+    {
+      "id": "d14e9834f97f4c32b4d97daced43f0e0",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 20.764206965002813
+    },
+    {
+      "id": "923b49714e5b4352b1c9c700fdd2059d",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 15.738148668999202
+    },
+    {
+      "id": "634f376e062045ac9ac93219afe566c8",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 10.71276652198867
+    },
+    {
+      "id": "893bc2404e07472e8b60fa9c5c3c84e1",
+      "status": "ready",
+      "kind": "export",
+      "downloadUrl": null,
+      "error": null,
+      "statusAtLoadEnd": "ready",
+      "checkedAfterSeconds": 5.6882398599991575
+    }
+  ],
+  "exportDrainSeconds": 0.015366917999926955,
+  "metrics": "# HELP moscowt_http_seconds HTTP duration\n# TYPE moscowt_http_seconds histogram\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/health/ready\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/health/ready\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/health/ready\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/health/ready\"} 2.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/health/ready\"} 8.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/health/ready\"} 0.4562030010129092\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v1/capabilities\"} 1756.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v1/capabilities\"} 1776.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v1/capabilities\"} 1789.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v1/capabilities\"} 1801.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v1/capabilities\"} 1.8113285060680937\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3521.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3572.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3611.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3619.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3623.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3623.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3623.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/map-snapshot\"} 3624.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/map-snapshot\"} 8.440902785136132\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v2/capabilities\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v2/capabilities\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v2/capabilities\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v2/capabilities\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v2/capabilities\"} 2.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v2/capabilities\"} 2.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v2/capabilities\"} 2.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v2/capabilities\"} 2.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v2/capabilities\"} 2.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v2/capabilities\"} 2.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v2/capabilities\"} 2.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v2/capabilities\"} 0.07743297702108975\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/timeseries\"} 3510.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/timeseries\"} 3549.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/timeseries\"} 3583.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/timeseries\"} 3597.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/timeseries\"} 3600.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/timeseries\"} 5.106816255880403\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3515.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3554.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3586.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3598.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/route-comparison\"} 3600.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/route-comparison\"} 4.698498572266544\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/heatmap\"} 3512.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/heatmap\"} 3551.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/heatmap\"} 3589.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/heatmap\"} 3599.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/heatmap\"} 3600.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/heatmap\"} 4.819507521751802\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v1/routes\"} 1740.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v1/routes\"} 1763.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v1/routes\"} 1784.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v1/routes\"} 1795.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v1/routes\"} 1800.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v1/routes\"} 3.8559757546754554\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v2/blobs\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v2/blobs\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v2/blobs\"} 24.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v2/blobs\"} 27.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v2/blobs\"} 0.5432533279963536\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v2/uploads\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v2/uploads\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v2/uploads\"} 19.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v2/uploads\"} 27.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v2/uploads\"} 0.6525779740186408\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 551.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 564.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 570.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 572.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 573.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 573.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 573.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 573.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 573.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 573.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 573.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 1.3819575241795974\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 19.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 27.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 0.6563058140018256\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"POST\",path=\"/api/v1/exports\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"POST\",path=\"/api/v1/exports\"} 0.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"POST\",path=\"/api/v1/exports\"} 4.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_count{method=\"POST\",path=\"/api/v1/exports\"} 12.0\nmoscowt_http_seconds_sum{method=\"POST\",path=\"/api/v1/exports\"} 0.3119736360240495\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 0.002405256003839895\nmoscowt_http_seconds_bucket{le=\"0.005\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.01\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.025\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.05\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.1\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.25\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"0.5\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"1.0\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"5.0\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_bucket{le=\"+Inf\",method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_count{method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 12.0\nmoscowt_http_seconds_sum{method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 0.009922995042870753\n# HELP moscowt_http_seconds_created HTTP duration\n# TYPE moscowt_http_seconds_created gauge\nmoscowt_http_seconds_created{method=\"GET\",path=\"/health/ready\"} 1.7905099384917157e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v1/capabilities\"} 1.7905099541549776e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/map-snapshot\"} 1.7905099548098967e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v2/capabilities\"} 1.7905099550188658e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/timeseries\"} 1.7905099550211995e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/route-comparison\"} 1.7905099550213072e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/heatmap\"} 1.7905099550286915e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v1/routes\"} 1.7905099550532982e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v2/blobs\"} 1.790509955073248e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v2/uploads\"} 1.790509955096227e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v2/jobs/{ident}\"} 1.7905099551986687e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v2/uploads/{ident}/apply\"} 1.7905099557353425e+09\nmoscowt_http_seconds_created{method=\"POST\",path=\"/api/v1/exports\"} 1.7905099559674916e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v2/datasets/{ident}\"} 1.790510016940901e+09\nmoscowt_http_seconds_created{method=\"GET\",path=\"/api/v1/jobs/{ident}\"} 1.7905100169445972e+09\n# HELP moscowt_http_requests_total HTTP responses\n# TYPE moscowt_http_requests_total counter\nmoscowt_http_requests_total{path=\"/health/ready\",status=\"200\"} 8.0\nmoscowt_http_requests_total{path=\"/api/v1/capabilities\",status=\"200\"} 1801.0\nmoscowt_http_requests_total{path=\"/api/v1/map-snapshot\",status=\"200\"} 3624.0\nmoscowt_http_requests_total{path=\"/api/v2/capabilities\",status=\"200\"} 2.0\nmoscowt_http_requests_total{path=\"/api/v1/timeseries\",status=\"200\"} 3600.0\nmoscowt_http_requests_total{path=\"/api/v1/route-comparison\",status=\"200\"} 3600.0\nmoscowt_http_requests_total{path=\"/api/v1/heatmap\",status=\"200\"} 3600.0\nmoscowt_http_requests_total{path=\"/api/v1/routes\",status=\"200\"} 1800.0\nmoscowt_http_requests_total{path=\"/api/v2/blobs\",status=\"201\"} 27.0\nmoscowt_http_requests_total{path=\"/api/v2/uploads\",status=\"202\"} 27.0\nmoscowt_http_requests_total{path=\"/api/v2/jobs/{ident}\",status=\"200\"} 573.0\nmoscowt_http_requests_total{path=\"/api/v2/uploads/{ident}/apply\",status=\"202\"} 27.0\nmoscowt_http_requests_total{path=\"/api/v1/exports\",status=\"202\"} 12.0\nmoscowt_http_requests_total{path=\"/api/v2/datasets/{ident}\",status=\"200\"} 1.0\nmoscowt_http_requests_total{path=\"/api/v1/jobs/{ident}\",status=\"200\"} 12.0\n# HELP moscowt_http_requests_created HTTP responses\n# TYPE moscowt_http_requests_created gauge\nmoscowt_http_requests_created{path=\"/health/ready\",status=\"200\"} 1.7905099384917643e+09\nmoscowt_http_requests_created{path=\"/api/v1/capabilities\",status=\"200\"} 1.7905099541550071e+09\nmoscowt_http_requests_created{path=\"/api/v1/map-snapshot\",status=\"200\"} 1.790509954809934e+09\nmoscowt_http_requests_created{path=\"/api/v2/capabilities\",status=\"200\"} 1.7905099550188947e+09\nmoscowt_http_requests_created{path=\"/api/v1/timeseries\",status=\"200\"} 1.7905099550212252e+09\nmoscowt_http_requests_created{path=\"/api/v1/route-comparison\",status=\"200\"} 1.7905099550213249e+09\nmoscowt_http_requests_created{path=\"/api/v1/heatmap\",status=\"200\"} 1.790509955028725e+09\nmoscowt_http_requests_created{path=\"/api/v1/routes\",status=\"200\"} 1.790509955053325e+09\nmoscowt_http_requests_created{path=\"/api/v2/blobs\",status=\"201\"} 1.7905099550732741e+09\nmoscowt_http_requests_created{path=\"/api/v2/uploads\",status=\"202\"} 1.7905099550962539e+09\nmoscowt_http_requests_created{path=\"/api/v2/jobs/{ident}\",status=\"200\"} 1.790509955198696e+09\nmoscowt_http_requests_created{path=\"/api/v2/uploads/{ident}/apply\",status=\"202\"} 1.790509955735376e+09\nmoscowt_http_requests_created{path=\"/api/v1/exports\",status=\"202\"} 1.7905099559675264e+09\nmoscowt_http_requests_created{path=\"/api/v2/datasets/{ident}\",status=\"200\"} 1.7905100169409316e+09\nmoscowt_http_requests_created{path=\"/api/v1/jobs/{ident}\",status=\"200\"} 1.7905100169446273e+09\n# HELP moscowt_jobs Persisted jobs\n# TYPE moscowt_jobs gauge\nmoscowt_jobs{status=\"pending\"} 0.0\nmoscowt_jobs{status=\"running\"} 0.0\nmoscowt_jobs{status=\"ready\"} 36.0\nmoscowt_jobs{status=\"failed\"} 0.0\n# HELP moscowt_cache_bytes Estimated cached response memory\n# TYPE moscowt_cache_bytes gauge\nmoscowt_cache_bytes 1.0803584e+07\n",
+  "latencyIncludesSchedulingDelay": true,
+  "clientConcurrency": 96
+}

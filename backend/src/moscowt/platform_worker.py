@@ -21,6 +21,39 @@ def execute(settings: Settings, job):
     data = DatasetRepository(settings.data_root, read_only=job["kind"] in MODEL_KINDS)
     models = ModelService(data, store, settings.model_threads, settings.max_forecast_hours)
     payload = job["payload"]
+    if job["kind"] == "scenario_run":
+        from .scenario_engine import ScenarioForecastService
+
+        return ScenarioForecastService(settings, data, models).run(payload["scenario_id"], job["id"])
+    if job["kind"].startswith("model_"):
+        from .modeling.packages import EnsembleWeights, ModelPackageService
+        from .storage import atomic_write
+
+        packages = ModelPackageService(models)
+        if job["kind"] == "model_import":
+            return packages.import_package(store.path("uploads", payload["blob_id"], "zip"))
+        if job["kind"] == "model_reweight":
+            model = packages.reweight(payload["model_id"], EnsembleWeights.model_validate(payload["weights"]))
+            if payload.get("forecast_id"):
+                base = store.read("forecast_runs", payload["forecast_id"])
+                forecast = models.predict(
+                    ForecastSpec.model_validate({**base["spec"], "model_id": model["id"]})
+                )
+                return {**model, "forecast_id": forecast["id"]}
+            return model
+        content = packages.export(payload["model_id"])
+        filename = job["id"] + ".zip"
+        atomic_write(store.root / "exports" / filename, content)
+        return {"filename": filename}
+    if job["kind"] == "factor_fetch":
+        from .factors import FactorRepository
+
+        repo = FactorRepository(settings.data_root)
+        if payload["kind"] == "weather":
+            return repo.fetch_weather(payload["start"], payload["end"])
+        archive = repo.fetch_accidents()
+        linked = repo.link_accidents(archive["id"], store, payload["network_id"])
+        return {"archive": archive, "links": linked}
     if job["kind"] == "weather_fetch":
         from .external import OpenMeteoForecastProvider
 
@@ -94,7 +127,9 @@ def run(settings: Settings, channel: str, stop=None):
                     process.join()
                 if queue.get(job["id"])["status"] == "running":
                     queue.finish(job["id"], owner, error="Worker interrupted; submit again to retry")
-            elif legacy and (old := legacy.claim()):
+            # Give the compatibility export queue a turn even under continuous
+            # v2 ingestion, without letting either queue starve the other.
+            if not stop.is_set() and legacy and (old := legacy.claim()):
                 from .worker import process_job
 
                 process_job(
@@ -103,5 +138,5 @@ def run(settings: Settings, channel: str, stop=None):
                     settings.source_dir if settings.source_dir.exists() else settings.dataset_dir,
                     old,
                 )
-            else:
+            elif not job:
                 stop.wait(0.5)

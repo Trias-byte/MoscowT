@@ -4720,3 +4720,222 @@ dialog::backdrop {
   max-height: 280px;
   overflow: auto;
 }
+
+/* Data and scenario workspaces share one persistent side navigation. */
+.workspace-tools {
+  position: fixed;
+  right: 20px;
+  top: 76px;
+  z-index: 42;
+  display: flex;
+  gap: 8px;
+}
+.workspace-tools button {
+  padding: 10px 16px;
+  background: #f8fbf9;
+  border: 1px solid #cad9d3;
+  border-radius: 9px;
+  color: #203e35;
+  cursor: pointer;
+}
+.workspace-tools button[aria-pressed='true'] {
+  background: #174e42;
+  color: #fff;
+}
+.platform-panel {
+  top: 126px;
+  width: min(480px, calc(100vw - 32px));
+}
+.platform-panel[hidden] {
+  display: none;
+}
+.tool-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #d4ded9;
+}
+.tool-heading h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.tool-heading button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 24px;
+}
+.platform-body {
+  max-height: calc(100dvh - 200px);
+}
+.platform-body fieldset label {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.platform-body .chart {
+  height: 180px;
+}
+.scenario-note {
+  border-left: 3px solid #d4a94b;
+  padding: 8px 10px;
+  background: #fff8e9;
+}
+.scenario-run {
+  position: sticky;
+  bottom: -16px;
+  padding: 8px 0;
+  background: #f8fbf9;
+  border-top: 1px solid #cad9d3;
+  z-index: 2;
+}
+.incident-item {
+  display: flex;
+  justify-content: space-between;
+}
+.incident-editor,
+.dataset-card {
+  background: #edf4ef;
+  border-radius: 8px;
+  padding: 10px;
+}
+.incident-marker {
+  background: #b4442c;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px #0005;
+  font-size: 19px;
+  cursor: grab;
+}
+@media (min-width: 1100px) {
+  .tools-open .v2-workarea {
+    margin-right: 510px;
+  }
+}
+@media (max-width: 700px) {
+  .workspace-tools {
+    top: auto;
+    bottom: 14px;
+    right: 10px;
+  }
+  .platform-panel.expanded {
+    inset: 0;
+    width: 100vw;
+    border-radius: 0;
+    z-index: 60;
+  }
+  .platform-body {
+    max-height: calc(100dvh - 65px);
+  }
+  .placing-incident .scenario-panel {
+    display: none;
+  }
+}
+.platform-body input[type='range'],
+.platform-body input[type='checkbox'] {
+  accent-color: #147f78;
+}
+
+/* Route dynamics: all selected lines and a readable expanded view. */
+.analytics-caption-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.analytics-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 7px 10px;
+  border: 1px solid #d6e4de;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+}
+.dynamics-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin: 8px 0;
+}
+.dynamics-routes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.dynamics-routes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid #d6e4de;
+  border-radius: 7px;
+  background: #fff;
+  font-size: 12px;
+}
+.dynamics-routes button[aria-pressed='false'] {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+.dynamics-routes i {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+.dynamics-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.v2-dialog.analytics-dialog {
+  width: min(1180px, 95vw);
+  max-width: 95vw;
+  padding: 24px;
+  overflow: auto;
+}
+.analytics-dialog .chart {
+  width: 100%;
+  height: clamp(260px, 57vh, 680px);
+}
+.dynamics-tooltip {
+  min-width: 220px;
+  color: #263e37;
+}
+.dynamics-tooltip table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.dynamics-tooltip th,
+.dynamics-tooltip td {
+  padding: 5px 12px;
+  text-align: right;
+  border-bottom: 1px solid #edf1ee;
+}
+.dynamics-tooltip th:first-child,
+.dynamics-tooltip td:first-child {
+  text-align: left;
+}
+@media (max-width: 680px) {
+  .analytics-caption-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .v2-dialog.analytics-dialog {
+    padding: 14px;
+  }
+  .analytics-dialog .chart {
+    height: 50vh;
+  }
+}

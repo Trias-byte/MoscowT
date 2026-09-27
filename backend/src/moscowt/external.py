@@ -43,6 +43,14 @@ SOURCES = [
         "effect_status": "unavailable",
         "limitation": "No downloadable route-hour historical speeds confirmed; no traffic values are fabricated",
     },
+    {
+        "id": "accidents",
+        "url": "https://dtp-stat.ru/opendata/",
+        "license": "Использование материалов с активной ссылкой на https://dtp-stat.ru/",
+        "access": "https://dtp-stat.ru/media/opendata/moskva.geojson.zip; filter Moscow events in 2025",
+        "effect_status": "not_evaluated",
+        "limitation": "Spatial proximity only; no publication time or disruption duration. Mostly injury crashes, not a congestion time series.",
+    },
 ]
 EVENTS = [
     {
@@ -77,6 +85,7 @@ class OpenMeteoForecastProvider:
             "latitude": 55.75,
             "longitude": 37.62,
             "daily": ",".join(WEATHER_FIELDS),
+            "hourly": "temperature_2m,relative_humidity_2m,precipitation",
             "timezone": "Europe/Moscow",
             "wind_speed_unit": "ms",
             "forecast_days": 7,
@@ -130,6 +139,21 @@ class OpenMeteoForecastProvider:
         selected = frame.reindex(dates.dt.strftime("%Y-%m-%d"))[list(WEATHER_FIELDS)].reset_index(drop=True)
         if selected.isna().any().any():
             raise DomainError("EXTERNAL_COVERAGE_MISSING", "Погодный выпуск не покрывает выбранный день")
+        return selected
+
+    def select_hourly(self, ident, dates, origin):
+        from .factors import WEATHER_COLUMNS
+
+        manifest = self.store.read("weather_forecasts", ident)
+        if pd.Timestamp(manifest["available_at"]) > origin:
+            raise DomainError("WEATHER_NOT_AVAILABLE", "Погодный выпуск получен после origin")
+        if "hourly" not in manifest["response"]:
+            raise DomainError("HOURLY_WEATHER_REQUIRED", "Этот выпуск не содержит почасовую влажность")
+        frame = pd.DataFrame(manifest["response"]["hourly"])
+        frame.index = pd.to_datetime(frame.pop("time")).dt.tz_localize("Europe/Moscow")
+        selected = frame.reindex(dates)[list(WEATHER_COLUMNS)].reset_index(drop=True)
+        if not np.isfinite(selected).all().all():
+            raise DomainError("EXTERNAL_COVERAGE_MISSING", "Погодный выпуск не покрывает выбранные часы")
         return selected
 
 

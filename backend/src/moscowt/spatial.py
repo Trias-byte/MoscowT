@@ -209,6 +209,11 @@ class SpatialService:
             "scheduleId": spec.schedule_id,
             "scheduleScenario": spec.schedule_scenario,
         }
+        if (
+            spec.scenario_id
+            and self.store.read("scenarios", spec.scenario_id)["spec"].get("engine") == "recompute"
+        ):
+            snapshot["scheduleId"] = None
         rows = []
         for row in route_frame.itertuples():
             day = row.timestamp.strftime("%Y-%m-%d")

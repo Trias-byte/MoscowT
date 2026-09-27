@@ -118,7 +118,9 @@ class PeriodExporter:
                         sources,
                         forecast["spec"]["origin"] if forecast else None,
                     )
-                    frame.loc[positions, "vehicle_hours"] = [record["vehicles"] for record in records]
+                    frame.loc[positions, "vehicle_hours"] = np.array(
+                        [record["vehicles"] for record in records], dtype=float
+                    )
                     frame.loc[positions, "fleet_method"] = [record["source"] for record in records]
         frame["base_value"] = frame.value
         frame["base_vehicle_hours"] = frame.vehicle_hours
@@ -219,6 +221,11 @@ class PeriodExporter:
         ):
             raise DomainError("INVALID_COMPETITION_EXPORT", "Конкурсный экспорт требует почасовой прогноз")
         run = self.models.store.read("forecast_runs", spec.forecast_id)
+        if run["spec"].get("diagnostic_observed_factors"):
+            raise DomainError(
+                "DIAGNOSTIC_ONLY",
+                "Диагностика с будущими внешними фактами не допускается в конкурсный экспорт",
+            )
         if pd.Timestamp(run["spec"]["origin"]) != pd.Timestamp("2025-11-01T00:00:00+03:00"):
             raise DomainError("COMPETITION_CUTOFF", "Конкурсный origin должен быть 01.11.2025 00:00 МСК")
         path = self.settings.input_path("test_submission.csv")

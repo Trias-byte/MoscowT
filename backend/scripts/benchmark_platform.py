@@ -5,6 +5,7 @@ import asyncio
 import json
 import math
 import time
+import uuid
 from pathlib import Path
 
 import aiohttp
@@ -26,9 +27,11 @@ async def main(args):
                 return await response.json()
 
         async def post(path, body):
-            async with client.post(path, json=body) as response:
+            async with client.post(
+                path, json=body, headers={"Idempotency-Key": uuid.uuid4().hex}
+            ) as response:
                 content = await response.read()
-                if response.status != 200:
+                if response.status not in (200, 202):
                     raise RuntimeError(content.decode())
                 return content
 
@@ -55,13 +58,29 @@ async def main(args):
                 "/api/v2/scenarios",
                 {
                     "forecast_id": run["id"],
+                    "engine": "recompute",
                     "route_ids": routes,
                     "time_range": period,
-                    "coefficients": {"weather": 1.1, "event": 1.05},
+                    "weather": {"temperature_2m": -5, "relative_humidity_2m": 80, "precipitation": 1},
+                    "coefficients": {"season": 1.1},
+                    "schedule": {"base_headway_minutes": 10, "headway_minutes": 8, "elasticity": 0.3},
                     "additional_vehicle_hours": 12,
                 },
             )
         )
+        started = time.perf_counter()
+        job = json.loads(await post(f"/api/v2/scenarios/{scenario['id']}/runs", {}))
+        while job["status"] in ("pending", "running"):
+            if time.perf_counter() - started > 180:
+                raise TimeoutError("Scenario calculation exceeded 180 seconds")
+            await asyncio.sleep(0.2)
+            job = await get("/api/v2/jobs/" + job["id"])
+        assert job["status"] == "ready", job
+        report["scenario_calculation"] = {
+            "elapsed_ms_including_queue": (time.perf_counter() - started) * 1000,
+            "job": job,
+        }
+        scenario = job["result"]
         cases = {
             "day": ("/api/v2/forecasts/query", query),
             "scenario_day": ("/api/v2/forecasts/query", {**query, "scenario_id": scenario["id"]}),

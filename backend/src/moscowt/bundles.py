@@ -26,10 +26,21 @@ STATE_KINDS = (
     "fleets",
     "snapshots",
     "scenarios",
+    "scenario_results",
     "evaluations",
     "reports",
 )
-DATA_KINDS = ("canonical", "raw", "schedules", "schedule_sources", "external", "weather_forecasts")
+DATA_KINDS = (
+    "canonical",
+    "raw",
+    "schedules",
+    "schedule_sources",
+    "external",
+    "weather_forecasts",
+    "weather_hourly",
+    "accidents",
+    "accident_links",
+)
 
 
 def create_bundle(settings, ident):
@@ -45,6 +56,19 @@ def create_bundle(settings, ident):
     for dataset in catalog["datasets"]:
         data.verify(dataset["id"])
     sources = []
+    from .tasks import WorkQueue
+
+    queue = WorkQueue(settings.state_dir)
+    completed_scenarios = {}
+    for path in (settings.state_dir / "scenarios").glob("*.json"):
+        record = json.loads(path.read_bytes())
+        if record.get("job_id"):
+            try:
+                job = queue.get(record["job_id"])
+            except DomainError:
+                continue
+            if job["status"] == "ready":
+                completed_scenarios[record["id"]] = record
     for root, prefix, directories in (
         (settings.state_dir, "state", STATE_KINDS),
         (settings.data_root, "data", DATA_KINDS),
@@ -59,6 +83,17 @@ def create_bundle(settings, ident):
         {"path": name, "sha256": file_hash(path), "bytes": path.stat().st_size}
         for path, name in sorted(sources, key=lambda pair: pair[1])
     ]
+    # Never ship an unpublished/cancelled result as a completed scenario.
+    excluded = set()
+    for path, name in sources:
+        if name.startswith("state/scenarios/"):
+            record = json.loads(path.read_bytes())
+            if record.get("job_id") and record["id"] not in completed_scenarios:
+                excluded.add(name)
+        if name.startswith("state/scenario_results/") and path.stem not in completed_scenarios:
+            excluded.add(name)
+    sources = [(p, n) for p, n in sources if n not in excluded]
+    entries = [e for e in entries if e["path"] not in excluded]
     entries.extend(
         {"path": name, "sha256": hashlib.sha256(content).hexdigest(), "bytes": len(content)}
         for name, content in captured.items()
@@ -68,6 +103,7 @@ def create_bundle(settings, ident):
         "created_at": datetime.now(timezone.utc).isoformat(),
         "files": entries,
         "catalog": catalog,
+        "completed_scenarios": list(completed_scenarios.values()),
     }
     directory = settings.state_dir / "exports"
     directory.mkdir(parents=True, exist_ok=True)
@@ -152,4 +188,20 @@ def restore_bundle(path, settings):
                 )
         if manifest["catalog"]["current_id"]:
             db.execute("INSERT INTO catalog_state VALUES ('dataset',?)", (manifest["catalog"]["current_id"],))
+    from .tasks import WorkQueue
+
+    queue = WorkQueue(settings.state_dir)
+    with queue.connect() as db:
+        for scenario in manifest.get("completed_scenarios", []):
+            db.execute(
+                "INSERT INTO work_items(id,kind,idempotency_key,request_hash,payload,status,created_at,updated_at,progress,phase,result) VALUES (?,?,?,?,?,'ready',0,0,1,'restored',?)",
+                (
+                    scenario["job_id"],
+                    "scenario_run",
+                    "restore-" + scenario["id"],
+                    "restored",
+                    canonical({"scenario_id": scenario["draft_id"]}).decode(),
+                    canonical(scenario).decode(),
+                ),
+            )
     return {"restored_files": len(expected), "dataset_id": catalog.current_id()}

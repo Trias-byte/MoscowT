@@ -52,7 +52,13 @@ class EnsembleAdapter(ModelAdapter):
         from threadpoolctl import threadpool_limits
 
         parameters = EnsembleParameters.model_validate(spec.parameters)
-        builder = FeatureBuilder(spec.route_ids, spec.external_snapshot_id, spec.feature_groups)
+        builder = FeatureBuilder(
+            spec.route_ids,
+            spec.external_snapshot_id,
+            spec.feature_groups,
+            spec.weather_hourly_id,
+            spec.accident_links_id,
+        )
         features, labels, weights = builder.supervised(history)
         models = [
             (
@@ -107,6 +113,11 @@ class EnsembleAdapter(ModelAdapter):
             "features": features.columns.tolist(),
             "training_rows": len(labels),
             "parameters": parameters.model_dump(),
+            "feature_ranges": {
+                name: {"min": float(features[name].min()), "max": float(features[name].max())}
+                for name in features
+                if name.startswith("weather_")
+            },
         }
 
     def predict(self, model, history, spec):

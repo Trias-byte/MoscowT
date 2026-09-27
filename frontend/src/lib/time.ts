@@ -34,7 +34,9 @@ export function makeScope(view: ViewState): Scope {
   };
 }
 function dataRange(c: Capabilities) {
-  const ranges = [c.historyRange, c.forecastRange].filter((r) => r !== null);
+  const ranges = [c.historyRange, c.forecastRange, ...(c.forecastOptions || [])].filter(
+    (r) => r !== null,
+  );
   return ranges.length
     ? {
         start: new Date(Math.min(...ranges.map((r) => Date.parse(r.start)))).toISOString(),

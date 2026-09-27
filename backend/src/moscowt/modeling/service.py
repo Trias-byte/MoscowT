@@ -55,13 +55,18 @@ class ModelService:
 
     def train(self, spec: TrainingSpec):
         start = time.monotonic()
-        if set(spec.feature_groups) & {"weather", "events"} and spec.model_type != "lgb_cb_rf":
+        if set(spec.feature_groups) & {"weather", "events", "accidents"} and spec.model_type != "lgb_cb_rf":
             raise DomainError(
                 "FEATURES_UNSUPPORTED",
                 "Внешние ML-признаки поддерживает ансамбль; для остальных моделей используйте сценарные поправки",
             )
-        if set(spec.feature_groups) & {"weather", "events"} and not spec.external_snapshot_id:
+        if (
+            "events" in spec.feature_groups
+            or ("weather" in spec.feature_groups and not spec.weather_hourly_id)
+        ) and not spec.external_snapshot_id:
             raise DomainError("EXTERNAL_DATA_REQUIRED", "Выберите версию внешних данных")
+        if "accidents" in spec.feature_groups and not spec.accident_links_id:
+            raise DomainError("ACCIDENT_DATA_REQUIRED", "Выберите архив ДТП с привязкой к маршрутам")
         adapter = ADAPTERS[spec.model_type]
         history = self._history(
             spec.dataset_id, spec.route_ids, spec.time_range.start, spec.time_range.end, adapter.minimum_days
@@ -78,7 +83,7 @@ class ModelService:
         code.update(
             {
                 name: file_hash(Path(__file__).parent.parent / name)
-                for name in ("external.py", "service_calendar.py")
+                for name in ("external.py", "service_calendar.py", "factors.py")
             }
         )
         identity = {
@@ -104,6 +109,7 @@ class ModelService:
                 "process_peak_rss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024,
                 "availability_policy": "retrospective_event_time",
                 "training_rows": int(history.value.notna().sum()),
+                "feature_ranges": model.get("feature_ranges", {}),
                 "route_coverage": {
                     route: {
                         "known_hours": int(rows.value.notna().sum()),
@@ -136,7 +142,11 @@ class ModelService:
         # Only artifacts trained locally may enter this store; arbitrary pickle uploads are not accepted.
         return manifest, joblib.load(path)
 
-    def predict(self, spec: ForecastSpec):
+    def predict(self, spec: ForecastSpec, *, overrides=None, persist=True):
+        if overrides and persist:
+            raise DomainError(
+                "SCENARIO_REQUIRED", "Изменённые признаки сохраняются только как отдельный сценарий"
+            )
         manifest, model = self.load(spec.model_id)
         training = TrainingSpec.model_validate(manifest["spec"])
         if training.time_range.end > spec.origin:
@@ -162,6 +172,14 @@ class ModelService:
         history = self._history(
             spec.dataset_id, spec.route_ids, training.time_range.start, spec.origin, adapter.minimum_days
         )
+        history.attrs["observed_factors"] = spec.diagnostic_observed_factors
+        history.attrs["factor_overrides"] = overrides
+        if overrides and any(v is not None for v in overrides.get("weather", {}).values()):
+            if "weather" not in training.feature_groups or not training.weather_hourly_id:
+                raise DomainError(
+                    "WEATHER_MODEL_REQUIRED",
+                    "Переобучите ансамбль с почасовой погодой для изменения температуры, влажности и осадков",
+                )
         if spec.weather_forecast_id:
             if "weather" not in training.feature_groups or training.model_type != "lgb_cb_rf":
                 raise DomainError(
@@ -177,7 +195,7 @@ class ModelService:
         inference_code.update(
             {
                 name: file_hash(Path(__file__).parent.parent / name)
-                for name in ("external.py", "service_calendar.py")
+                for name in ("external.py", "service_calendar.py", "factors.py")
             }
         )
         ident = "forecast-" + digest(
@@ -188,7 +206,7 @@ class ModelService:
             }
         )
         with self.store.lock("forecast"):
-            if self.store.path("forecast_runs", ident).exists():
+            if persist and self.store.path("forecast_runs", ident).exists():
                 return self.store.read("forecast_runs", ident)
             predicted = adapter.predict(model, history, spec)
             expected = len(spec.route_ids) * int(
@@ -203,6 +221,8 @@ class ModelService:
                 raise DomainError(
                     "INVALID_PREDICTIONS", "Модель вернула неполный или некорректный прогноз", 500
                 )
+            if not persist:
+                return predicted
             buffer = io.BytesIO()
             predicted.to_parquet(buffer, index=False)
             path = self.store.path("forecast_runs", ident, "parquet")
@@ -217,10 +237,13 @@ class ModelService:
                 "total": float(predicted.value.sum()),
                 "sha256": file_hash(path),
                 "availability_policy": "retrospective_event_time",
-                "quality_note": "Невалидированный годовой сценарий"
+                "quality_note": "Ретроспективная диагностика с фактическими внешними данными; не оперативный прогноз"
+                if spec.diagnostic_observed_factors
+                else "Невалидированный годовой сценарий"
                 if training.model_type == "annual_scenario"
                 else "Качество см. в отчёте временной проверки",
                 "model_type": training.model_type,
+                "purpose": training.purpose,
                 "external_snapshot_id": training.external_snapshot_id,
                 "route_applicability": manifest.get("route_coverage", {}),
                 "weather_method": "received_forecast_unvalidated_transfer"

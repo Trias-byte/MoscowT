@@ -1,6 +1,11 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
-export function Modal(p: { title: string; onClose: () => void; children: ReactNode }) {
+export function Modal(p: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  className?: string;
+}) {
   const ref = useRef<HTMLDialogElement>(null),
     close = useRef(p.onClose);
   close.current = p.onClose;
@@ -22,7 +27,7 @@ export function Modal(p: { title: string; onClose: () => void; children: ReactNo
   return (
     <dialog
       ref={ref}
-      className="v2-dialog"
+      className={`v2-dialog ${p.className || ''}`}
       aria-label={p.title}
       onKeyDown={(event) => {
         if (event.key !== 'Tab') return;

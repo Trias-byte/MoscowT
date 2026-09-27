@@ -6,7 +6,13 @@ import type { Network, GeometrySelection, ObjectSelection } from '../lib/contrac
 import type { SectionLoad } from '../lib/sectionLoad';
 import { number, valueColor } from '../lib/domain';
 import { mapStyle } from '../data/mapStyle';
+import type { Incident } from '../lib/scenario';
 interface Props {
+  incidents?: Incident[];
+  placingIncident?: boolean;
+  onIncidentPlace?: (longitude: number, latitude: number) => void;
+  onIncidentMove?: (id: string, longitude: number, latitude: number) => void;
+  onIncidentSelect?: (id: string) => void;
   network: Network;
   sectionLoads: Record<string, SectionLoad>;
   geometry?: GeometrySelection;
@@ -46,6 +52,35 @@ export function NetworkMap(p: Props) {
   const [ready, setReady] = useState(false),
     [failed, setFailed] = useState(false),
     [baseError, setBaseError] = useState(false);
+  useEffect(() => {
+    const map = instance.current;
+    if (!map || !ready) return;
+    map.getCanvas().style.cursor = p.placingIncident ? 'crosshair' : '';
+  }, [p.placingIncident, ready]);
+  useEffect(() => {
+    const map = instance.current;
+    if (!map || !ready) return;
+    const markers = (p.incidents || []).map((incident, index) => {
+      const element = document.createElement('button');
+      element.className = 'incident-marker';
+      element.textContent = '⚠';
+      element.setAttribute('aria-label', `ДТП ${index + 1}`);
+      element.title = `ДТП: ${incident.duration_minutes} мин, −${Math.round(incident.reduction * 100)}% движения (допущение)`;
+      element.addEventListener('click', (event) => {
+        event.stopPropagation();
+        latest.current.onIncidentSelect?.(incident.id);
+      });
+      const marker = new maplibregl.Marker({ element, draggable: true })
+        .setLngLat([incident.longitude, incident.latitude])
+        .addTo(map);
+      marker.on('dragend', () => {
+        const point = marker.getLngLat();
+        latest.current.onIncidentMove?.(incident.id, point.lng, point.lat);
+      });
+      return marker;
+    });
+    return () => markers.forEach((marker) => marker.remove());
+  }, [p.incidents, ready]);
   const previousSelection = useRef(p.selected);
   const displayed = useMemo(() => {
     const segments = new Set(p.geometry?.segmentIds ?? []),
@@ -89,6 +124,10 @@ export function NetworkMap(p: Props) {
       if (initialExtent && !userMoved)
         map.fitBounds(initialExtent, { padding: 35, duration: 0, maxZoom: 12 });
     };
+    map.on('click', (event) => {
+      if (latest.current.placingIncident)
+        latest.current.onIncidentPlace?.(event.lngLat.lng, event.lngLat.lat);
+    });
     map.on('dragstart', () => {
       userMoved = true;
     });
@@ -249,6 +288,7 @@ export function NetworkMap(p: Props) {
         paint: { 'text-color': '#173d34', 'text-halo-color': '#fff', 'text-halo-width': 2 },
       });
       map.on('click', 'stop-clusters', async (event) => {
+        if (latest.current.placingIncident) return;
         const feature = event.features?.[0];
         if (feature?.geometry.type !== 'Point') return;
         const zoom = await (
@@ -271,6 +311,7 @@ export function NetworkMap(p: Props) {
         popup.remove();
       });
       map.on('click', 'route-lines', (e) => {
+        if (latest.current.placingIncident) return;
         const properties = e.features?.[0]?.properties;
         if (properties?.id && properties?.routeId)
           latest.current.onSelect({
@@ -280,6 +321,7 @@ export function NetworkMap(p: Props) {
           });
       });
       map.on('click', 'stop-points', (e) => {
+        if (latest.current.placingIncident) return;
         const id = e.features?.[0]?.properties?.id;
         if (id) latest.current.onSelect({ kind: 'stop', id });
       });

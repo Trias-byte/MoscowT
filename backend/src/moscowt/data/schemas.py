@@ -13,9 +13,14 @@ class ImportSpec(StrictModel):
     time_range: TimeRange
     route_ids: list[str] = Field(default_factory=list, max_length=1000)
     complete: bool = False
+    dataset_name: str | None = Field(default=None, min_length=1, max_length=160)
+    base_dataset_id: str | None = None
+    new_dataset: bool = False
 
     @model_validator(mode="after")
     def valid_selection(self):
+        if self.new_dataset and self.base_dataset_id:
+            raise ValueError("Новый набор не может иметь исходную редакцию")
         if len(set(self.route_ids)) != len(self.route_ids):
             raise ValueError("Маршруты не должны повторяться")
         if self.mode == "replace" and not self.route_ids:

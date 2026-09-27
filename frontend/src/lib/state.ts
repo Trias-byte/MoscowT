@@ -8,6 +8,7 @@ export function initialView(c: Capabilities): ViewState {
     windowHours: 24,
     date: c.defaultDate,
     snapshotId: c.snapshotId,
+    publishedSnapshotId: c.snapshotId,
     index: 0,
     geometry: { patternIds: [], section: null, bbox: null, referenceMode: 'reference' },
   };
@@ -57,6 +58,11 @@ export function initialView(c: Capabilities): ViewState {
         ? Math.min(24 - windowHours, Math.max(0, saved.index))
         : 0,
       scenarioId: typeof saved.scenarioId === 'string' ? saved.scenarioId : undefined,
+      forecastId: typeof saved.forecastId === 'string' ? saved.forecastId : undefined,
+      publishedSnapshotId:
+        typeof saved.publishedSnapshotId === 'string'
+          ? saved.publishedSnapshotId
+          : saved.snapshotId || c.snapshotId,
       geometry,
     };
   } catch {

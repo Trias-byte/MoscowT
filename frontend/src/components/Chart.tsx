@@ -61,7 +61,11 @@ export function Chart({
         aria: { enabled: true, label: { description: label }, decal: { show: true } },
         tooltip: {
           trigger: 'axis',
-          renderMode: 'richText',
+          renderMode: 'html',
+          appendTo: (el: HTMLElement) => el.closest('dialog') || document.body,
+          confine: !!element.current?.closest('dialog'),
+          enterable: true,
+          extraCssText: `max-height: min(${element.current?.closest('dialog') ? 50 : 65}vh, 480px); max-width: calc(100vw - 32px); overflow: auto; white-space: normal;`,
           backgroundColor: '#ffffff',
           borderColor: '#e2e9e6',
           textStyle: { color: '#263e37', fontSize: 12 },

@@ -32,6 +32,9 @@ export const Dataset = z
     rows: z.number(),
     known_rows: z.number(),
     total: z.number(),
+    name: z.string().optional(),
+    revision: z.number().optional(),
+    created_at: z.string().optional(),
   })
   .passthrough();
 export const Model = z
@@ -43,6 +46,9 @@ export const Model = z
       model_type: z.string(),
       route_ids: z.array(z.string()),
       time_range: z.object({ start: z.string(), end: z.string() }),
+      weather_hourly_id: z.string().nullable().optional(),
+      accident_links_id: z.string().nullable().optional(),
+      feature_groups: z.array(z.string()).optional(),
     }),
   })
   .passthrough();
@@ -79,8 +85,8 @@ export const Schedule = z
     routes: z.array(z.string()),
   })
   .passthrough();
-export async function upload(file: File) {
-  const response = await fetch(`${BASE}/blobs`, {
+export async function upload(file: File, kind: 'data' | 'model' = 'data') {
+  const response = await fetch(`${BASE}/blobs?kind=${kind}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/octet-stream' },
     body: file,

@@ -9,14 +9,23 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 
-FEATURE_VERSION = "fixed-origin-analogue-v2"
+FEATURE_VERSION = "fixed-origin-hourly-factors-v3"
 
 
 class FeatureBuilder:
-    def __init__(self, route_ids, external_snapshot_id=None, feature_groups=None):
+    def __init__(
+        self,
+        route_ids,
+        external_snapshot_id=None,
+        feature_groups=None,
+        weather_hourly_id=None,
+        accident_links_id=None,
+    ):
         self.external_snapshot_id = external_snapshot_id
         self.feature_groups = ["calendar"] if feature_groups is None else feature_groups
         self.route_codes = {route: index for index, route in enumerate(sorted(route_ids))}
+        self.weather_hourly_id = weather_hourly_id
+        self.accident_links_id = accident_links_id
 
     def build(self, history, target, origin):
         import holidays
@@ -133,13 +142,61 @@ class FeatureBuilder:
                 self.external_snapshot_id,
                 target,
                 origin,
-                self.feature_groups,
+                [
+                    g
+                    for g in self.feature_groups
+                    if g != "weather" or not getattr(self, "weather_hourly_id", None)
+                ],
                 history.attrs.get("weather_forecast_id"),
             )
             features = pd.concat([features, extras], axis=1)
+        if "weather" in self.feature_groups and getattr(self, "weather_hourly_id", None):
+            from ..factors import hourly_weather
+
+            weather = hourly_weather(
+                history.attrs["external_root"],
+                self.weather_hourly_id,
+                target,
+                origin,
+                history.attrs.get("observed_factors", False),
+            )
+            if history.attrs.get("weather_forecast_id"):
+                from ..external import OpenMeteoForecastProvider
+
+                weather = OpenMeteoForecastProvider(history.attrs["external_root"]).select_hourly(
+                    history.attrs["weather_forecast_id"], target.timestamp, origin
+                )
+            overrides = history.attrs.get("factor_overrides")
+            if overrides:
+                mask = (
+                    target.route.isin(overrides["route_ids"])
+                    & target.timestamp.ge(overrides["start"])
+                    & target.timestamp.lt(overrides["end"])
+                )
+                for column, value in overrides.get("weather", {}).items():
+                    if value is not None:
+                        weather.loc[mask, column] = value
+            features = pd.concat([features, weather.add_prefix("weather_")], axis=1)
+        if "accidents" in self.feature_groups and getattr(self, "accident_links_id", None):
+            from ..factors import accident_features
+
+            features = pd.concat(
+                [
+                    features,
+                    accident_features(
+                        history.attrs["external_root"],
+                        self.accident_links_id,
+                        target,
+                        history.attrs.get("observed_factors", False),
+                    ),
+                ],
+                axis=1,
+            )
         return features
 
     def supervised(self, history):
+        history = history.copy()
+        history.attrs["observed_factors"] = True
         first = history.timestamp.min().normalize() + pd.Timedelta(days=28)
         end = history.timestamp.max() + pd.Timedelta(hours=1)
         blocks, labels, weights = [], [], []
