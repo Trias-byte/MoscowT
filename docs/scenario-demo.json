@@ -1,1 +1,0 @@
-{"dataset_id":"dataset-4974446a8d419fe8d5323151","evaluation_id":"evaluation-2327647b808298c91522d69f","forecast_id":"forecast-7ccb8fd66b4bd349908c2674","model_id":"model-46459e80dc716840f024e17b","parameters":{"cat_iterations":144,"lgb_estimators":96,"rf_estimators":64}}

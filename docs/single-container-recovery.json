@@ -1,8 +1,0 @@
-{
-  "test": "Idle general worker SIGKILL restarts whole single container",
-  "recoverySeconds": 2.3807048559974646,
-  "restartCountBefore": 0,
-  "restartCountAfter": 1,
-  "snapshotUnchanged": true,
-  "ready": true
-}

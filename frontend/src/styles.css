@@ -4964,3 +4964,19 @@ dialog::backdrop {
 .scenario-panel td button {
   white-space: normal;
 }
+
+.v2-dialog a.v2-primary {
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+}
+.export-body fieldset {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.export-body input,
+.export-body select {
+  min-width: 0;
+}

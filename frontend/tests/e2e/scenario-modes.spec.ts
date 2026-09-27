@@ -75,12 +75,18 @@ test('each factor is independent; map and submission export use its exact window
   expect(view.scenarioRange).toEqual(results.season.spec.time_range);
   await expect
     .poll(async () =>
-      Number((await page.locator('.v2-total strong').innerText()).replace(/[^\d,.-]/g, '').replace(',', '.')),
+      Number(
+        (await page.locator('.v2-total strong').innerText())
+          .replace(/[^\d,.-]/g, '')
+          .replace(',', '.'),
+      ),
     )
     .toBeCloseTo(results.season.total, 0);
   await page.getByRole('button', { name: 'Экспорт', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Экспорт данных' });
-  await expect(dialog.getByLabel('Результат', { exact: true })).toHaveValue(results.season.id);
+  await expect(dialog.getByRole('combobox', { name: 'Результат', exact: true })).toHaveValue(
+    results.season.id,
+  );
   await dialog.getByRole('button', { name: 'Подготовить CSV как submission' }).click();
   await expect(dialog.getByRole('link', { name: 'Скачать файл' })).toBeVisible({ timeout: 30000 });
   const downloadPromise = page.waitForEvent('download');
@@ -112,7 +118,35 @@ test('each factor is independent; map and submission export use its exact window
   expect(csv.slice(1).map((line) => Number(line.split(';')[3]))).toEqual(
     query.rows.map((r: any) => Math.floor(r.value + 0.5)),
   );
+  const downloadLink = dialog.getByRole('link', { name: 'Скачать файл' });
+  const colors = await downloadLink.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return [style.color, style.backgroundColor];
+  });
+  expect(colors[0]).not.toBe(colors[1]);
   await page.screenshot({ path: 'test-results/scenario-submission.png', fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await dialog.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/scenario-submission-mobile.png', fullPage: true });
+  await dialog.getByRole('button', { name: 'Закрыть диалог' }).click();
+  await panel.getByRole('button', { name: 'Вернуться к базе' }).click();
+  await expect
+    .poll(() => JSON.parse(new URL(page.url()).searchParams.get('view')!).scenarioId)
+    .toBeUndefined();
+  expect(JSON.parse(new URL(page.url()).searchParams.get('view')!).scenarioRange).toEqual(
+    results.season.spec.time_range,
+  );
+  await expect
+    .poll(async () =>
+      Number(
+        (await page.locator('.v2-total strong').innerText())
+          .replace(/[^\d,.-]/g, '')
+          .replace(',', '.'),
+      ),
+    )
+    .toBeCloseTo(results.season.base_total, 0);
+  await page.reload();
+  await expect(page.locator('.incident-marker')).toHaveCount(0);
 });
 
 test('scenario copies and active choices stay independent across tabs', async ({
